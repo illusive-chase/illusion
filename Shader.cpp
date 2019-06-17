@@ -40,7 +40,7 @@ void fl::geom::Shader::shade(const LerpX& shadee, DWORD mask) {
 void fl::geom::Shader::shade_follow(float z, int id) {
 	if (map_trait->z_depth < z) {
 		*write = write[-id];
+		*map_trait = map_trait[-id];
 		map_trait->z_depth = z;
-		map_trait->object = obj;
 	}
 }

@@ -125,29 +125,37 @@ void fl::geom::Stage3D::render() {
 	DWORD* p1 = reinterpret_cast<DWORD*>(swap_chain->colors);
 	DWORD* p2 = swap_chain->sample;
 	MapTrait* p3 = swap_chain->map_trait;
-	if (sample_num > 1) {
-		for (int i = 0; i < size; ++i) {
-			*p1 = ((((p2[0] + p2[1]) >> 1) & 0x00FEFEFFU) + (((p2[2] + p2[3]) >> 1) & 0x00FEFEFFU)) >> 1;
-			p2 += sample_num;
-			p1++;
-		}
-	} else {
-		for (int i = 0; i < size; ++i) {
-			BYTE* pick = reinterpret_cast<BYTE*>(p2);
+	for (int i = 0; i < size; ++i) {
 #ifdef SSE
-			const __m128i zero = _mm_setzero_si128();
-			__m128 tmp = _mm_set_ps(0, p3->r, p3->g, p3->b);
-			tmp = _mm_div_ps(tmp, _mm_set1_ps(p3->z_depth));
-			__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0])), tmp)),
-				zero), zero);
-			*p1 = ~_mm_cvtsi128_si32(tmpi);
-#else
-			*p1 = ~RGB3D(MIX(pick[2], p3->r / p3->z_depth), MIX(pick[1], p3->g / p3->z_depth), MIX(pick[0], p3->b / p3->z_depth));
-#endif
-			p1++;
+		__m128 tmp = _mm_setzero_ps();
+		for (int j = 0; j < sample_num; ++j) {
+			BYTE* pick = reinterpret_cast<BYTE*>(p2);
+			tmp = _mm_add_ps(tmp, 
+				_mm_mul_ps(
+					_mm_div_ps(_mm_set_ps(0, p3->r, p3->g, p3->b), _mm_set1_ps(p3->z_depth)),
+					_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0]))
+				)
+			);
 			p2++;
 			p3++;
 		}
+		tmp = _mm_div_ps(tmp, _mm_set1_ps(sample_num));
+		const __m128i zero = _mm_setzero_si128();
+		__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(tmp), zero), zero);
+		*p1 = ~_mm_cvtsi128_si32(tmpi);
+		p1++;
+#else
+		unsigned r = 0, g = 0, b = 0;
+		for (int j = 0; j < sample_num; ++j) {
+			BYTE* pick = reinterpret_cast<BYTE*>(p2);
+			r += MIX(pick[2], p3->r / p3->z_depth);
+			g += MIX(pick[1], p3->g / p3->z_depth);
+			b += MIX(pick[0], p3->b / p3->z_depth);
+			p2++, p3++;
+		}
+		*p1 = ~RGB3D(r / sample_num, g / sample_num, b / sample_num);
+		p1++;
+#endif
 	}
 	if (render_mode & MODE_MLAA) postFiltering_MLAA();
 	//printf("%d %d\n", cnt, clock() - cl);
