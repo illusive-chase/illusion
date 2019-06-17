@@ -2,7 +2,7 @@
 
 
 fl::geom::LerpX::LerpX(const LerpY & sa, const LerpY & sb)
-	: x(sa.x), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dx(1.0 / (sb.x - x)), dz((sb.z - z) * dx),
+	: x(sa.x), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dx(1.0 / ((sb.x - x == 0.0) ? 1e-5 : (sb.x - x))), dz((sb.z - z) * dx),
 	du((sb.u - u) * dx), dv((sb.v - v) * dx), dr((sb.r - r) * dx), dg((sb.g - g) * dx), db((sb.b - b) * dx) {
 }
 

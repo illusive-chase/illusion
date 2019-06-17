@@ -39,7 +39,7 @@ void fl::Setup() {
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3, 0, 0);
 
 	stage.addConsole();
-	stage.addChild(wd = new Stage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3D::MODE_MSAA, 1, new SkyBox(tx, 2000)));
+	stage.addChild(wd = new Stage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3D::MODE_MLAA, 1, new SkyBox(tx, 2000)));
 	wd->addLight(new DirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6, 0.6, 0.6)));
 	wd->addLight(new Light3D(Vector3D(0.4, 0.4, 0.4)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
