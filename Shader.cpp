@@ -27,18 +27,11 @@ void fl::geom::Shader::move() {
 }
 
 void fl::geom::Shader::shade(const LerpX& shadee, DWORD mask) {
-	const BYTE* pick = src + ((shadee.getU() + src_wid * shadee.getV()) << 2);
 	if (map_trait->z_depth < shadee.z) {
-#ifdef SSE
-		const __m128i zero = _mm_setzero_si128();
-		__m128 tmp = _mm_set_ps(0, (float)shadee.r, (float)shadee.g, (float)shadee.b);
-		tmp = _mm_div_ps(tmp, _mm_set1_ps((float)shadee.z));
-		__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0])), tmp)),
-			zero), zero);
-		*write = (~_mm_cvtsi128_si32(tmpi)) & mask;
-#else
-		*write = ((~RGB3D(MIX(pick[2], shadee.r / shadee.z), MIX(pick[1], shadee.g / shadee.z), MIX(pick[0], shadee.b / shadee.z))) & mask);
-#endif
+		*write = ((DWORD*)src)[shadee.getU() + src_wid * shadee.getV()];
+		map_trait->r = shadee.r;
+		map_trait->g = shadee.g;
+		map_trait->b = shadee.b;
 		map_trait->z_depth = shadee.z;
 		map_trait->object = obj;
 	}

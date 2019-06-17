@@ -3,9 +3,7 @@
 #include "SMLAAA.h"
 
 void fl::geom::Stage3D::render() {
-	//clock_t cl = clock();
 	memset(swap_chain->map_trait, 0, (size << sample_offset) * sizeof(MapTrait));
-	if (sample_num > 1) memset(swap_chain->sample, 0, (size << sample_offset) * sizeof(*swap_chain->sample));
 	if (update_Shadee) {
 		if (vertex2D) delete[] vertex2D;
 		vertex2D = new Shadee[size_Shadee];
@@ -124,13 +122,31 @@ void fl::geom::Stage3D::render() {
 			}
 		}
 	}
-
+	DWORD* p1 = reinterpret_cast<DWORD*>(swap_chain->colors);
+	DWORD* p2 = swap_chain->sample;
+	MapTrait* p3 = swap_chain->map_trait;
 	if (sample_num > 1) {
-		DWORD* p1 = reinterpret_cast<DWORD*>(swap_chain->colors), *p2 = swap_chain->sample;
 		for (int i = 0; i < size; ++i) {
 			*p1 = ((((p2[0] + p2[1]) >> 1) & 0x00FEFEFFU) + (((p2[2] + p2[3]) >> 1) & 0x00FEFEFFU)) >> 1;
 			p2 += sample_num;
 			p1++;
+		}
+	} else {
+		for (int i = 0; i < size; ++i) {
+			BYTE* pick = reinterpret_cast<BYTE*>(p2);
+#ifdef SSE
+			const __m128i zero = _mm_setzero_si128();
+			__m128 tmp = _mm_set_ps(0, p3->r, p3->g, p3->b);
+			tmp = _mm_div_ps(tmp, _mm_set1_ps(p3->z_depth));
+			__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0])), tmp)),
+				zero), zero);
+			*p1 = ~_mm_cvtsi128_si32(tmpi);
+#else
+			*p1 = ~RGB3D(MIX(pick[2], p3->r / p3->z_depth), MIX(pick[1], p3->g / p3->z_depth), MIX(pick[0], p3->b / p3->z_depth));
+#endif
+			p1++;
+			p2++;
+			p3++;
 		}
 	}
 	if (render_mode & MODE_MLAA) postFiltering_MLAA();

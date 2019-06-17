@@ -6,9 +6,9 @@ namespace fl {
 	namespace geom {
 
 		struct MapTrait {
-			float z_depth;
+			float z_depth, r, g, b;
 			void* object;
-			MapTrait() :z_depth(0), object(nullptr) {}
+			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
 		};
 
 		class Shader {

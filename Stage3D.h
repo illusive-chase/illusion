@@ -85,11 +85,10 @@ namespace fl {
 					info.bmiHeader.biBitCount = 32;
 					info.bmiHeader.biCompression = BI_RGB;
 					hbmp = CreateDIBSection(NULL, &info, DIB_RGB_COLORS, &colors, NULL, 0);
-					if (sample_num > 1) sample = new DWORD[sample_num * size];
-					else sample = static_cast<DWORD*>(colors);
+					sample = new DWORD[sample_num * size];
 				}
 
-				~SwapChain() { if (next) delete next; DeleteObject(hbmp); }
+				~SwapChain() { if (next) delete next; DeleteObject(hbmp); delete[] sample; }
 			};
 
 			vector<SObject3D*> obj;
