@@ -21,8 +21,10 @@ void fl::geom::Stage3D::render() {
 	if (skybox) skybox->pos = camera.pos;
 
 	for (SText3D* it : txt) {
+		Vector3D temp = it->obj->pos - persPos;
+		if (temp * camera.dir > cameraDir_mod * camera.farPlatform) continue;
 		Shadee tmp;
-		project(tmp, it->pos - persPos, cameraDir_mod);
+		project(tmp, temp + it->pos, cameraDir_mod);
 		it->x = (int)tmp.x;
 		it->y = (int)tmp.y;
 		it->renderEventListener(it);
@@ -424,7 +426,9 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, float cameraDir_mod) {
 void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p) {
 	p.value->caption.str(L"");
 	p.value->caption.clear();
-	p.value->caption << p.value->pos.x << L',' << p.value->pos.y << L',' << p.value->pos.z;
+	p.value->caption << p.value->pos.x + p.value->obj->pos.x << L',' 
+		<< p.value->pos.y+ p.value->obj->pos.y << L',' 
+		<< p.value->pos.z + p.value->obj->pos.z;
 }
 
 

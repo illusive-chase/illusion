@@ -131,7 +131,7 @@ namespace fl {
 			void addObjectWithPosition(SObject3D* tar) {
 				addObject(tar);
 				for (Vector3D& v : tar->vertex) {
-					SText3D* p = new SText3D(v, L"undefined");
+					SText3D* p = new SText3D(v, tar, L"undefined");
 					p->renderEventListener.add(0, showPosition);
 					addObject(p);
 				}

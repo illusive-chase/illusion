@@ -150,6 +150,8 @@ namespace fl {
 
 			Vector3D(float x, float y, float z) :x(x), y(y), z(z), w(0U) {}
 
+			inline Vector3D operator -() const { return Vector3D(-x, -y, -z); }
+
 			inline void operator +=(const Vector3D& tar) { x += tar.x; y += tar.y; z += tar.z; }
 
 			inline Vector3D operator +(const Vector3D& tar) const { return Vector3D(x + tar.x, y + tar.y, z + tar.z); }

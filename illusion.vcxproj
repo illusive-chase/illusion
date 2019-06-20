@@ -280,11 +280,12 @@
     <ClCompile Include="SGeomMath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SLoader.cpp" />
     <ClCompile Include="SMLAAA.cpp" />
     <ClCompile Include="SMovieClip.cpp" />
     <ClCompile Include="SObject3D.cpp" />
-    <ClCompile Include="PObject.cpp" />
+    <ClCompile Include="PObject3D.cpp" />
     <ClCompile Include="SPointer.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Stage3D.cpp" />

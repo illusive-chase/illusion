@@ -197,8 +197,11 @@
     <ClCompile Include="Stage3D.cpp">
       <Filter>源文件\top_element\geom3D</Filter>
     </ClCompile>
-    <ClCompile Include="PObject.cpp">
+    <ClCompile Include="PObject3D.cpp">
       <Filter>源文件\top_element\physics3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyBox.cpp">
+      <Filter>源文件\top_element\geom3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

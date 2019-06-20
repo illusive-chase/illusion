@@ -26,7 +26,7 @@ namespace fl {
 			public:
 
 				template<typename ExactForceType>
-				void add(const ExactForceType& f) { base.insert(new PForceGeneratorImpl<ExactForceType>(f)); }
+				void add(const ExactForceType& f) { base.push_back(new PForceGeneratorImpl<ExactForceType>(f)); }
 				void operator()(PObject3D* obj) { for (auto it : base) it->Execute(obj); }
 				~PForceGenerator() { for (auto it : base) delete it; }
 			} force;
@@ -42,13 +42,13 @@ namespace fl {
 			void framing(float duration) {
 				pos += vel * duration;
 				vel += acc * duration;
-				acc = geom::Vector3D();
+				acc = Vector3D();
 				if(mass) force(this);
 			}
 			void framing() {
 				pos += vel;
 				vel += acc;
-				acc = geom::Vector3D();
+				acc = Vector3D();
 				if (mass) force(this);
 			}
 

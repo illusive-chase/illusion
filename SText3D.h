@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SGeomMath.h"
+#include "SObject3D.h"
 #include "SText.h"
 
 namespace fl {
@@ -10,11 +10,12 @@ namespace fl {
 
 		public:
 			Vector3D pos;
+			SObject3D* obj;
 			fl::events::Signal<fl::events::SimpleEvent<SText3D*>> renderEventListener;
 
-			SText3D(const Vector3D& pos, const wstring& caption,
+			SText3D(const Vector3D& pos, SObject3D* obj, const wstring& caption,
 				const fl::display::SFont& sfont = fl::display::SFont(20), Shape* parent = nullptr)
-				:SText(0, 0, caption, sfont, parent), pos(pos) {
+				:SText(0, 0, caption, sfont, parent), pos(pos), obj(obj) {
 			}
 
 		};

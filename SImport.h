@@ -7,6 +7,7 @@
 #define import_geom
 #define import_ui
 #define import_loader
+#define import_physics
 #endif
 #if defined(import_fl)
 #include "Stage.h"
@@ -37,4 +38,8 @@ using namespace fl::ui;
 #if defined(import_loader)
 #include "SLoader.h"
 using namespace fl::loader;
+#endif
+#if defined(import_physics)
+#include "PForce.h"
+using namespace fl::physics;
 #endif
