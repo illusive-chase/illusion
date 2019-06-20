@@ -31,6 +31,12 @@
     <Filter Include="头文件\top_element\geom3D">
       <UniqueIdentifier>{73ca1deb-a35e-48ad-96cb-013ce32ffe8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\top_element\physics3D">
+      <UniqueIdentifier>{b1e8e64c-de63-464c-b19b-e526d27ed6b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\top_element\physics3D">
+      <UniqueIdentifier>{d14b22b8-3014-45a6-b3b8-531f72182158}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">
@@ -120,14 +126,17 @@
     <ClInclude Include="SObject3D.h">
       <Filter>头文件\top_element\geom3D</Filter>
     </ClInclude>
-    <ClInclude Include="SPhysics.h">
-      <Filter>头文件\top_element\geom3D</Filter>
-    </ClInclude>
     <ClInclude Include="SText3D.h">
       <Filter>头文件\top_element\geom3D</Filter>
     </ClInclude>
     <ClInclude Include="Stage3D.h">
       <Filter>头文件\top_element\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="PObject3D.h">
+      <Filter>头文件\top_element\physics3D</Filter>
+    </ClInclude>
+    <ClInclude Include="PForce.h">
+      <Filter>头文件\top_element\physics3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -188,8 +197,8 @@
     <ClCompile Include="Stage3D.cpp">
       <Filter>源文件\top_element\geom3D</Filter>
     </ClCompile>
-    <ClCompile Include="SPhysics.cpp">
-      <Filter>源文件\top_element\geom3D</Filter>
+    <ClCompile Include="PObject.cpp">
+      <Filter>源文件\top_element\physics3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

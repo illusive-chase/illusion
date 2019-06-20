@@ -44,9 +44,9 @@ void fl::Setup() {
 	wd->addLight(new Light3D(Vector3D(0.4, 0.4, 0.4)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 
-	stage.addRecycleListener(ml = new ModelLoader());
-	ml->loadMMD(L"C:\\Users\\Ò¶¿ª\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
-	wd->addObject(new SObject3D(*(ml->models[0])));
+	//stage.addRecycleListener(ml = new ModelLoader());
+	//ml->loadMMD(L"C:\\Users\\Ò¶¿ª\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
+	//wd->addObject(new SObject3D(*(ml->models[0])));
 
 	//Texture suf(Color::RED);
 	//wd->addObjectWithPosition(new Cube3D(Vector3D(0, 0, 0), suf));

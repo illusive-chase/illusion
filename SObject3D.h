@@ -3,6 +3,7 @@
 #include "SPointer.h"
 #include "SGeomMath.h"
 #include "Surface.h"
+#include "PObject3D.h"
 
 namespace fl {
 	namespace geom {
@@ -15,8 +16,9 @@ namespace fl {
 			vector<Vector3D> vertex;
 			vector<Vector3D> normal;
 			vector<Surface3D> surface;
+			fl::physics::PObject3D* pobj;
 
-			SObject3D(const Vector3D& pos) :pos(pos), m_x(1, 0, 0), m_y(0, 1, 0), m_z(0, 0, 1) {}
+			SObject3D(const Vector3D& pos) :pos(pos), m_x(1, 0, 0), m_y(0, 1, 0), m_z(0, 0, 1), pobj(nullptr) {}
 			virtual ~SObject3D() {}
 
 			/// @brief 添加顶点和顶点的法向量，返回在顶点列表中的序号
@@ -43,6 +45,12 @@ namespace fl {
 			/// @return int
 			int addSurface(int pa, int pb, int pc, const Texture& texture, int uva = 0, int uvb = 0, int uvc = 0);
 
+			/// @brief 添加物理实体
+			/// @note 物理实体的缺省值为空
+			/// @param[in] obj 物理实体
+			/// @return void
+			void addPObject(fl::physics::PObject3D* obj);
+
 
 			void rotateX(const Rad& rad);//clockwise
 			void rotateY(const Rad& rad);
@@ -57,7 +65,7 @@ namespace fl {
 			/// @brief 每一逻辑帧都会被Stage3D调用
 			/// @param void
 			/// @return void
-			virtual void framing() {};
+			virtual void framing() { if (pobj) pobj->framing(), pos = pobj->pos; };
 		};
 
 		//future: 加入可持久化功能

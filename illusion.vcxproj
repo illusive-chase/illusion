@@ -238,6 +238,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="illusion.h" />
+    <ClInclude Include="PForce.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SBitmap.h" />
     <ClInclude Include="SColor.h" />
@@ -256,7 +257,7 @@
     <ClInclude Include="SMLAAA.h" />
     <ClInclude Include="SMovieClip.h" />
     <ClInclude Include="SObject3D.h" />
-    <ClInclude Include="SPhysics.h" />
+    <ClInclude Include="PObject3D.h" />
     <ClInclude Include="SPointer.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Stage3D.h" />
@@ -283,7 +284,7 @@
     <ClCompile Include="SMLAAA.cpp" />
     <ClCompile Include="SMovieClip.cpp" />
     <ClCompile Include="SObject3D.cpp" />
-    <ClCompile Include="SPhysics.cpp" />
+    <ClCompile Include="PObject.cpp" />
     <ClCompile Include="SPointer.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Stage3D.cpp" />

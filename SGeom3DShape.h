@@ -6,11 +6,7 @@ namespace fl {
 		class Sphere3D :public SObject3D {
 		public:
 			const int row, col, r;
-			virtual void framing() {
-				//rotateX(0.02);
-				rotateY(0.02);
-				//rotateZ(0.03);
-			}
+
 			Sphere3D(const Vector3D& pos, const Texture& texture, int row = 15, int col = 15, int r = 60) :SObject3D(pos), row(row), col(col), r(r) {
 				const int width = texture.width - 1;
 				const int height = texture.height - 1;
@@ -62,12 +58,7 @@ namespace fl {
 		class Cube3D :public SObject3D {
 		public:
 			const int size;
-			virtual void framing() {
-				return;
-				rotateX(0.03);
-				rotateY(0.02);
-				rotateZ(0.015);
-			}
+
 			Cube3D(const Vector3D& pos, const Texture& top, const Texture& bottom, const Texture& front,
 				const Texture& behind, const Texture& left, const Texture& right, int size = 60) :SObject3D(pos), size(size) {
 				init(pos, top, bottom, front, behind, left, right);
@@ -86,7 +77,7 @@ namespace fl {
 		class SRect3D : public SObject3D {
 		public:
 			int width, height;
-			virtual void framing() {}
+
 			SRect3D(const Vector3D& pos, const Texture& texture, int width, int height) 
 				:SObject3D(pos), width(width), height(height) {
 				int w = texture.width - 1, h = texture.height - 1;

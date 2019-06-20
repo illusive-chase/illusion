@@ -17,6 +17,10 @@ int fl::geom::SObject3D::addSurface(int pa, int pb, int pc, const Texture& textu
 	return (int)surface.size() - 1;
 }
 
+void fl::geom::SObject3D::addPObject(physics::PObject3D * obj) {
+	pobj = obj;
+}
+
 void fl::geom::SObject3D::rotateX(const Rad& rad) {
 	for (Vector3D& p : vertex) p.rotateX(rad);
 	for (Vector3D& p : normal) p.rotateX(rad);
