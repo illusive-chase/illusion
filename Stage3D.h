@@ -9,7 +9,7 @@
 namespace fl {
 	namespace geom {
 
-		class Camera {
+		ILL_ATTRIBUTE_ALIGNED16(class) Camera {
 		public:
 			Vector3D pos;
 			Vector3D dir, dir_h, dir_v;

@@ -3,7 +3,7 @@
 
 namespace fl {
 	namespace geom {
-#ifdef SSE
+#ifdef ILL_SSE
 		class MorphologicalAntialiasingAgent {
 		private:
 			static constexpr DWORD FlagH = 1 << 31;

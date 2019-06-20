@@ -138,6 +138,15 @@
     <ClInclude Include="PForce.h">
       <Filter>头文件\top_element\physics3D</Filter>
     </ClInclude>
+    <ClInclude Include="Scalar.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SAlignedAllocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SLog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -202,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="SkyBox.cpp">
       <Filter>源文件\top_element\geom3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SAlignedAllocator.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

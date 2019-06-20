@@ -240,7 +240,9 @@
     <ClInclude Include="illusion.h" />
     <ClInclude Include="PForce.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SAlignedAllocator.h" />
     <ClInclude Include="SBitmap.h" />
+    <ClInclude Include="Scalar.h" />
     <ClInclude Include="SColor.h" />
     <ClInclude Include="SConfig.h" />
     <ClInclude Include="SEvent.h" />
@@ -254,6 +256,7 @@
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="SLight.h" />
     <ClInclude Include="SLoader.h" />
+    <ClInclude Include="SLog.h" />
     <ClInclude Include="SMLAAA.h" />
     <ClInclude Include="SMovieClip.h" />
     <ClInclude Include="SObject3D.h" />
@@ -274,6 +277,7 @@
   <ItemGroup>
     <ClCompile Include="illusion.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SAlignedAllocator.cpp" />
     <ClCompile Include="SColor.cpp" />
     <ClCompile Include="SEvent.cpp" />
     <ClCompile Include="SGeom3DShape.cpp" />

@@ -1,5 +1,5 @@
 #pragma once
-#include "SConfig.h"
+#include "Scalar.h"
 
 namespace fl {
 

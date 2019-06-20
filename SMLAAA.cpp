@@ -1,7 +1,7 @@
 #include "SMLAAA.h"
 
 
-#ifdef SSE
+#ifdef ILL_SSE
 void fl::geom::MorphologicalAntialiasingAgent::FindDiscontinuities() {
 	for (int irow = 0; irow < height; irow += 4) {
 		int width_offset = irow * width;

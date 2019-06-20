@@ -128,7 +128,7 @@ void fl::geom::Stage3D::render() {
 	DWORD* p2 = swap_chain->sample;
 	MapTrait* p3 = swap_chain->map_trait;
 	for (int i = 0; i < size; ++i) {
-#ifdef SSE
+#ifdef ILL_SSE
 		__m128 tmp = _mm_setzero_ps();
 		for (int j = 0; j < sample_num; ++j) {
 			BYTE* pick = reinterpret_cast<BYTE*>(p2);
@@ -386,7 +386,7 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 }
 
 void fl::geom::Stage3D::postFiltering_MLAA() {
-#ifdef SSE
+#ifdef ILL_SSE
 	MorphologicalAntialiasingAgent agent;
 	agent.Execute((DWORD*)swap_chain->colors, width, height);
 #endif

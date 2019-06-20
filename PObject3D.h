@@ -5,7 +5,7 @@
 namespace fl {
 	namespace physics {
 
-		class PObject3D :public AutoPtr {
+		ILL_ATTRIBUTE_ALIGNED16(class) PObject3D :public AutoPtr {
 		private:
 			class PForceGenerator {
 			private:
@@ -42,13 +42,13 @@ namespace fl {
 			void framing(float duration) {
 				pos += vel * duration;
 				vel += acc * duration;
-				acc = Vector3D();
+				acc = geom::Vector3D();
 				if(mass) force(this);
 			}
 			void framing() {
 				pos += vel;
 				vel += acc;
-				acc = Vector3D();
+				acc = geom::Vector3D();
 				if (mass) force(this);
 			}
 

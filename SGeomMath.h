@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "SConfig.h"
+#include "Scalar.h"
+#include "SAlignedAllocator.h"
 #include "SColor.h"
 
 namespace fl {
@@ -59,9 +60,9 @@ namespace fl {
 		/// @param[in] e RGB值，32位整型
 		/// @note 第一个参数的最高4位不会改变
 		/// @return void
-		inline void MIX32(DWORD& c, float w_e, DWORD e) {
+		ILL_INLINE void MIX32(DWORD& c, float w_e, DWORD e) {
 			float w_c = 1.0f - w_e;
-#ifdef SSE
+#ifdef ILL_SSE
 			__m128i c1 = _mm_cvtsi32_si128(c);
 			__m128i c2 = _mm_cvtsi32_si128(e);
 			const __m128i zero = _mm_setzero_si128();
@@ -99,101 +100,199 @@ namespace fl {
 
 			//fixed
 
-			inline fixed operator *(const fixed& t) { return fixed((t.value * value) >> 8); }
-			inline fixed operator +(const fixed& t) { return fixed(t.value + value); }
-			inline fixed operator /(const fixed& t) { return fixed((value << 8) / t.value); }
-			inline fixed operator -(const fixed& t) { return fixed(value - t.value); }
-			inline void operator ++() { value += 1 << 8; }
-			inline void operator --() { value -= 1 << 8; }
-			inline void operator +=(const fixed& t) { value += t.value; }
-			inline void operator -=(const fixed& t) { value -= t.value; }
-			inline void operator *=(const fixed& t) { value *= t.value; value >>= 8; }
-			inline void operator /=(const fixed& t) { value <<= 8; value /= t.value; }
-			inline bool operator >(const fixed& t)const { return value > t.value; }
-			inline bool operator >=(const fixed& t)const { return value >= t.value; }
-			inline bool operator <(const fixed& t)const { return value < t.value; }
-			inline bool operator <=(const fixed& t)const { return value <= t.value; }
-			inline bool operator ==(const fixed& t)const { return value == t.value; }
-			inline const fixed& operator =(const fixed& t) { value = t.value; return *this; }
-			inline fixed operator -() { return fixed(-value); }
+			ILL_INLINE fixed operator *(const fixed& t) { return fixed((t.value * value) >> 8); }
+			ILL_INLINE fixed operator +(const fixed& t) { return fixed(t.value + value); }
+			ILL_INLINE fixed operator /(const fixed& t) { return fixed((value << 8) / t.value); }
+			ILL_INLINE fixed operator -(const fixed& t) { return fixed(value - t.value); }
+			ILL_INLINE void operator ++() { value += 1 << 8; }
+			ILL_INLINE void operator --() { value -= 1 << 8; }
+			ILL_INLINE void operator +=(const fixed& t) { value += t.value; }
+			ILL_INLINE void operator -=(const fixed& t) { value -= t.value; }
+			ILL_INLINE void operator *=(const fixed& t) { value *= t.value; value >>= 8; }
+			ILL_INLINE void operator /=(const fixed& t) { value <<= 8; value /= t.value; }
+			ILL_INLINE bool operator >(const fixed& t)const { return value > t.value; }
+			ILL_INLINE bool operator >=(const fixed& t)const { return value >= t.value; }
+			ILL_INLINE bool operator <(const fixed& t)const { return value < t.value; }
+			ILL_INLINE bool operator <=(const fixed& t)const { return value <= t.value; }
+			ILL_INLINE bool operator ==(const fixed& t)const { return value == t.value; }
+			ILL_INLINE const fixed& operator =(const fixed& t) { value = t.value; return *this; }
+			ILL_INLINE fixed operator -() { return fixed(-value); }
 
 			//int
 
-			inline fixed operator *(const int& t) { return fixed(lint(t) * value); }
-			inline fixed operator +(const int& t) { return fixed((lint(t << 8)) + value); }
-			inline fixed operator /(const int& t) { return fixed(value / lint(t)); }
-			inline fixed operator -(const int& t) { return fixed(value - lint(t << 8)); }
-			inline void operator +=(const int& t) { value += t << 8; }
-			inline void operator -=(const int& t) { value -= t << 8; }
-			inline void operator *=(const int& t) { value *= t; }
-			inline void operator /=(const int& t) { value /= t; }
-			inline bool operator >(const int& t)const { return value > (t << 8); }
-			inline bool operator >=(const int& t)const { return value >= (t << 8); }
-			inline bool operator <(const int& t)const { return value < (t << 8); }
-			inline bool operator <=(const int& t)const { return value <= (t << 8); }
-			inline bool operator ==(const int& t)const { return value == (t << 8); }
-			inline const fixed& operator =(const int& t) { value = t << 8; return *this; }
+			ILL_INLINE fixed operator *(const int& t) { return fixed(lint(t) * value); }
+			ILL_INLINE fixed operator +(const int& t) { return fixed((lint(t << 8)) + value); }
+			ILL_INLINE fixed operator /(const int& t) { return fixed(value / lint(t)); }
+			ILL_INLINE fixed operator -(const int& t) { return fixed(value - lint(t << 8)); }
+			ILL_INLINE void operator +=(const int& t) { value += t << 8; }
+			ILL_INLINE void operator -=(const int& t) { value -= t << 8; }
+			ILL_INLINE void operator *=(const int& t) { value *= t; }
+			ILL_INLINE void operator /=(const int& t) { value /= t; }
+			ILL_INLINE bool operator >(const int& t)const { return value > (t << 8); }
+			ILL_INLINE bool operator >=(const int& t)const { return value >= (t << 8); }
+			ILL_INLINE bool operator <(const int& t)const { return value < (t << 8); }
+			ILL_INLINE bool operator <=(const int& t)const { return value <= (t << 8); }
+			ILL_INLINE bool operator ==(const int& t)const { return value == (t << 8); }
+			ILL_INLINE const fixed& operator =(const int& t) { value = t << 8; return *this; }
 
 		private:
 			lint value;
 			explicit fixed(lint x) :value(x) {}
 		};
 
+
+
+
 		/// @brief 向量类
 		///
-		class Vector3D {
+		ILL_ATTRIBUTE_ALIGNED16(class) Vector3D {
 		public:
-			float x, y, z;
-			uint w;
+#if defined(ILL_SSE)
+			union {
+				f4 m_vec128;
+				float m_floats[4];
+				struct {
+					float x, y, z, w;
+				};
+			};
 
-			Vector3D() :x(0), y(0), z(0), w(0U) {}
+			Vector3D(f4 m_vec128) :m_vec128(m_vec128) {}
 
-			Vector3D(float x, float y, float z) :x(x), y(y), z(z), w(0U) {}
+#else
+			union {
+				float m_floats[4];
+				struct {
+					float x, y, z, w;
+				};
+			};
+#endif
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 
-			inline Vector3D operator -() const { return Vector3D(-x, -y, -z); }
+			Vector3D() :x(0), y(0), z(0), w(0) {}
 
-			inline void operator +=(const Vector3D& tar) { x += tar.x; y += tar.y; z += tar.z; }
+			Vector3D(float x, float y, float z) :x(x), y(y), z(z), w(0) {}
 
-			inline Vector3D operator +(const Vector3D& tar) const { return Vector3D(x + tar.x, y + tar.y, z + tar.z); }
+			ILL_INLINE Vector3D operator -() const { return Vector3D(-x, -y, -z); }
 
-			inline void operator -=(const Vector3D& tar) { x -= tar.x; y -= tar.y; z -= tar.z; }
-
-			inline Vector3D operator -(const Vector3D& tar)  const { return Vector3D(x - tar.x, y - tar.y, z - tar.z); }
-
-			inline void operator *=(float k) { x *= k; y *= k; z *= k; }
-
-			inline void operator /=(float k) { x /= k; y /= k;	z /= k; }
-
-			inline float mod() const { return sqrt(x * x + y * y + z * z); }
-
-			inline float mod2() const { return (x * x + y * y + z * z); }
-
-			inline void normalize() { float k = mod();	x /= k;	y /= k;	z /= k; }
-
-			inline float operator *(const Vector3D& tar) const { return x * tar.x + y * tar.y + z * tar.z; }
-
-			inline Vector3D operator *(float k) const { return Vector3D(x * k, y * k, z * k); }
-
-			inline bool operator ==(const Vector3D& cp) const {
-				return abs(x - cp.x) < 1e-5 && abs(y - cp.y) < 1e-5 && abs(z - cp.z) < 1e-5;
+			ILL_INLINE Vector3D& operator +=(const Vector3D& tar) {
+#ifdef ILL_SSE_IN_API
+				m_vec128 = _mm_add_ps(m_vec128, tar.m_vec128);
+#else
+				x += tar.x; y += tar.y; z += tar.z;
+#endif
+				return *this;
 			}
 
-			inline void rotateX(const Rad& rad) {
+			ILL_INLINE Vector3D operator +(const Vector3D& tar) const { 
+#ifdef ILL_SSE_IN_API
+				return Vector3D(_mm_add_ps(m_vec128, tar.m_vec128));
+#else
+				return Vector3D(x + tar.x, y + tar.y, z + tar.z);
+#endif
+			}
+
+			ILL_INLINE Vector3D& operator -=(const Vector3D& tar) {
+#ifdef ILL_SSE_IN_API
+				m_vec128 = _mm_add_ps(m_vec128, tar.m_vec128);
+#else
+				x -= tar.x; y -= tar.y; z -= tar.z; 
+#endif
+				return *this;
+			}
+
+			ILL_INLINE Vector3D operator -(const Vector3D& tar)  const { 
+#ifdef ILL_SSE_IN_API
+				return Vector3D(_mm_sub_ps(m_vec128, tar.m_vec128));
+#else
+				return Vector3D(x - tar.x, y - tar.y, z - tar.z);
+#endif
+			}
+
+			ILL_INLINE Vector3D& operator *=(const float& k) {
+#ifdef ILL_SSE_IN_API
+				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
+				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)
+				m_vec128 = _mm_mul_ps(m_vec128, vs);
+#else
+				x *= k; y *= k; z *= k;
+#endif
+				return *this;
+			}
+
+			ILL_INLINE Vector3D& operator /=(float k) { return *this *= (scalar(1) / k); }
+
+			ILL_INLINE float operator *(const Vector3D& tar) const { 
+#ifdef ILL_SSE_IN_API
+				__m128 vd = _mm_mul_ps(m_vec128, tar.m_vec128);
+				__m128 z = _mm_movehl_ps(vd, vd);
+				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);
+				vd = _mm_add_ss(vd, y);
+				vd = _mm_add_ss(vd, z);
+				return _mm_cvtss_f32(vd);
+#else
+				return x * tar.x + y * tar.y + z * tar.z;
+#endif
+			}
+
+			ILL_INLINE Vector3D operator *(float k) const { return Vector3D(x * k, y * k, z * k); }
+
+			ILL_INLINE float mod2() const { return (*this) * (*this); }
+
+			ILL_INLINE float mod() const { return illSqrt(mod2()); }
+
+			ILL_INLINE Vector3D& normalize() {
+#ifdef ILL_SSE_IN_API
+				__m128 vd = _mm_mul_ps(m_vec128, m_vec128);
+				__m128 z = _mm_movehl_ps(vd, vd);
+				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);
+				vd = _mm_add_ss(vd, y);
+				vd = _mm_add_ss(vd, z);
+
+				// NR step 1/sqrt(x) - vd is x, y is output
+				y = _mm_rsqrt_ss(vd);  // estimate
+
+				//  one step NR
+				z = illv1_5;
+				vd = _mm_mul_ss(vd, illvHalf);  // vd * 0.5
+				//x2 = vd;
+				vd = _mm_mul_ss(vd, y);  // vd * 0.5 * y0
+				vd = _mm_mul_ss(vd, y);  // vd * 0.5 * y0 * y0
+				z = _mm_sub_ss(z, vd);   // 1.5 - vd * 0.5 * y0 * y0
+
+				y = _mm_mul_ss(y, z);  // y0 * (1.5 - vd * 0.5 * y0 * y0)
+
+				y = ill_splat_ps(y, 0x80);
+				m_vec128 = _mm_mul_ps(m_vec128, y);
+#else
+				float k = mod();
+				x /= k;	y /= k;	z /= k;
+#endif
+				return *this;
+			}
+
+			ILL_INLINE bool operator ==(const Vector3D& cp) const {
+				return Eq(x, cp.x) && Eq(y, cp.y) && Eq(z, cp.z);
+			}
+
+			ILL_INLINE Vector3D& rotateX(const Rad& rad) {
 				float temp = rad.c * y + rad.s * z;
 				z = rad.c * z - rad.s * y;
 				y = temp;
+				return *this;
 			}
 
-			inline void rotateY(const Rad& rad) {
+			ILL_INLINE Vector3D& rotateY(const Rad& rad) {
 				float temp = rad.c * x - rad.s * z;
 				z = rad.c * z + rad.s * x;
 				x = temp;
+				return *this;
 			}
 
-			inline void rotateZ(const Rad& rad) {
+			ILL_INLINE Vector3D& rotateZ(const Rad& rad) {
 				float temp = rad.c * x + rad.s * y;
 				y = rad.c * y - rad.s * x;
 				x = temp;
+				return *this;
 			}
 
 		};
@@ -219,7 +318,7 @@ namespace fl {
 				u = va->u * rt + vb->u * t;
 				v = va->v * rt + vb->v * t;
 			}
-			inline void set(const float& _x, const float& _y, const float& _z, const float& _r, const float& _g, const float& _b) {
+			ILL_INLINE void set(const float& _x, const float& _y, const float& _z, const float& _r, const float& _g, const float& _b) {
 				x = _x;
 				y = _y;
 				z = _z;
@@ -252,13 +351,13 @@ namespace fl {
 			void start(int ax, float sample_x);
 			void move();
 			void move(float step);
-			inline int getU() const { return int(u / z); }
-			inline int getV() const { return int(v / z); }
+			ILL_INLINE int getU() const { return int(u / z); }
+			ILL_INLINE int getV() const { return int(v / z); }
 		};
 
 		class LerpZ {
 		public:
-			static inline void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
+			static ILL_INLINE void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
 				const Shadee& sa, const Shadee& sb, const Vector3D& vz, float vz_mod, float z) {
 				float t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
 				float rt = 1.0 - t;
@@ -277,12 +376,12 @@ namespace fl {
 			~LerpZ() {}
 		};
 
-		inline bool triangleClockwise(Shadee *p) {
+		ILL_INLINE bool triangleClockwise(Shadee *p) {
 			return ((p[1].x - p[0].x) * (p[2].y - p[0].y) - (p[1].y - p[0].y) * (p[2].x - p[0].x) >= 0);
 		}
 
 		//02*01
-		inline Vector3D normalVector(const Vector3D& a, const Vector3D& b) {
+		ILL_INLINE Vector3D normalVector(const Vector3D& a, const Vector3D& b) {
 			return Vector3D(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 		}
 
