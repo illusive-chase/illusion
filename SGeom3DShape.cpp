@@ -1,7 +1,7 @@
 #include "SGeom3DShape.h"
 
 void fl::geom::Cube3D::init(const Vector3D & pos, const Texture & top, const Texture & bottom, const Texture & front, const Texture & behind, const Texture & left, const Texture & right) {
-	float sz = float(size >> 1);
+	scalar sz = scalar(size >> 1);
 	addPoint(Vector3D(sz, sz, sz));
 	addPoint(Vector3D(sz, -sz, sz));
 	addPoint(Vector3D(-sz, -sz, sz));
@@ -30,20 +30,20 @@ fl::geom::Sphere3D::Sphere3D(const Vector3D & pos, const Texture & texture, int 
 
 	vector<int> uv;
 	vector<int> newv, oldv;
-	const float theta = 3.14159265358 / row;
-	const float phi = 2 * 3.14159265358 / col;
+	const scalar theta = PI / row;
+	const scalar phi = 2 * PI / col;
 
 
 #define ID(i,j) ((j==col)?(1+((i)-1)*(col)):(1+((i)-1)*(col)+(j)))
 #define UVID(i,j) (uv[((i)*(col+1)+(j))])
 
-	addPoint(Vector3D(0.0, float(r), 0.0));
+	addPoint(Vector3D(0.0, scalar(r), 0.0));
 	for (int j = 0; j < col; ++j) uv.push_back(UV(int((width * j + width / 2.0) / col), 0));
 	uv.push_back(UV(0, 0));
 
 	for (int i = 1; i <= row; ++i) {
-		float sin_ti = sin(theta * i);
-		float cos_ti = cos(theta * i);
+		scalar sin_ti = sin(theta * i);
+		scalar cos_ti = cos(theta * i);
 		for (int j = 0; j < col; ++j) {
 			addPoint(Vector3D(sin_ti * r * sin(phi * j), cos_ti * r, sin_ti * r * cos(phi * j)));
 			uv.push_back(UV(width * j / col, height * i / row));
@@ -51,7 +51,7 @@ fl::geom::Sphere3D::Sphere3D(const Vector3D & pos, const Texture & texture, int 
 		uv.push_back(UV(width, height * i / row));
 	}
 
-	addPoint(Vector3D(0.0, float(-r), 0.0));
+	addPoint(Vector3D(0.0, scalar(-r), 0.0));
 	for (int j = 0; j < col; ++j) uv.push_back(UV(int((width * j + width / 2.0) / col), height));
 	uv.push_back(UV(0, 0));
 

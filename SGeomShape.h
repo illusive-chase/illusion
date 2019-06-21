@@ -26,7 +26,7 @@ namespace fl {
 			bool hitTestPoint(int gx, int gy) {
 				if (!filled) return false;
 				transGlobalPosToLocal(gx, gy);
-				float a = (gx - x) / float(width) - 0.5, b = (gy - y) / float(height) - 0.5;
+				scalar a = (gx - x) / scalar(width) - 0.5, b = (gy - y) / scalar(height) - 0.5;
 				return (a * a + b * b) < 1.0;
 			}
 		private:
@@ -63,7 +63,7 @@ namespace fl {
 				pcolor = pen_color;
 				enabled = false;
 			}
-			SLine(int x0, int y0, float rad, int length, int PEN_STYLE = PS_SOLID, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) :Shape(parent) {
+			SLine(int x0, int y0, scalar rad, int length, int PEN_STYLE = PS_SOLID, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) :Shape(parent) {
 				int x1 = x0 + int(round(length * cos(rad)));
 				int y1 = y0 + int(round(length * sin(rad)));
 				SLine(x0, y0, x1, y1, PEN_STYLE, pen_width, pen_color, parent);

@@ -18,9 +18,9 @@ namespace fl {
 		class PointLight3D :public Light3D {
 		public:
 			Vector3D pos;
-			float k_c, k_l;
+			scalar k_c, k_l;
 
-			PointLight3D(const Vector3D& pos, const Vector3D& intensity, float k_c, float k_l) :Light3D(intensity), pos(pos), k_c(k_c), k_l(k_l) {
+			PointLight3D(const Vector3D& pos, const Vector3D& intensity, scalar k_c, scalar k_l) :Light3D(intensity), pos(pos), k_c(k_c), k_l(k_l) {
 				type = 1;
 			}
 			

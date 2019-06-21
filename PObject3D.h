@@ -32,14 +32,14 @@ namespace fl {
 			} force;
 
 		public:
-			float mass;
+			scalar mass;
 			geom::Vector3D pos;
 			geom::Vector3D vel;
 			geom::Vector3D acc;
 			
-			explicit PObject3D(float mass, const geom::Vector3D& pos) :mass(mass), pos(pos), vel(), acc() {}
+			explicit PObject3D(scalar mass, const geom::Vector3D& pos) :mass(mass), pos(pos), vel(), acc() {}
 			template<typename ExactForceType> void addForce(ExactForceType f) { force.add(f); }
-			void framing(float duration) {
+			void framing(scalar duration) {
 				pos += vel * duration;
 				vel += acc * duration;
 				acc = geom::Vector3D();

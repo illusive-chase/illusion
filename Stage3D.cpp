@@ -12,7 +12,7 @@ void fl::geom::Stage3D::render() {
 
 	Vector3D persPos = camera.pos - camera.dir;
 
-	float cameraDir_mod = camera.dir.mod();
+	scalar cameraDir_mod = camera.dir.mod();
 
 	std::sort(obj.begin(), obj.end(), [&](SObject3D* a, SObject3D* b)->bool {
 		return (a->pos - persPos).mod2() > (b->pos - persPos).mod2();
@@ -58,7 +58,7 @@ void fl::geom::Stage3D::render() {
 			if (1 / p[0].z < camera.nearPlatform + cameraDir_mod) ZTag |= 1;
 			if (1 / p[1].z < camera.nearPlatform + cameraDir_mod) ZTag |= 2;
 			if (1 / p[2].z < camera.nearPlatform + cameraDir_mod) ZTag |= 4;
-			//printf("Obj%d:ZTag%d\n", cnt, ZTag);
+
 			if (ZTag < 7 && (Shadee::clockwise(p[0], p[1], p[2]) ^ reverse)) {
 
 				//light render
@@ -69,7 +69,7 @@ void fl::geom::Stage3D::render() {
 				for (Light3D* light : lit) {
 					if (light->type == 2) {
 						Vector3D& lit_dir = dynamic_cast<DirectionalLight3D*>(light)->dir;
-						float tmp = n * lit_dir;
+						scalar tmp = n * lit_dir;
 						if (tmp > 0.0) continue;
 						Vector3D tmp_h = n * (2.0 * tmp);
 						tmp_h -= lit_dir;
@@ -79,8 +79,8 @@ void fl::geom::Stage3D::render() {
 				}
 
 				for (int i = 0; i < 3; ++i) {
-					p[i].u = float(s.uv[i] >> 16) * p[i].z;
-					p[i].v = float(s.uv[i] & 0xffff) * p[i].z;
+					p[i].u = scalar(s.uv[i] >> 16) * p[i].z;
+					p[i].v = scalar(s.uv[i] & 0xffff) * p[i].z;
 					p[i].r = (p[i].r * s.texture.Kd + intensity.x) * p[i].z;//fac:256
 					p[i].g = (p[i].g * s.texture.Kd + intensity.y) * p[i].z;
 					p[i].b = (p[i].b * s.texture.Kd + intensity.z) * p[i].z;
@@ -159,7 +159,7 @@ void fl::geom::Stage3D::render() {
 		p1++;
 #endif
 	}
-	if (render_mode & MODE_MLAA) postFiltering_MLAA();
+	if (render_mode & MODE_MLAA) post_filtering_MLAA();
 	//printf("%d %d\n", cnt, clock() - cl);
 }
 
@@ -247,8 +247,8 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 	if (b->y < 0) by = 0, b_k = 0;
 	if (c->y < 0) return;
 
-	float left_bound_f[4];
-	float right_bound_f[4];
+	scalar left_bound_f[4];
+	scalar right_bound_f[4];
 	{
 		LerpY left(*a, *b, 0.25), right(*a, *cut, 0.25);
 		if (a_k == 4) {
@@ -385,22 +385,22 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 	}
 }
 
-void fl::geom::Stage3D::postFiltering_MLAA() {
+void fl::geom::Stage3D::post_filtering_MLAA() {
 #ifdef ILL_SSE
 	MorphologicalAntialiasingAgent agent;
 	agent.Execute((DWORD*)swap_chain->colors, width, height);
 #endif
 }
 
-void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal, float cameraDir_mod) {
-	float z_val = cameraDir_mod / (p * camera.dir);
+void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod) {
+	scalar z_val = cameraDir_mod / (p * camera.dir);
 	Vector3D intensity_diff;
 
 	p *= (cameraDir_mod + camera.nearPlatform) * z_val;
 	p -= (camera.dir * (1 + camera.nearPlatform / cameraDir_mod));
 
 	for (Light3D* light : lit) {
-		float tmp;
+		scalar tmp;
 		if (light->type == 2) {
 			tmp = -(((DirectionalLight3D*)light)->dir * normal);
 			if (tmp > 0.0) intensity_diff += light->intensity * tmp;
@@ -414,8 +414,8 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal,
 	);
 }
 
-void fl::geom::Stage3D::project(Shadee& src, Vector3D p, float cameraDir_mod) {
-	float z_val = cameraDir_mod / (p * camera.dir);
+void fl::geom::Stage3D::project(Shadee& src, Vector3D p, scalar cameraDir_mod) {
+	scalar z_val = cameraDir_mod / (p * camera.dir);
 	p *= cameraDir_mod * z_val;
 	p -= camera.dir;
 
@@ -432,8 +432,8 @@ void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*>
 }
 
 
-fl::geom::Stage3D::Stage3D(int x, int y, int width, int height, float nearPlatform, float farPlatform, 
-	float scale, DWORD renderMode, int swapChainNum, SkyBox * skybox, Shape * parent) :
+fl::geom::Stage3D::Stage3D(int x, int y, int width, int height, scalar nearPlatform, scalar farPlatform, 
+	scalar scale, DWORD renderMode, int swapChainNum, SkyBox * skybox, Shape * parent) :
 	Shape(parent), camera(nearPlatform, farPlatform, scale), size(width * height), skybox(skybox), vertex2D(nullptr),
 	update_Shadee(false), size_Shadee(0), render_mode(renderMode), sample_mode(renderMode & 3),
 	sample_num(sample_mode ? 4 : 1), sample_offset(sample_mode ? 2 : 0),
@@ -496,9 +496,9 @@ void fl::geom::Camera::rotateH(const Rad& rad) {//right rotate
 void fl::geom::Camera::rotateV(const Rad& rad) {//up rotate
 	//what if ss == 0?
 	//here remains a bug
-	float cc = dir.y;
-	float ss = sqrt(dir.mod2() - cc * cc);
-	float k = rad.c - cc * rad.s / ss;
+	scalar cc = dir.y;
+	scalar ss = sqrt(dir.mod2() - cc * cc);
+	scalar k = rad.c - cc * rad.s / ss;
 	dir.x *= k;
 	dir.z *= k;
 	dir.y = cc * rad.c + ss * rad.s;

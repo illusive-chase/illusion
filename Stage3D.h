@@ -13,9 +13,9 @@ namespace fl {
 		public:
 			Vector3D pos;
 			Vector3D dir, dir_h, dir_v;
-			float nearPlatform, farPlatform;
-			float scale;
-			Camera(float nearPlatform, float farPlatform, float scale) :
+			scalar nearPlatform, farPlatform;
+			scalar scale;
+			Camera(scalar nearPlatform, scalar farPlatform, scalar scale) :
 				nearPlatform(nearPlatform), farPlatform(farPlatform), scale(scale) {
 			}
 
@@ -56,11 +56,11 @@ namespace fl {
 			Camera camera;
 
 			const int size;
-			const float* const sample_x;
-			const float* const sample_y;
+			const scalar* const sample_x;
+			const scalar* const sample_y;
 
-			const float SAMPLE_X[3][4] = { {0.5,0.0,0.0,0.0}, {0.375,0.875,0.125,0.625}, {0.375,0.875,0.125,0.625} };
-			const float SAMPLE_Y[3][4] = { {0.5,0.0,0.0,0.0}, {0.125,0.375,0.625,0.875}, {0.125,0.375,0.625,0.875} };
+			const scalar SAMPLE_X[3][4] = { {0.5,0.0,0.0,0.0}, {0.375,0.875,0.125,0.625}, {0.375,0.875,0.125,0.625} };
+			const scalar SAMPLE_Y[3][4] = { {0.5,0.0,0.0,0.0}, {0.125,0.375,0.625,0.875}, {0.125,0.375,0.625,0.875} };
 
 		private:
 
@@ -88,7 +88,12 @@ namespace fl {
 					sample = AlignedAllocator<DWORD, 16>().allocate(sample_num * size);
 				}
 
-				~SwapChain() { if (next) delete next; DeleteObject(hbmp); AlignedAllocator<DWORD, 16>().deallocate(sample); }
+				~SwapChain() { 
+					if (next) delete next; 
+					DeleteObject(hbmp); 
+					AlignedAllocator<DWORD, 16>().deallocate(sample);
+					delete[] map_trait;
+				}
 			};
 
 			vector<SObject3D*> obj;
@@ -105,13 +110,13 @@ namespace fl {
 			void render();
 			void drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj);
 			void drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj);
-			void postFiltering_MLAA();
-			void project(Shadee& src, Vector3D p, const Vector3D& normal, float cameraDir_mod);
-			void project(Shadee& src, Vector3D p, float cameraDir_mod);
+			void post_filtering_MLAA();
+			void project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod);
+			void project(Shadee& src, Vector3D p, scalar cameraDir_mod);
 			static void showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p);
 
 		public:
-			Stage3D(int x, int y, int width, int height, float nearPlatform = 20, float farPlatform = 2000, float scale = 12.0,
+			Stage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12.0,
 				DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox* skybox = nullptr, Shape* parent = nullptr);
 
 			virtual ~Stage3D();

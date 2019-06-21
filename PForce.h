@@ -5,27 +5,27 @@ namespace fl {
 	
 		class PFGravity {
 		private:
-			float g;
+			scalar g;
 		public:
-			explicit PFGravity(float g) :g(g) {}
+			explicit PFGravity(scalar g) :g(g) {}
 			void operator()(PObject3D* obj) { obj->acc += geom::Vector3D(0, -g, 0); }
 		};
 
 		class PFResistance {
 		private:
-			float k;
+			scalar k;
 		public:
-			explicit PFResistance(float k) :k(k) {}
+			explicit PFResistance(scalar k) :k(k) {}
 			void operator()(PObject3D* obj) { obj->acc -= obj->vel * (k / obj->mass); }
 		};
 
 		class PFElastic {
 		private:
-			float k;
-			float x0;
+			scalar k;
+			scalar x0;
 			PObject3D* other;
 		public:
-			PFElastic(float k, float x0, PObject3D* other) :k(k), x0(x0), other(other) {}
+			PFElastic(scalar k, scalar x0, PObject3D* other) :k(k), x0(x0), other(other) {}
 			void operator()(PObject3D* obj) {
 				Vector3D dis(other->pos);
 				dis -= obj->pos;

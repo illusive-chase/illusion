@@ -1,6 +1,6 @@
 /// @file SGeomMath.h
 /// @brief 3D数学库，包括矩阵类、RGB混合方法、定点数类、向量类、着色点类、线性插值类
-/// @date 2019/3/31
+/// @date 2019/6/22
 
 #pragma once
 
@@ -14,9 +14,9 @@ namespace fl {
 
 		class Rad {
 		public:
-			float s, c;
-			Rad(float rad) :s(sin(rad)), c(cos(rad)) {}
-			Rad(float s, float c) :s(s), c(c) {}
+			scalar s, c;
+			Rad(scalar rad) :s(sin(rad)), c(cos(rad)) {}
+			Rad(scalar s, scalar c) :s(s), c(c) {}
 			Rad operator -() const { return Rad(-s, c); }
 		};
 
@@ -24,11 +24,11 @@ namespace fl {
 		///
 		class Matrix3D {
 		public:
-			float value[4][4];            ///< 矩阵各项值
+			scalar value[4][4];            ///< 矩阵各项值
 			Matrix3D() {
 				memset(value, 0, sizeof value);
 			}
-			Matrix3D(const std::initializer_list<float>& list) {
+			Matrix3D(const std::initializer_list<scalar>& list) {
 				memset(value, 0, sizeof value);
 				auto p = list.begin();
 				for (int i = 0; i < 16 && p != list.end(); p++, i++) {
@@ -49,7 +49,7 @@ namespace fl {
 		/// @param[in] a R/G/B值，0~255的整数
 		/// @param[in] w 权重，非负实数
 		/// @return BYTE
-		constexpr BYTE MIX(BYTE a, float w) {
+		constexpr BYTE MIX(BYTE a, scalar w) {
 			int c = int(a * w);
 			return c > 0xFF ? 0xFF : BYTE(c);
 		}
@@ -60,8 +60,8 @@ namespace fl {
 		/// @param[in] e RGB值，32位整型
 		/// @note 第一个参数的最高4位不会改变
 		/// @return void
-		ILL_INLINE void MIX32(DWORD& c, float w_e, DWORD e) {
-			float w_c = 1.0f - w_e;
+		ILL_INLINE void MIX32(DWORD& c, scalar w_e, DWORD e) {
+			scalar w_c = 1.0f - w_e;
 #ifdef ILL_SSE
 			__m128i c1 = _mm_cvtsi32_si128(c);
 			__m128i c2 = _mm_cvtsi32_si128(e);
@@ -93,10 +93,10 @@ namespace fl {
 			const static lint FIXED_MIN = (-1i64 << 55);
 
 			explicit fixed(int x) :value(x << 8) {}
-			explicit fixed(float x) :value(int(x) << 8) {}
+			explicit fixed(scalar x) :value(int(x) << 8) {}
 			fixed() :value(0) {}
 			operator int() { return int(value >> 8); }
-			operator float() { return value / 65536.0; }
+			operator scalar() { return value / 65536.0; }
 
 			//fixed
 
@@ -150,23 +150,23 @@ namespace fl {
 #if defined(ILL_SSE)
 			union {
 				f4 m_vec128;
-				float m_floats[4];
-				struct { float x, y, z, w; };
+				scalar m_floats[4];
+				struct { scalar x, y, z, w; };
 			};
 
 			Vector3D(f4 m_vec128) :m_vec128(m_vec128) {}
 
 #else
 			union {
-				float m_floats[4];
-				struct { float x, y, z, w; };
+				scalar m_floats[4];
+				struct { scalar x, y, z, w; };
 			};
 #endif
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 
 			Vector3D() :x(0), y(0), z(0), w(0) {}
 
-			Vector3D(float x, float y, float z) :x(x), y(y), z(z), w(0) {}
+			Vector3D(scalar x, scalar y, scalar z) :x(x), y(y), z(z), w(0) {}
 
 			ILL_INLINE Vector3D operator -() const { return Vector3D(-x, -y, -z); }
 
@@ -204,7 +204,7 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D& operator *=(const float& k) {
+			ILL_INLINE Vector3D& operator *=(const scalar& k) {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
 				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
@@ -215,9 +215,9 @@ namespace fl {
 				return *this;
 			}
 
-			ILL_INLINE Vector3D& operator /=(float k) { return *this *= (scalar(1) / k); }
+			ILL_INLINE Vector3D& operator /=(scalar k) { return *this *= (scalar(1) / k); }
 
-			ILL_INLINE float operator *(const Vector3D& tar) const { 
+			ILL_INLINE scalar operator *(const Vector3D& tar) const { 
 #ifdef ILL_SSE_IN_API
 				__m128 vd = _mm_mul_ps(m_vec128, tar.m_vec128);
 				__m128 z = _mm_movehl_ps(vd, vd);
@@ -230,7 +230,7 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D operator *(const float& k) const {
+			ILL_INLINE Vector3D operator *(const scalar& k) const {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
 				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
@@ -240,9 +240,9 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE float mod2() const { return (*this) * (*this); }
+			ILL_INLINE scalar mod2() const { return (*this) * (*this); }
 
-			ILL_INLINE float mod() const { return illSqrt(mod2()); }
+			ILL_INLINE scalar mod() const { return illSqrt(mod2()); }
 
 			ILL_INLINE Vector3D& normalize() {
 #ifdef ILL_SSE_IN_API
@@ -268,7 +268,7 @@ namespace fl {
 				y = ill_splat_ps(y, 0x80);
 				m_vec128 = _mm_mul_ps(m_vec128, y);
 #else
-				float k = mod();
+				scalar k = mod();
 				x /= k;	y /= k;	z /= k;
 #endif
 				return *this;
@@ -279,21 +279,21 @@ namespace fl {
 			}
 
 			ILL_INLINE Vector3D& rotateX(const Rad& rad) {
-				float temp = rad.c * y + rad.s * z;
+				scalar temp = rad.c * y + rad.s * z;
 				z = rad.c * z - rad.s * y;
 				y = temp;
 				return *this;
 			}
 
 			ILL_INLINE Vector3D& rotateY(const Rad& rad) {
-				float temp = rad.c * x - rad.s * z;
+				scalar temp = rad.c * x - rad.s * z;
 				z = rad.c * z + rad.s * x;
 				x = temp;
 				return *this;
 			}
 
 			ILL_INLINE Vector3D& rotateZ(const Rad& rad) {
-				float temp = rad.c * x + rad.s * y;
+				scalar temp = rad.c * x + rad.s * y;
 				y = rad.c * y - rad.s * x;
 				x = temp;
 				return *this;
@@ -307,20 +307,20 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { float x, y, u, v, r, g, b, z; };
+				struct { scalar x, y, u, v, r, g, b, z; };
 				struct { f4 m_xyuv, m_rgbz; };
-				struct { float floats[8]; };
+				struct { scalar floats[8]; };
 			};
 #else
 			union {
-				struct { float x, y, u, v, r, g, b, z; };
-				struct { float floats[8]; };
+				struct { scalar x, y, u, v, r, g, b, z; };
+				struct { scalar floats[8]; };
 			};
 #endif
 			Shadee() {}
-			Shadee(Shadee* va, Shadee* vb, float y0) {
-				float ILL_ATTRIBUTE_ALIGNED16(t) = (y0 - va->y) / (vb->y - va->y);
-				float ILL_ATTRIBUTE_ALIGNED16(rt) = 1.0 - t;
+			Shadee(Shadee* va, Shadee* vb, scalar y0) {
+				scalar ILL_ATTRIBUTE_ALIGNED16(t) = (y0 - va->y) / (vb->y - va->y);
+				scalar ILL_ATTRIBUTE_ALIGNED16(rt) = 1.0 - t;
 #ifdef ILL_SSE_IN_API
 				{
 					__m128 m_t = _mm_load1_ps(&t);
@@ -341,7 +341,7 @@ namespace fl {
 				}
 #endif
 			}
-			ILL_INLINE void set(float _x, float _y, const Vector3D& color, float _z) {
+			ILL_INLINE void set(scalar _x, scalar _y, const Vector3D& color, scalar _z) {
 				x = _x;
 				y = _y;
 #ifdef ILL_SSE
@@ -364,22 +364,70 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
-				struct { float floats[16]; };
+				struct { scalar floats[16]; };
 			};
 #else
 			union {
-				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
-				struct { float floats[16]; };
+				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar floats[16]; };
 			};
 #endif
-			LerpY(const Shadee& sa, const Shadee& sb, const float& step);
+			LerpY(const Shadee& sa, const Shadee& sb, const scalar& step);
 			LerpY(const Shadee& sa, const Shadee& sb);
-			ILL_INLINE void start(int ay, float sample_y){ move(ay - y + sample_y); }
-			void move();
-			void move(const float& step);
-			void reset(const Shadee& sa);
+
+			ILL_INLINE void start(int ay, scalar sample_y){ move(ay - y + sample_y); }
+
+			ILL_INLINE void move() {
+#ifdef ILL_SSE_IN_API
+				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
+				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
+#else
+				x += dx;
+				y += scalar(1);
+				z += dz;
+				u += du;
+				v += dv;
+				r += dr;
+				b += db;
+				g += dg;
+#endif
+			}
+
+			ILL_INLINE void move(const scalar& step) {
+#ifdef ILL_SSE_IN_API
+				f4 m_step = _mm_load_ps1(&step);
+				m_rgbz = _mm_add_ps(m_rgbz, _mm_mul_ps(m_drgbz, m_step));
+				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
+#else
+				x += dx * step;
+				y += step;
+				z += dz * step;
+				u += du * step;
+				v += dv * step;
+				r += dr * step;
+				b += db * step;
+				g += dg * step;
+#endif
+			}
+
+
+			ILL_INLINE void reset(const Shadee& sa) {
+#ifdef ILL_SSE
+				m_xyuv = sa.m_xyuv;
+				m_rgbz = sa.m_rgbz;
+#else
+				x = sa.x;
+				y = sa.y;
+				z = sa.z;
+				u = sa.u;
+				v = sa.v;
+				r = sa.r;
+				g = sa.g;
+				b = sa.b;
+#endif
+			}
 		};
 
 		ILL_ATTRIBUTE_ALIGNED16(class) LerpX {
@@ -388,20 +436,52 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
-				struct { float floats[16]; };
+				struct { scalar floats[16]; };
 			};
 #else
 			union {
-				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
-				struct { float floats[16]; };
+				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar floats[16]; };
 			};
 #endif
 			LerpX(const LerpY& sa, const LerpY& sb);
-			ILL_INLINE void start(int ax, float sample_x) { move(ax - x + sample_x); }
-			void move();
-			void move(const float& step);
+			ILL_INLINE void start(int ax, scalar sample_x) { move(ax - x + sample_x); }
+
+			ILL_INLINE void move() {
+#ifdef ILL_SSE_IN_API
+				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
+				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
+#else
+				x += scalar(1);
+				y += dy;
+				z += dz;
+				u += du;
+				v += dv;
+				r += dr;
+				b += db;
+				g += dg;
+#endif
+			}
+
+			ILL_INLINE void move(const scalar& step) {
+#ifdef ILL_SSE_IN_API
+				f4 m_step = _mm_load_ps1(&step);
+				m_rgbz = _mm_add_ps(m_rgbz, _mm_mul_ps(m_drgbz, m_step));
+				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
+#else
+				x += step;
+				y += dy * step;
+				z += dz * step;
+				u += du * step;
+				v += dv * step;
+				r += dr * step;
+				b += db * step;
+				g += dg * step;
+#endif
+			}
+
 			ILL_INLINE int getU() const { return int(u / z); }
 			ILL_INLINE int getV() const { return int(v / z); }
 		};
@@ -409,9 +489,23 @@ namespace fl {
 		class LerpZ {
 		public:
 			static void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
-				const Shadee& sa, const Shadee& sb, const Vector3D& vz, float vz_mod, float z) {
-				float t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
-				float rt = 1.0 - t;
+				const Shadee& sa, const Shadee& sb, const Vector3D& vz, scalar vz_mod, scalar z) 
+			{
+#ifdef ILL_SSE_IN_API
+				scalar ILL_ATTRIBUTE_ALIGNED16(t) = (vb * vz - z * vz_mod) / ((vb - va) * vz);
+				scalar ILL_ATTRIBUTE_ALIGNED16(rt) = scalar(1) - t;
+				f4 m_t = _mm_load_ps1(&t);
+				f4 m_rt = _mm_load_ps1(&rt);
+				v_src.m_vec128 = _mm_add_ps(_mm_mul_ps(va.m_vec128, m_t), _mm_mul_ps(vb.m_vec128, m_rt));
+				t /= sa.z * z;
+				rt /= sb.z * z;
+				m_t = _mm_load_ps1(&t);
+				m_rt = _mm_load_ps1(&rt);
+				src.m_xyuv = _mm_add_ps(_mm_mul_ps(sa.m_xyuv, m_t), _mm_mul_ps(sb.m_xyuv, m_rt));
+				src.m_rgbz = _mm_add_ps(_mm_mul_ps(sa.m_rgbz, m_t), _mm_mul_ps(sb.m_rgbz, m_rt));
+#else
+				scalar t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
+				scalar rt = 1.0 - t;
 				v_src.x = va.x * t + vb.x * rt;
 				v_src.y = va.y * t + vb.y * rt;
 				v_src.z = va.z * t + vb.z * rt;
@@ -423,6 +517,7 @@ namespace fl {
 				src.b = sa.b * t + sb.b * rt;
 				src.u = sa.u * t + sb.u * rt;
 				src.v = sa.v * t + sb.v * rt;
+#endif
 			}
 		private:
 			LerpZ() {}

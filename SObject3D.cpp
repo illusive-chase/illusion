@@ -45,7 +45,7 @@ void fl::geom::SObject3D::rotateZ(const Rad& rad) {
 	m_z.rotateZ(rad);
 }
 
-void fl::geom::SObject3D::scale(float factor) {
+void fl::geom::SObject3D::scale(scalar factor) {
 	for (Vector3D& p : vertex) p *= factor;
 }
 

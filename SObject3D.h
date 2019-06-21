@@ -55,12 +55,12 @@ namespace fl {
 			void rotateX(const Rad& rad);//clockwise
 			void rotateY(const Rad& rad);
 			void rotateZ(const Rad& rad);
-			void scale(float factor);
+			void scale(scalar factor);
 			inline void move(const Vector3D& dir) { pos += dir; }
 			void rotateX(const Rad& rad, const Vector3D& refv);//clockwise
 			void rotateY(const Rad& rad, const Vector3D& refv);
 			void rotateZ(const Rad& rad, const Vector3D& refv);
-			void scale(float factor, const Vector3D& refv);
+			void scale(scalar factor, const Vector3D& refv);
 
 			/// @brief 每一逻辑帧都会被Stage3D调用
 			/// @param void
@@ -83,7 +83,7 @@ namespace fl {
 			inline void rotateX(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateX(rad, refv); }
 			inline void rotateY(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateY(rad, refv); }
 			inline void rotateZ(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateZ(rad, refv); }
-			inline void scale(float factor, const Vector3D& refv) { for (SObject3D* it : children) it->scale(factor, refv); }
+			inline void scale(scalar factor, const Vector3D& refv) { for (SObject3D* it : children) it->scale(factor, refv); }
 			inline void move(const Vector3D& dir) { for (SObject3D* it : children) it->move(dir); }
 		};
 	}

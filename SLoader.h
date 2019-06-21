@@ -24,7 +24,7 @@ namespace fl {
 			vector<geom::SObject3D*> models;
 			ModelLoader() :AutoPtr() { uv_loader = new ImageLoader(); }
 			~ModelLoader() { for (geom::SObject3D* p : models) delete p; delete uv_loader; }
-			int loadMMD(const wstring& dir, const wstring& name, float scale = 12.0, bool leftTopOrigin = false);
+			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12.0, bool leftTopOrigin = false);
 		};
 	}
 }

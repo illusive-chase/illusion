@@ -8,8 +8,8 @@ namespace fl {
 		private:
 			static constexpr DWORD FlagH = 1 << 31;
 			static constexpr const DWORD FlagV = 1 << 30;
-			static constexpr const float UZ_Weight = 0.125f;
-			static constexpr const float L_Weight = 0.25f;
+			static constexpr const scalar UZ_Weight = 0.125f;
+			static constexpr const scalar L_Weight = 0.25f;
 
 			int height, width, size;
 			DWORD* colors;

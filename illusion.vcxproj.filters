@@ -191,9 +191,6 @@
     <ClCompile Include="SGeomMath.cpp">
       <Filter>源文件\top_element\geom3D</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>源文件\top_element\geom3D</Filter>
-    </ClCompile>
     <ClCompile Include="SGeom3DShape.cpp">
       <Filter>源文件\top_element\geom3D</Filter>
     </ClCompile>

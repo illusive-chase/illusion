@@ -282,7 +282,6 @@
     <ClCompile Include="SEvent.cpp" />
     <ClCompile Include="SGeom3DShape.cpp" />
     <ClCompile Include="SGeomMath.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SLoader.cpp" />
