@@ -46,10 +46,13 @@ subject to the following restrictions:
 #define ILL_ATTRIBUTE_ALIGNED128(a) __declspec(align(128)) a
 
 #if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(ILL_USE_DOUBLE_PRECISION)) && (defined(_M_IX86) || defined(_M_X64))
-#define ILL_SSE
+#if defined ILL_SSE
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include <tmmintrin.h>
+#elif defined ILL_SSE_IN_API
+#undef ILL_SSE_IN_API
+#endif
 
 #if defined ILL_SSE_IN_API
 #ifdef _WIN32
@@ -87,8 +90,8 @@ inline __m128 operator*(const __m128 A, const __m128 B) {
 #endif  //ILL_SSE_IN_API
 
 
-#elif defined ILL_SSE_IN_API
-#undef ILL_SSE_IN_API
+#elif defined ILL_SSE
+#undef ILL_SSE
 #endif
 
 #endif  //__MINGW32__

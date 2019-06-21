@@ -344,7 +344,13 @@ namespace fl {
 			ILL_INLINE void set(float _x, float _y, const Vector3D& color, float _z) {
 				x = _x;
 				y = _y;
+#ifdef ILL_SSE
 				m_rgbz = color.m_vec128;
+#else
+				r = color.x;
+				g = color.y;
+				b = color.z;
+#endif
 				z = _z;
 			}
 			static bool clockwise(const Shadee& a, const Shadee& b, const Shadee& c) {
@@ -356,7 +362,7 @@ namespace fl {
 		public:
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 
-#ifdef ILL_SSE_IN_API
+#ifdef ILL_SSE
 			union {
 				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
@@ -380,7 +386,7 @@ namespace fl {
 		public:
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 
-#ifdef ILL_SSE_IN_API
+#ifdef ILL_SSE
 			union {
 				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };

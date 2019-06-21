@@ -3,7 +3,8 @@
 
 fl::geom::Shader::Shader(DWORD * write_src, MapTrait* map_trait_src, int width, void* obj, const Texture & t,
 	const int offset) :
-	src(reinterpret_cast<const BYTE*>(t.src)), src_wid(t.width), offset(offset), step(1 << offset), write_src(write_src),
+	src(reinterpret_cast<const BYTE*>(t.src)), src_wid(t.width), src_size(t.width * t.height),
+	offset(offset), step(1 << offset), write_src(write_src),
 	map_trait_src(map_trait_src), width(width), obj(obj)
 {
 	write = write_src;
@@ -28,7 +29,9 @@ void fl::geom::Shader::move() {
 
 void fl::geom::Shader::shade(const LerpX& shadee, DWORD mask) {
 	if (map_trait->z_depth < shadee.z) {
-		*write = ((DWORD*)src)[shadee.getU() + src_wid * shadee.getV()];
+		int index = shadee.getU() + src_wid * shadee.getV();
+		if (index < 0 || index >= src_size) return;
+		*write = ((DWORD*)src)[index];
 		map_trait->r = shadee.r;
 		map_trait->g = shadee.g;
 		map_trait->b = shadee.b;

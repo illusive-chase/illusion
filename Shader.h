@@ -19,6 +19,7 @@ namespace fl {
 			void* obj;
 
 			const int src_wid;
+			const int src_size;
 			const int offset;
 			const int step;
 			const int width;
