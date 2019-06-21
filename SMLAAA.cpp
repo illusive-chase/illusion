@@ -10,11 +10,11 @@ void fl::geom::MorphologicalAntialiasingAgent::FindDiscontinuities() {
 			int width128 = width >> 2;
 
 			__m128i mask = _mm_set1_epi32(0x00FFFFFF);
-			__m128i vpix0 = _mm_and_si128(mask, _mm_loadu_si128(ptr));
-			__m128i vpix1 = _mm_and_si128(mask, _mm_loadu_si128(ptr + width128));
-			__m128i vpix2 = _mm_and_si128(mask, _mm_loadu_si128(ptr + width128 * 2));
-			__m128i vpix3 = _mm_and_si128(mask, _mm_loadu_si128(ptr + width128 * 3));
-			__m128i vpix4 = (irow == height - 4) ? vpix3 : _mm_and_si128(mask, _mm_loadu_si128(ptr + width));
+			__m128i vpix0 = _mm_and_si128(mask, _mm_load_si128(ptr));
+			__m128i vpix1 = _mm_and_si128(mask, _mm_load_si128(ptr + width128));
+			__m128i vpix2 = _mm_and_si128(mask, _mm_load_si128(ptr + width128 * 2));
+			__m128i vpix3 = _mm_and_si128(mask, _mm_load_si128(ptr + width128 * 3));
+			__m128i vpix4 = (irow == height - 4) ? vpix3 : _mm_and_si128(mask, _mm_load_si128(ptr + width));
 
 			ComparePixels(vpix0, vpix1, FlagH);
 			ComparePixels(vpix1, vpix2, FlagH);

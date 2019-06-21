@@ -208,10 +208,10 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D& operator *=(const float& k) {
+			ILL_INLINE Vector3D& operator *=(float k) {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
-				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)
+				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
 				m_vec128 = _mm_mul_ps(m_vec128, vs);
 #else
 				x *= k; y *= k; z *= k;
@@ -225,7 +225,7 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				__m128 vd = _mm_mul_ps(m_vec128, tar.m_vec128);
 				__m128 z = _mm_movehl_ps(vd, vd);
-				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);
+				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);  //   0x55 = _MM_SHUFFLE(1, 1, 1, 1)
 				vd = _mm_add_ss(vd, y);
 				vd = _mm_add_ss(vd, z);
 				return _mm_cvtss_f32(vd);
@@ -234,7 +234,15 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D operator *(float k) const { return Vector3D(x * k, y * k, z * k); }
+			ILL_INLINE Vector3D operator *(float k) const {
+#ifdef ILL_SSE_IN_API
+				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
+				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
+				return Vector3D(_mm_mul_ps(m_vec128, vs));
+#else
+				return Vector3D(x * k, y * k, z * k);
+#endif
+			}
 
 			ILL_INLINE float mod2() const { return (*this) * (*this); }
 
@@ -244,7 +252,7 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				__m128 vd = _mm_mul_ps(m_vec128, m_vec128);
 				__m128 z = _mm_movehl_ps(vd, vd);
-				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);
+				__m128 y = _mm_shuffle_ps(vd, vd, 0x55);  //  //   0x55 = _MM_SHUFFLE(1, 1, 1, 1)
 				vd = _mm_add_ss(vd, y);
 				vd = _mm_add_ss(vd, z);
 

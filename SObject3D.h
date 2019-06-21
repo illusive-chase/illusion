@@ -10,7 +10,7 @@ namespace fl {
 
 		/// @brief 3D对象类，由Stage3D负责析构，储存所有渲染所需的信息，提供接口函数进行几何变换、顶点和面的添加
 		///
-		ILL_ATTRIBUTE_ALIGNED16(class) SObject3D :public AutoPtr {
+		class SObject3D :public AutoPtr {
 		public:
 			Vector3D pos, m_x, m_y, m_z;
 			vector<Vector3D> vertex;
@@ -66,7 +66,7 @@ namespace fl {
 			/// @param void
 			/// @return void
 			virtual void framing() { if (pobj) pobj->framing(), pos = pobj->pos; };
-			ILL_DECLARE_ALIGNED_ALLOCATOR
+			
 		};
 
 		//future: 加入可持久化功能

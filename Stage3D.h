@@ -9,7 +9,7 @@
 namespace fl {
 	namespace geom {
 
-		ILL_ATTRIBUTE_ALIGNED16(class) Camera {
+		class Camera {
 		public:
 			Vector3D pos;
 			Vector3D dir, dir_h, dir_v;
@@ -85,10 +85,10 @@ namespace fl {
 					info.bmiHeader.biBitCount = 32;
 					info.bmiHeader.biCompression = BI_RGB;
 					hbmp = CreateDIBSection(NULL, &info, DIB_RGB_COLORS, &colors, NULL, 0);
-					sample = new DWORD[sample_num * size];
+					sample = AlignedAllocator<DWORD, 16>().allocate(sample_num * size);
 				}
 
-				~SwapChain() { if (next) delete next; DeleteObject(hbmp); delete[] sample; }
+				~SwapChain() { if (next) delete next; DeleteObject(hbmp); AlignedAllocator<DWORD, 16>().deallocate(sample); }
 			};
 
 			vector<SObject3D*> obj;

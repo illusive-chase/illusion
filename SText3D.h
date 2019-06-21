@@ -6,7 +6,7 @@
 namespace fl {
 	namespace geom {
 
-		ILL_ATTRIBUTE_ALIGNED16(class) SText3D :public fl::display::SText {
+		class SText3D :public fl::display::SText {
 
 		public:
 			Vector3D pos;

@@ -5,10 +5,12 @@
 namespace fl {
 	namespace geom {
 
-		struct MapTrait {
+		ILL_ATTRIBUTE_ALIGNED16(struct) MapTrait {
 			float z_depth, r, g, b;
 			void* object;
 			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
+
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};
 
 		class Shader {

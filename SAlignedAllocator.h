@@ -33,7 +33,7 @@ namespace fl {
 		T* address(T& ref) const { return &ref; }
 		const T* address(const T& ref) { return &ref; }
 		T* allocate(int n, const T* hint = 0) {
-			void(hint);
+			(void)hint;
 			return reinterpret_cast<T*>(AlignedAlloc(sizeof(T)*n, Alignment));
 		}
 		void construct(T* ptr, const T& value) { new (ptr) T(value); }

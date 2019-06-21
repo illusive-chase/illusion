@@ -4,7 +4,7 @@
 namespace fl {
 	namespace geom {
 
-		ILL_ATTRIBUTE_ALIGNED16(class) SkyBox :public SObject3D {
+		class SkyBox :public SObject3D {
 		public:
 			DWORD* top_src;
 			const int size;
@@ -13,7 +13,6 @@ namespace fl {
 			SkyBox(const Texture& tex, int size);
 
 			~SkyBox() { if (top_src) delete[] top_src; }
-			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};
 	}
 }

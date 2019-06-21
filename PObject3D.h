@@ -5,7 +5,7 @@
 namespace fl {
 	namespace physics {
 
-		ILL_ATTRIBUTE_ALIGNED16(class) PObject3D :public AutoPtr {
+		class PObject3D :public AutoPtr {
 		private:
 			class PForceGenerator {
 			private:
