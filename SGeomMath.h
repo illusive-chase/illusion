@@ -151,9 +151,7 @@ namespace fl {
 			union {
 				f4 m_vec128;
 				float m_floats[4];
-				struct {
-					float x, y, z, w;
-				};
+				struct { float x, y, z, w; };
 			};
 
 			Vector3D(f4 m_vec128) :m_vec128(m_vec128) {}
@@ -161,9 +159,7 @@ namespace fl {
 #else
 			union {
 				float m_floats[4];
-				struct {
-					float x, y, z, w;
-				};
+				struct { float x, y, z, w; };
 			};
 #endif
 			ILL_DECLARE_ALIGNED_ALLOCATOR
@@ -208,7 +204,7 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D& operator *=(float k) {
+			ILL_INLINE Vector3D& operator *=(const float& k) {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
 				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
@@ -234,7 +230,7 @@ namespace fl {
 #endif
 			}
 
-			ILL_INLINE Vector3D operator *(float k) const {
+			ILL_INLINE Vector3D operator *(const float& k) const {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
 				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
@@ -279,7 +275,7 @@ namespace fl {
 			}
 
 			ILL_INLINE bool operator ==(const Vector3D& cp) const {
-				return Eq(x, cp.x) && Eq(y, cp.y) && Eq(z, cp.z);
+				return Eq(x - cp.x, EPS) && Eq(y - cp.y, EPS) && Eq(z - cp.z, EPS);
 			}
 
 			ILL_INLINE Vector3D& rotateX(const Rad& rad) {
@@ -305,74 +301,117 @@ namespace fl {
 
 		};
 
-		class Shadee {
+		ILL_ATTRIBUTE_ALIGNED16(class) Shadee {
 		public:
-			float x, y, z;
-			float u, v;
-			float r, g, b;
+			ILL_DECLARE_ALIGNED_ALLOCATOR
+
+#ifdef ILL_SSE
+			union {
+				struct { float x, y, u, v, r, g, b, z; };
+				struct { f4 m_xyuv, m_rgbz; };
+				struct { float floats[8]; };
+			};
+#else
+			union {
+				struct { float x, y, u, v, r, g, b, z; };
+				struct { float floats[8]; };
+			};
+#endif
 			Shadee() {}
-			Shadee(float x, float y, float z, float r, float g, float b, float u = 0.0, float v = 0.0) :
-				x(x), y(y), z(z), u(u), v(v), r(r), g(g), b(b) {
+			Shadee(Shadee* va, Shadee* vb, float y0) {
+				float ILL_ATTRIBUTE_ALIGNED16(t) = (y0 - va->y) / (vb->y - va->y);
+				float ILL_ATTRIBUTE_ALIGNED16(rt) = 1.0 - t;
+#ifdef ILL_SSE_IN_API
+				{
+					__m128 m_t = _mm_load1_ps(&t);
+					__m128 m_rt = _mm_load1_ps(&rt);
+					m_xyuv = _mm_add_ps(_mm_mul_ps(va->m_xyuv, m_rt), _mm_mul_ps(vb->m_xyuv, m_t));
+					m_rgbz = _mm_add_ps(_mm_mul_ps(va->m_rgbz, m_rt), _mm_mul_ps(vb->m_rgbz, m_t));
+				}
+#else
+				{
+					x = va->x * rt + vb->x * t;
+					y = va->y * rt + vb->y * t;
+					z = va->z * rt + vb->z * t;
+					r = va->r * rt + vb->r * t;
+					g = va->g * rt + vb->g * t;
+					b = va->b * rt + vb->b * t;
+					u = va->u * rt + vb->u * t;
+					v = va->v * rt + vb->v * t;
+				}
+#endif
 			}
-			Shadee(Shadee* va, Shadee* vb, float y) :y(y) {
-				float t = (y - va->y) / (vb->y - va->y);
-				float rt = 1.0 - t;
-				x = va->x * rt + vb->x * t;
-				rt /= va->z; t /= vb->z;
-				z = 1.0 / (rt + t); rt *= z; t *= z;
-				r = va->r * rt + vb->r * t;
-				g = va->g * rt + vb->g * t;
-				b = va->b * rt + vb->b * t;
-				u = va->u * rt + vb->u * t;
-				v = va->v * rt + vb->v * t;
-			}
-			ILL_INLINE void set(const float& _x, const float& _y, const float& _z, const float& _r, const float& _g, const float& _b) {
+			ILL_INLINE void set(float _x, float _y, const Vector3D& color, float _z) {
 				x = _x;
 				y = _y;
+				m_rgbz = color.m_vec128;
 				z = _z;
-				r = _r;
-				g = _g;
-				b = _b;
 			}
 			static bool clockwise(const Shadee& a, const Shadee& b, const Shadee& c) {
 				return (c.x - a.x)*b.y + (b.x - c.x)*a.y + (a.x - b.x)*c.y < 0.0;
 			}
 		};
 
-		class LerpY {
+		ILL_ATTRIBUTE_ALIGNED16(class) LerpY {
 		public:
-			float x, z, u, v, r, g, b;
-			const float y, dy, dx, dz, du, dv, dr, dg, db;
-			LerpY(const Shadee& sa, const Shadee& sb, float step);
+			ILL_DECLARE_ALIGNED_ALLOCATOR
+
+#ifdef ILL_SSE_IN_API
+			union {
+				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
+				struct { float floats[16]; };
+			};
+#else
+			union {
+				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { float floats[16]; };
+			};
+#endif
+			LerpY(const Shadee& sa, const Shadee& sb, const float& step);
 			LerpY(const Shadee& sa, const Shadee& sb);
-			void start(int ay, float sample_y);
+			ILL_INLINE void start(int ay, float sample_y){ move(ay - y + sample_y); }
 			void move();
-			void move(float step);
+			void move(const float& step);
 			void reset(const Shadee& sa);
 		};
 
-		class LerpX {
+		ILL_ATTRIBUTE_ALIGNED16(class) LerpX {
 		public:
-			float z, u, v, r, g, b;
-			const float x, dx, dz, du, dv, dr, dg, db;
+			ILL_DECLARE_ALIGNED_ALLOCATOR
+
+#ifdef ILL_SSE_IN_API
+			union {
+				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
+				struct { float floats[16]; };
+			};
+#else
+			union {
+				struct { float x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { float floats[16]; };
+			};
+#endif
 			LerpX(const LerpY& sa, const LerpY& sb);
-			void start(int ax, float sample_x);
+			ILL_INLINE void start(int ax, float sample_x) { move(ax - x + sample_x); }
 			void move();
-			void move(float step);
+			void move(const float& step);
 			ILL_INLINE int getU() const { return int(u / z); }
 			ILL_INLINE int getV() const { return int(v / z); }
 		};
 
 		class LerpZ {
 		public:
-			static ILL_INLINE void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
+			static void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
 				const Shadee& sa, const Shadee& sb, const Vector3D& vz, float vz_mod, float z) {
 				float t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
 				float rt = 1.0 - t;
 				v_src.x = va.x * t + vb.x * rt;
 				v_src.y = va.y * t + vb.y * rt;
 				v_src.z = va.z * t + vb.z * rt;
-				src.z = z;
+				src.z = 1.0 / z;
+				t /= sa.z * z;
+				rt /= sb.z * z;
 				src.r = sa.r * t + sb.r * rt;
 				src.g = sa.g * t + sb.g * rt;
 				src.b = sa.b * t + sb.b * rt;
@@ -384,9 +423,6 @@ namespace fl {
 			~LerpZ() {}
 		};
 
-		ILL_INLINE bool triangleClockwise(Shadee *p) {
-			return ((p[1].x - p[0].x) * (p[2].y - p[0].y) - (p[1].y - p[0].y) * (p[2].x - p[0].x) >= 0);
-		}
 
 		//02*01
 		ILL_INLINE Vector3D normalVector(const Vector3D& a, const Vector3D& b) {

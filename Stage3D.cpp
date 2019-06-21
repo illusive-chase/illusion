@@ -55,9 +55,9 @@ void fl::geom::Stage3D::render() {
 
 			BYTE ZTag = 0;
 			bool reverse = (p[0].z < 0) ^ (p[1].z < 0) ^ (p[2].z < 0);
-			if (p[0].z < camera.nearPlatform + cameraDir_mod) ZTag |= 1;
-			if (p[1].z < camera.nearPlatform + cameraDir_mod) ZTag |= 2;
-			if (p[2].z < camera.nearPlatform + cameraDir_mod) ZTag |= 4;
+			if (1 / p[0].z < camera.nearPlatform + cameraDir_mod) ZTag |= 1;
+			if (1 / p[1].z < camera.nearPlatform + cameraDir_mod) ZTag |= 2;
+			if (1 / p[2].z < camera.nearPlatform + cameraDir_mod) ZTag |= 4;
 			//printf("Obj%d:ZTag%d\n", cnt, ZTag);
 			if (ZTag < 7 && (Shadee::clockwise(p[0], p[1], p[2]) ^ reverse)) {
 
@@ -79,11 +79,11 @@ void fl::geom::Stage3D::render() {
 				}
 
 				for (int i = 0; i < 3; ++i) {
-					p[i].u = float(s.uv[i] >> 16);
-					p[i].v = float(s.uv[i] & 0xffff);
-					p[i].r = p[i].r * s.texture.Kd + intensity.x;//fac:256
-					p[i].g = p[i].g * s.texture.Kd + intensity.y;
-					p[i].b = p[i].b * s.texture.Kd + intensity.z;
+					p[i].u = float(s.uv[i] >> 16) * p[i].z;
+					p[i].v = float(s.uv[i] & 0xffff) * p[i].z;
+					p[i].r = (p[i].r * s.texture.Kd + intensity.x) * p[i].z;//fac:256
+					p[i].g = (p[i].g * s.texture.Kd + intensity.y) * p[i].z;
+					p[i].b = (p[i].b * s.texture.Kd + intensity.z) * p[i].z;
 				}
 				switch (ZTag) {
 				case 0:
@@ -393,10 +393,10 @@ void fl::geom::Stage3D::postFiltering_MLAA() {
 }
 
 void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal, float cameraDir_mod) {
-	float z_val = (p * camera.dir) / cameraDir_mod;
+	float z_val = cameraDir_mod / (p * camera.dir);
 	Vector3D intensity_diff;
 
-	p *= (cameraDir_mod + camera.nearPlatform) / z_val;
+	p *= (cameraDir_mod + camera.nearPlatform) * z_val;
 	p -= (camera.dir * (1 + camera.nearPlatform / cameraDir_mod));
 
 	for (Light3D* light : lit) {
@@ -410,17 +410,17 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal,
 	src.set(
 		width * 0.5 + p * camera.dir_h * camera.scale,
 		height * 0.5 - p * camera.dir_v * camera.scale,
-		z_val, intensity_diff.x, intensity_diff.y, intensity_diff.z
+		intensity_diff, z_val
 	);
 }
 
 void fl::geom::Stage3D::project(Shadee& src, Vector3D p, float cameraDir_mod) {
-	float z_val = (p * camera.dir) / cameraDir_mod;
-	p *= cameraDir_mod / z_val;
+	float z_val = cameraDir_mod / (p * camera.dir);
+	p *= cameraDir_mod * z_val;
 	p -= camera.dir;
 
-	src.x = width * 0.5 + p * camera.dir_h * camera.scale;
-	src.y = height * 0.5 - p * camera.dir_v * camera.scale;
+	src.x = (width * 0.5 + p * camera.dir_h * camera.scale);
+	src.y = (height * 0.5 - p * camera.dir_v * camera.scale);
 }
 
 void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p) {
