@@ -15,7 +15,7 @@ namespace fl {
 		class Rad {
 		public:
 			scalar s, c;
-			Rad(scalar rad) :s(sin(rad)), c(cos(rad)) {}
+			Rad(scalar rad) :s(illSin(rad)), c(illCos(rad)) {}
 			Rad(scalar s, scalar c) :s(s), c(c) {}
 			Rad operator -() const { return Rad(-s, c); }
 		};
@@ -41,7 +41,7 @@ namespace fl {
 		/// @param[in] u U坐标，0~65535的整数
 		/// @param[in] v V坐标，0~65535的整数
 		/// @return DWORD
-		constexpr DWORD UV(DWORD u, DWORD v) {
+		ILL_INLINE DWORD UV(DWORD u, DWORD v) {
 			return u << 16 | v;
 		}
 
@@ -49,7 +49,7 @@ namespace fl {
 		/// @param[in] a R/G/B值，0~255的整数
 		/// @param[in] w 权重，非负实数
 		/// @return BYTE
-		constexpr BYTE MIX(BYTE a, scalar w) {
+		ILL_INLINE BYTE MIX(BYTE a, scalar w) {
 			int c = int(a * w);
 			return c > 0xFF ? 0xFF : BYTE(c);
 		}
@@ -96,7 +96,7 @@ namespace fl {
 			explicit fixed(scalar x) :value(int(x) << 8) {}
 			fixed() :value(0) {}
 			operator int() { return int(value >> 8); }
-			operator scalar() { return value / 65536.0; }
+			operator scalar() { return value / scalar(65536); }
 
 			//fixed
 
@@ -165,6 +165,8 @@ namespace fl {
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 
 			Vector3D() :x(0), y(0), z(0), w(0) {}
+
+			Vector3D(int x, int y, int z) :x(scalar(x)), y(scalar(y)), z(scalar(z)), w(0) {}
 
 			Vector3D(scalar x, scalar y, scalar z) :x(x), y(y), z(z), w(0) {}
 
@@ -320,7 +322,7 @@ namespace fl {
 			Shadee() {}
 			Shadee(Shadee* va, Shadee* vb, scalar y0) {
 				scalar ILL_ATTRIBUTE_ALIGNED16(t) = (y0 - va->y) / (vb->y - va->y);
-				scalar ILL_ATTRIBUTE_ALIGNED16(rt) = 1.0 - t;
+				scalar ILL_ATTRIBUTE_ALIGNED16(rt) = scalar(1) - t;
 #ifdef ILL_SSE_IN_API
 				{
 					__m128 m_t = _mm_load1_ps(&t);
@@ -354,7 +356,7 @@ namespace fl {
 				z = _z;
 			}
 			static bool clockwise(const Shadee& a, const Shadee& b, const Shadee& c) {
-				return (c.x - a.x)*b.y + (b.x - c.x)*a.y + (a.x - b.x)*c.y < 0.0;
+				return (c.x - a.x)*b.y + (b.x - c.x)*a.y + (a.x - b.x)*c.y < scalar(0);
 			}
 		};
 
@@ -505,11 +507,11 @@ namespace fl {
 				src.m_rgbz = _mm_add_ps(_mm_mul_ps(sa.m_rgbz, m_t), _mm_mul_ps(sb.m_rgbz, m_rt));
 #else
 				scalar t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
-				scalar rt = 1.0 - t;
+				scalar rt = scalar(1) - t;
 				v_src.x = va.x * t + vb.x * rt;
 				v_src.y = va.y * t + vb.y * rt;
 				v_src.z = va.z * t + vb.z * rt;
-				src.z = 1.0 / z;
+				src.z = scalar(1) / z;
 				t /= sa.z * z;
 				rt /= sb.z * z;
 				src.r = sa.r * t + sb.r * rt;

@@ -142,8 +142,8 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendH_UZ(DWORD * line, in
 		DWORD* write2 = line + end - len + right_offset * width;
 		right_offset = right_offset ? -width : width;
 
-		float w = UZ_Weight / (end - start);
-		float wi = w;
+		scalar w = UZ_Weight / (end - start);
+		scalar wi = w;
 
 		for (int i = 0; i < len;) {
 			MIX32(*write1, wi, *(write1 + left_offset));
@@ -160,7 +160,7 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendH_UZ(DWORD * line, in
 		DWORD* write2 = line + end - len + right_offset * width;
 		right_offset = right_offset ? -width : width;
 
-		float w = 2.0f * UZ_Weight / len;
+		scalar w = 2.0f * UZ_Weight / len;
 
 		for (int i = 0; i < len; ++i) {
 			MIX32(*write1, ((i << 1) | 1) * w, *(write1 + left_offset));
@@ -175,7 +175,7 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendH_L(DWORD * line, int
 	DWORD* write = line + start + offset * width;
 	offset = offset ? -width : width;
 	int len = end - start;
-	float w = L_Weight / len;
+	scalar w = L_Weight / len;
 	if (left_flat) {
 		for (int i = 0; i < len; ++i) {
 			MIX32(*write, ((i << 1) | 1) * w, *(write + offset));
@@ -200,8 +200,8 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendV_UZ(DWORD * line, in
 		mix2 = write2 = line + end - len * width + bottom_offset;
 		bottom_offset = bottom_offset ? -1 : 1;
 
-		float w = UZ_Weight / ((end - start) / width);
-		float wi = w;
+		scalar w = UZ_Weight / ((end - start) / width);
+		scalar wi = w;
 
 		for (int i = 0; i < len;) {
 			MIX32(*write1, wi, *(write1 + top_offset));
@@ -219,7 +219,7 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendV_UZ(DWORD * line, in
 		mix2 = write2 = line + end - len * width + bottom_offset;
 		bottom_offset = bottom_offset ? -1 : 1;
 
-		float w = 2.0f * UZ_Weight / len;
+		scalar w = 2.0f * UZ_Weight / len;
 
 		for (int i = 0; i < len; ++i) {
 			MIX32(*write1, ((i << 1) | 1) * w, *(write1 + top_offset));
@@ -234,7 +234,7 @@ inline void fl::geom::MorphologicalAntialiasingAgent::BlendV_L(DWORD * line, int
 	DWORD* write = line + start + offset;
 	offset = offset ? -1 : 1;
 	int len = (end - start) / width;
-	float w = L_Weight / len;
+	scalar w = L_Weight / len;
 	if (top_flat) {
 		for (int i = 0; i < len; ++i) {
 			MIX32(*write, ((i << 1) | 1) * w, *(write + offset));

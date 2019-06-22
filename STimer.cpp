@@ -1,6 +1,6 @@
 #include "STimer.h"
 
-list<fl::time::Timer*> fl::time::Timer::global_timers;
+std::list<fl::time::Timer*> fl::time::Timer::global_timers;
 
 DWORD fl::time::Timer::base_time = 0;
 DWORD fl::time::Timer::delay_time = 0;

@@ -26,8 +26,8 @@ namespace fl {
 			bool hitTestPoint(int gx, int gy) {
 				if (!filled) return false;
 				transGlobalPosToLocal(gx, gy);
-				scalar a = (gx - x) / scalar(width) - 0.5, b = (gy - y) / scalar(height) - 0.5;
-				return (a * a + b * b) < 1.0;
+				scalar a = (gx - x) / scalar(width) - scalar(0.5), b = (gy - y) / scalar(height) - scalar(0.5);
+				return (a * a + b * b) < scalar(1);
 			}
 		private:
 			void paint(HDC hdc) {

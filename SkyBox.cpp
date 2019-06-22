@@ -7,25 +7,25 @@ fl::geom::SkyBox::SkyBox(const Texture& tex, int size) :SObject3D(Vector3D()), s
 	int h = tex.height - 1;
 
 	top_src = new DWORD[(w + 1) * (w + 1)];
-	float w_r = 1.0 / w;
-	float drdx_l = float(int((tex.src[w] >> 16) & 0xFF) - int((tex.src[0] >> 16) & 0xFF)) * w_r;
-	float dgdx_l = float(int((tex.src[w] >> 8) & 0xFF) - int((tex.src[0] >> 8) & 0xFF)) * w_r;
-	float dbdx_l = float(int(tex.src[w] & 0xFF) - int(tex.src[0] & 0xFF)) * w_r;
-	float drdx_h = float(int((tex.src[w << 1] >> 16) & 0xFF) - int((tex.src[3 * w] >> 16) & 0xFF)) * w_r;
-	float dgdx_h = float(int((tex.src[w << 1] >> 8) & 0xFF) - int((tex.src[3 * w] >> 8) & 0xFF)) * w_r;
-	float dbdx_h = float(int(tex.src[w << 1] & 0xFF) - int(tex.src[3 * w] & 0xFF)) * w_r;
-	float r_l = float((tex.src[0] >> 16) & 0xFF);
-	float g_l = float((tex.src[0] >> 8) & 0xFF);
-	float b_l = float(tex.src[0] & 0xFF);
-	float r_h = float((tex.src[3 * w] >> 16) & 0xFF);
-	float g_h = float((tex.src[3 * w] >> 8) & 0xFF);
-	float b_h = float(tex.src[3 * w] & 0xFF);
+	scalar w_r = scalar(1) / w;
+	scalar drdx_l = scalar(int((tex.src[w] >> 16) & 0xFF) - int((tex.src[0] >> 16) & 0xFF)) * w_r;
+	scalar dgdx_l = scalar(int((tex.src[w] >> 8) & 0xFF) - int((tex.src[0] >> 8) & 0xFF)) * w_r;
+	scalar dbdx_l = scalar(int(tex.src[w] & 0xFF) - int(tex.src[0] & 0xFF)) * w_r;
+	scalar drdx_h = scalar(int((tex.src[w << 1] >> 16) & 0xFF) - int((tex.src[3 * w] >> 16) & 0xFF)) * w_r;
+	scalar dgdx_h = scalar(int((tex.src[w << 1] >> 8) & 0xFF) - int((tex.src[3 * w] >> 8) & 0xFF)) * w_r;
+	scalar dbdx_h = scalar(int(tex.src[w << 1] & 0xFF) - int(tex.src[3 * w] & 0xFF)) * w_r;
+	scalar r_l = scalar((tex.src[0] >> 16) & 0xFF);
+	scalar g_l = scalar((tex.src[0] >> 8) & 0xFF);
+	scalar b_l = scalar(tex.src[0] & 0xFF);
+	scalar r_h = scalar((tex.src[3 * w] >> 16) & 0xFF);
+	scalar g_h = scalar((tex.src[3 * w] >> 8) & 0xFF);
+	scalar b_h = scalar(tex.src[3 * w] & 0xFF);
 	int offset = 0;
 	for (int x = 0; x <= w; ++x) {
-		float r = r_l, g = g_l, b = b_l;
-		float drdy = (r_h - r_l) * w_r;
-		float dgdy = (g_h - g_l) * w_r;
-		float dbdy = (b_h - b_l) * w_r;
+		scalar r = r_l, g = g_l, b = b_l;
+		scalar drdy = (r_h - r_l) * w_r;
+		scalar dgdy = (g_h - g_l) * w_r;
+		scalar dbdy = (b_h - b_l) * w_r;
 		for (int y = 0; y <= w; ++y) {
 			top_src[offset + y] = RGB3D((BYTE)(int)r, (BYTE)(int)g, (BYTE)(int)b);
 			r += drdy;

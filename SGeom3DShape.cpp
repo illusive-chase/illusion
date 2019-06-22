@@ -28,8 +28,8 @@ fl::geom::Sphere3D::Sphere3D(const Vector3D & pos, const Texture & texture, int 
 	const int width = texture.width - 1;
 	const int height = texture.height - 1;
 
-	vector<int> uv;
-	vector<int> newv, oldv;
+	std::vector<int> uv;
+	std::vector<int> newv, oldv;
 	const scalar theta = PI / row;
 	const scalar phi = 2 * PI / col;
 

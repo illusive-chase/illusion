@@ -8,7 +8,7 @@ namespace fl {
 			scalar g;
 		public:
 			explicit PFGravity(scalar g) :g(g) {}
-			void operator()(PObject3D* obj) { obj->acc += geom::Vector3D(0, -g, 0); }
+			void operator()(PObject3D* obj) { obj->acc += geom::Vector3D(scalar(0), -g, scalar(0)); }
 		};
 
 		class PFResistance {

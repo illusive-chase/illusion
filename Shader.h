@@ -14,9 +14,12 @@ namespace fl {
 #else
 			scalar z_depth, r, g, b;
 #endif
+#ifdef ILL_DEBUG
 			void* object;
-
 			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
+#endif
+
+			MapTrait() :z_depth(0), r(0), g(0), b(0) {}
 
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};
@@ -76,7 +79,9 @@ namespace fl {
 					map_trait->b = shadee.b;
 					map_trait->z_depth = shadee.z;
 #endif
+#ifdef ILL_DEBUG
 					map_trait->object = obj;
+#endif
 				}
 			}
 

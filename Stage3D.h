@@ -24,7 +24,7 @@ namespace fl {
 			void rotateV(const Rad& rad);
 
 			//move right
-			inline void moveH(int x) { pos += dir_h * x; }
+			inline void moveH(int x) { pos += dir_h * scalar(x); }
 
 			//move up
 			inline void moveV(int x) { pos.y += x; }
@@ -59,8 +59,16 @@ namespace fl {
 			const scalar* const sample_x;
 			const scalar* const sample_y;
 
-			const scalar SAMPLE_X[3][4] = { {0.5,0.0,0.0,0.0}, {0.375,0.875,0.125,0.625}, {0.375,0.875,0.125,0.625} };
-			const scalar SAMPLE_Y[3][4] = { {0.5,0.0,0.0,0.0}, {0.125,0.375,0.625,0.875}, {0.125,0.375,0.625,0.875} };
+			const scalar SAMPLE_X[3][4] = { 
+				{scalar(0.5),0,0,0},
+			{scalar(0.375),scalar(0.875),scalar(0.125),scalar(0.625)},
+			{scalar(0.375),scalar(0.875),scalar(0.125),scalar(0.625)}
+			};
+			const scalar SAMPLE_Y[3][4] = { 
+				{scalar(0.5),0,0,0}, 
+			{scalar(0.125),scalar(0.375),scalar(0.625),scalar(0.875)},
+			{scalar(0.125),scalar(0.375),scalar(0.625),scalar(0.875)}
+			};
 
 		private:
 
@@ -96,9 +104,9 @@ namespace fl {
 				}
 			};
 
-			vector<SObject3D*> obj;
-			list<Light3D*> lit;
-			list<SText3D*> txt;
+			std::vector<SObject3D*> obj;
+			std::vector<Light3D*> lit;
+			std::vector<SText3D*> txt;
 			SkyBox* const skybox;
 			
 			SwapChain* swap_chain;
@@ -116,7 +124,7 @@ namespace fl {
 			static void showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p);
 
 		public:
-			Stage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12.0,
+			Stage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
 				DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox* skybox = nullptr, Shape* parent = nullptr);
 
 			virtual ~Stage3D();
@@ -154,10 +162,12 @@ namespace fl {
 			inline void setCamera(const Vector3D& pos, const Vector3D& dir) { camera.setCamera(pos, dir, width, height); }
 
 			inline void addLight(Light3D* light) { lit.push_back(light); }
-			inline const vector<SObject3D*>& getObjects() const { return obj; }
+			inline const std::vector<SObject3D*>& getObjects() const { return obj; }
+#ifdef ILL_DEBUG
 			inline const SObject3D* getObjectAt(int x, int y) const { 
 				return static_cast<SObject3D*>(swap_chain->prev->map_trait[y * width + x].object);
 			}
+#endif
 		};
 	}
 }

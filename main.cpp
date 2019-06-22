@@ -35,12 +35,12 @@ void fl::Setup() {
 	ImageLoader* ld = new ImageLoader();
 	stage.addRecycleListener(ld);
 	ld->load(L"src\\sky.bmp");
-	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3, 0, 0);
+	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
 
 	stage.addConsole();
 	stage.addChild(wd = new Stage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3D::MODE_MLAA, 1, new SkyBox(tx, 2000)));
-	wd->addLight(new DirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6, 0.6, 0.6)));
-	wd->addLight(new Light3D(Vector3D(0.4, 0.4, 0.4)));
+	wd->addLight(new DirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
+	wd->addLight(new Light3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 	wd->addObject(new SQuadr3D(Vector3D(0, -2000, 0), Vector3D(2000, 0, 0), Vector3D(0, 0, -2000), Color::GREEN));
 
@@ -49,7 +49,7 @@ void fl::Setup() {
 	wd->addObject(new SObject3D(*(ml->models[0])));
 
 	//Texture suf(Color::RED);
-	//PObject3D* partice = new PObject3D(10, Vector3D()); partice->addForce(PFGravity(0.098)); stage.addRecycleListener(partice);
+	//PObject3D* partice = new PObject3D(10, Vector3D()); partice->addForce(PFGravity(0.098f)); stage.addRecycleListener(partice);
 	//SObject3D* cube = new Cube3D(Vector3D(0, 0, 0), suf); cube->addPObject(partice); wd->addObjectWithPosition(cube);
 
 	stage.addRecycleListener(new Roamer(wd));

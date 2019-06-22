@@ -34,7 +34,7 @@ void * fl::AlignedAlloc(size_t size, int alignment) {
 }
 
 void fl::AlignedFree(void * ptr) {
-#if defined(B3_HAS_ALIGNED_ALLOCATOR)
+#if defined(ILL_HAS_ALIGNED_ALLOCATOR)
 	if (ptr) _aligned_free(ptr);
 #else
 	void *real;

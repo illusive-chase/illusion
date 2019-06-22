@@ -70,8 +70,8 @@ void fl::geom::Stage3D::render() {
 					if (light->type == 2) {
 						Vector3D& lit_dir = dynamic_cast<DirectionalLight3D*>(light)->dir;
 						scalar tmp = n * lit_dir;
-						if (tmp > 0.0) continue;
-						Vector3D tmp_h = n * (2.0 * tmp);
+						if (tmp > scalar(0)) continue;
+						Vector3D tmp_h = n * (scalar(2) * tmp);
 						tmp_h -= lit_dir;
 						tmp = tmp_h * camera.dir / cameraDir_mod;
 						if (tmp > 0.0) intensity += light->intensity * (s.texture.Ks * tmp);
@@ -141,7 +141,7 @@ void fl::geom::Stage3D::render() {
 			p2++;
 			p3++;
 		}
-		tmp = _mm_div_ps(tmp, _mm_set1_ps(sample_num));
+		tmp = _mm_div_ps(tmp, _mm_set1_ps(scalar(sample_num)));
 		const __m128i zero = _mm_setzero_si128();
 		__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(tmp), zero), zero);
 		*p1 = ~_mm_cvtsi128_si32(tmpi);
@@ -255,12 +255,12 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 			++ay;
 			a_k = 0;
 		}
-		left.move((ay + sample_y[a_k] - a->y) * 4.0);
-		right.move((ay + sample_y[a_k] - a->y) * 4.0);
+		left.move((ay + sample_y[a_k] - a->y) * scalar(4));
+		right.move((ay + sample_y[a_k] - a->y) * scalar(4));
 
 		for (int k = 0; k < 4; ++k) {
-			left_bound_f[k] = 4.0 * left.dx * (ay + sample_y[k] - a->y) + a->x + 1.0 - sample_x[k];
-			right_bound_f[k] = 4.0 * right.dx * (ay + sample_y[k] - a->y) + a->x + 1.0 - sample_x[k];
+			left_bound_f[k] = scalar(4) * left.dx * (ay + sample_y[k] - a->y) + a->x + scalar(1) - sample_x[k];
+			right_bound_f[k] = scalar(4) * right.dx * (ay + sample_y[k] - a->y) + a->x + scalar(1) - sample_x[k];
 		}
 
 		for (int i = ay; i <= by && i < height; ++i) {
@@ -311,8 +311,8 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 			}
 
 			for (int k = 0; k < 4; ++k) {
-				left_bound_f[k] += 4.0 * left.dx;
-				right_bound_f[k] += 4.0 * right.dx;
+				left_bound_f[k] += scalar(4) * left.dx;
+				right_bound_f[k] += scalar(4) * right.dx;
 			}
 		}
 	}
@@ -322,12 +322,12 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 			++by;
 			b_k = 0;
 		}
-		left.move((by + sample_y[b_k] - b->y) * 4.0);
-		right.move((by + sample_y[b_k] - b->y) * 4.0);
+		left.move((by + sample_y[b_k] - b->y) * scalar(4));
+		right.move((by + sample_y[b_k] - b->y) * scalar(4));
 
 		for (int k = 0; k < 4; ++k) {
-			left_bound_f[k] = 4.0 * left.dx * (by + sample_y[k] - b->y) + b->x + 1.0 - sample_x[k];
-			right_bound_f[k] = 4.0 * right.dx * (by + sample_y[k] - b->y) + cut->x + 1.0 - sample_x[k];
+			left_bound_f[k] = scalar(4) * left.dx * (by + sample_y[k] - b->y) + b->x + scalar(1) - sample_x[k];
+			right_bound_f[k] = scalar(4) * right.dx * (by + sample_y[k] - b->y) + cut->x + scalar(1) - sample_x[k];
 		}
 
 		for (int i = by; i <= cy && i < height; ++i) {
@@ -378,8 +378,8 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 			}
 
 			for (int k = 0; k < 4; ++k) {
-				left_bound_f[k] += 4.0 * left.dx;
-				right_bound_f[k] += 4.0 * right.dx;
+				left_bound_f[k] += scalar(4) * left.dx;
+				right_bound_f[k] += scalar(4) * right.dx;
 			}
 		}
 	}
@@ -408,8 +408,8 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal,
 	}
 
 	src.set(
-		width * 0.5 + p * camera.dir_h * camera.scale,
-		height * 0.5 - p * camera.dir_v * camera.scale,
+		width * scalar(0.5) + p * camera.dir_h * camera.scale,
+		height * scalar(0.5) - p * camera.dir_v * camera.scale,
 		intensity_diff, z_val
 	);
 }
@@ -419,8 +419,8 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, scalar cameraDir_mod) {
 	p *= cameraDir_mod * z_val;
 	p -= camera.dir;
 
-	src.x = (width * 0.5 + p * camera.dir_h * camera.scale);
-	src.y = (height * 0.5 - p * camera.dir_v * camera.scale);
+	src.x = (width * scalar(0.5) + p * camera.dir_h * camera.scale);
+	src.y = (height * scalar(0.5) - p * camera.dir_v * camera.scale);
 }
 
 void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p) {
@@ -512,7 +512,7 @@ void fl::geom::Camera::setCamera(const Vector3D & pos, const Vector3D & dir, int
 }
 
 void fl::geom::Camera::update() {
-	dir_h = (dir.z == 0.0 ? Vector3D(0, 0, 1) : (dir.z < 0.0 ? Vector3D(1, 0, -dir.x / dir.z) : Vector3D(-1, 0, dir.x / dir.z)));
+	dir_h = (dir.z == 0.0 ? Vector3D(0, 0, 1) : (dir.z < 0.0 ? Vector3D(scalar(1), scalar(0), -dir.x / dir.z) : Vector3D(scalar(-1), scalar(0), dir.x / dir.z)));
 	dir_h.normalize();
 	dir_v = normalVector(dir, dir_h);
 	if (dir_v.y < 0) dir_v *= -1;

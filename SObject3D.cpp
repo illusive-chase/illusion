@@ -70,8 +70,8 @@ void fl::geom::SObject3D::rotateZ(const Rad& rad, const Vector3D& refv) {
 	rotateZ(rad);
 }
 
-void fl::geom::SObject3D::scale(float factor, const Vector3D& refv) {
+void fl::geom::SObject3D::scale(scalar factor, const Vector3D& refv) {
 	pos *= factor;
-	pos += refv * (1.0 - factor);
+	pos += refv * (scalar(1) - factor);
 	scale(factor);
 }

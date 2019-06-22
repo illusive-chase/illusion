@@ -1,5 +1,5 @@
 #include "SLoader.h"
-
+#include <map>
 
 int fl::loader::ImageLoader::load(const wstring& path, int width, int height, int type) {
 	HBITMAP hbmp = (HBITMAP)LoadImage(NULL, path.c_str(), type, width, height, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
@@ -16,7 +16,7 @@ int fl::loader::ImageLoader::load(const wstring& path, int width, int height, in
 }
 
 
-int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, float scale, bool leftTopOrigin) {
+int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
 	using namespace fl::geom;
 	std::wifstream obj(dir + L"\\" + name);
 	if (!obj.is_open()) return -1;
@@ -26,8 +26,8 @@ int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, fl
 	std::wifstream mtl(dir + L"\\" + read);
 	if (!mtl.is_open()) return (obj.close(), -1);
 
-	map<wstring, int> uv_index;
-	map<wstring, int> bitmap_name;
+	std::map<wstring, int> uv_index;
+	std::map<wstring, int> bitmap_name;
 	wstring bitmap;
 	try {
 		while (1) {
@@ -50,13 +50,13 @@ int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, fl
 	}
 	mtl.close();
 	SObject3D* create = new SObject3D(Vector3D());
-	vector<Vector3D> uv_point;
-	vector<Vector3D> mesh_point;
-	vector<Vector3D> mesh_normal;
+	std::vector<Vector3D> uv_point;
+	std::vector<Vector3D> mesh_point;
+	std::vector<Vector3D> mesh_normal;
 	uv_point.push_back(Vector3D());
 	mesh_point.push_back(Vector3D());
 	mesh_normal.push_back(Vector3D(1, 0, 0));
-	float a, b, c;
+	scalar a, b, c;
 	int i[3], j[3], k[3];
 	int pre_index = -1;
 	try {
@@ -73,7 +73,7 @@ int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, fl
 				if (b < 0.001f) b = 0.001f;
 				if (a > 0.999f) a = 0.999f;
 				if (b > 0.999f) b = 0.999f;
-				uv_point.push_back(Vector3D(a, b, 0));
+				uv_point.push_back(Vector3D(a, b, scalar(0)));
 			} else if (read == L"vn") {
 				wss >> a >> b >> c;
 				mesh_normal.push_back(Vector3D(a, b, c));

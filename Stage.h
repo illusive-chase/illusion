@@ -15,7 +15,7 @@ namespace fl {
 			Signal<MouseEvent> mouseEventListener;
 			Signal<SystemEvent> systemEventListener;
 			Signal<FrameEvent> frameEventListener;
-			list<AutoPtr*> recycleListener;
+			std::list<AutoPtr*> recycleListener;
 
 
 			bool console_show;

@@ -67,7 +67,7 @@ namespace fl {
 		template<typename Para>
 		class Signal {
 		private:
-			list<Slot<Para>> slots;
+			std::list<Slot<Para>> slots;
 		public:
 
 			~Signal() { clear(); }

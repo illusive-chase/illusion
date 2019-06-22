@@ -36,7 +36,7 @@ fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb)
 #endif
 }
 
-fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb, const float& step)
+fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb, const scalar& step)
 #ifndef ILL_SSE_IN_API
 	: x(sa.x), y(sa.y), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dy(step / (sb.y - y)),
 	dx((sb.x - x) * (step / (sb.y - y))), dz((sb.z - z) * dy), du((sb.u - u) * dy), dv((sb.v - v) * dy),

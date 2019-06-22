@@ -15,9 +15,11 @@ subject to the following restrictions:
 
 #pragma once
 #include "Scalar.h"
+#include <vector>
+#include <list>
 
 namespace fl {
-	void* AlignedAlloc(size_t size, int alignment);
+	void* AlignedAlloc(std::size_t size, int alignment);
 	void AlignedFree(void* ptr);
 
 	template<typename T,unsigned Alignment>
@@ -27,17 +29,28 @@ namespace fl {
 
 	public:
 
+		using value_type = T;
+		using pointer = T * ;
+		using const_pointer = const T * ;
+		using reference = T & ;
+		using const_reference = const T&;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+
 		AlignedAllocator() {}
-		template<typename Other> AlignedAllocator(const AlignedAllocator<Other, Alignment>&) {}
+		AlignedAllocator(const self_type&) noexcept {}
+		AlignedAllocator(const self_type&&) noexcept {}
+		template<typename Other> AlignedAllocator(const AlignedAllocator<Other, Alignment>&) noexcept {}
+		template<typename Other> AlignedAllocator(const AlignedAllocator<Other, Alignment>&&) noexcept {}
 
 		T* address(T& ref) const { return &ref; }
 		const T* address(const T& ref) { return &ref; }
-		T* allocate(int n, const T* hint = 0) {
+		T* allocate(std::size_t n, const T* hint = 0) {
 			(void)hint;
 			return reinterpret_cast<T*>(AlignedAlloc(sizeof(T)*n, Alignment));
 		}
 		void construct(T* ptr, const T& value) { new (ptr) T(value); }
-		void deallocate(T* ptr) { AlignedFree(reinterpret_cast<void*>(ptr)); }
+		void deallocate(T* ptr, std::size_t n = 0) noexcept { AlignedFree(reinterpret_cast<void*>(ptr)); }
 		void destroy(T* ptr) { ptr->~T(); }
 
 		template <typename O>
@@ -46,7 +59,8 @@ namespace fl {
 		template <typename O>
 		self_type& operator=(const AlignedAllocator<O, Alignment>&) { return *this; }
 
-		friend bool operator==(const self_type&, const self_type&) { return true; }
+		friend bool operator==(const self_type&, const self_type&) noexcept { return true; }
+		friend bool operator!=(const self_type&, const self_type&) noexcept { return false; }
 
 	};
 
@@ -77,8 +91,12 @@ namespace fl {
 
 #endif
 
+	template<typename T>
+	using aligned_vector = std::vector<T, AlignedAllocator<T, 16>>;
+	template<typename T>
+	using aligned_list = std::list<T, AlignedAllocator<T, 16>>;
 
-
+#if 0
 	template <typename T>
 	class AlignedArray {
 
@@ -127,6 +145,13 @@ namespace fl {
 		}
 
 	public:
+
+		using iterator = T * ;
+
+		const iterator begin() const { return m_data; }
+
+		const iterator end() const { return m_data[m_size]; }
+
 		AlignedArray() { init(); }
 
 		~AlignedArray() { clear(); }
@@ -222,6 +247,13 @@ namespace fl {
 		}
 
 		ILL_INLINE void push_back(const T& _Val) {
+			int sz = size();
+			if (sz == capacity()) reserve(allocSize(size()));
+			new (&m_data[m_size]) T(_Val);
+			m_size++;
+		}
+
+		ILL_INLINE void push_back(const T&& _Val) {
 			int sz = size();
 			if (sz == capacity()) reserve(allocSize(size()));
 			new (&m_data[m_size]) T(_Val);
@@ -365,13 +397,21 @@ namespace fl {
 
 		void remove(const T& key) {
 			int findIndex = findLinearSearch(key);
-			if (findIndex < size()) {
-				swap(findIndex, size() - 1);
+			if (findIndex < size())
+				swap(findIndex, size() - 1),
 				pop_back();
-			}
+
 		}
 
-		//PCK: whole function
+		iterator erase(const iterator it) {
+			int index = it - m_data;
+			if (index < size())
+				swap(index, size() - 1),
+				pop_back();
+			
+			return m_data[index];
+		}
+
 		void initializeFromBuffer(void* buffer, int size, int capacity) {
 			clear();
 			m_ownsMemory = false;
@@ -387,10 +427,12 @@ namespace fl {
 		}
 
 		void removeAtIndex(int index) {
-			if (index < size()) {
-				swap(index, size() - 1);
+			if (index < size())
+				swap(index, size() - 1),
 				pop_back();
-			}
 		}
-	};
+
+	}; 
+#endif
 }
+

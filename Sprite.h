@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Shape.h"
+#include "SAlignedAllocator.h"
 
 namespace fl {
 	namespace display {
 		class Sprite :public Shape {
 		public:
-			vector<Shape*> children;
+			std::vector<Shape*> children;
 			Sprite(int _x, int _y, Shape* parent = nullptr) : Shape(parent) { x = _x, y = _y; width = height = 0; }
 			~Sprite() { for (Shape* child : children) delete child; }
 			int childrenNum() { return (int)children.size(); }

@@ -13,9 +13,9 @@ namespace fl {
 		class SObject3D :public AutoPtr {
 		public:
 			Vector3D pos, m_x, m_y, m_z;
-			vector<Vector3D> vertex;
-			vector<Vector3D> normal;
-			vector<Surface3D> surface;
+			aligned_vector<Vector3D> vertex;
+			aligned_vector<Vector3D> normal;
+			aligned_vector<Surface3D> surface;
 			fl::physics::PObject3D* pobj;
 
 			SObject3D(const Vector3D& pos) :pos(pos), m_x(1, 0, 0), m_y(0, 1, 0), m_z(0, 0, 1), pobj(nullptr) {}
@@ -74,7 +74,7 @@ namespace fl {
 		/// @note 各种变换方法将等同地作用在所有绑定对象上
 		class Sprite3D :public AutoPtr {
 		public:
-			list<SObject3D*> children;        ///< 绑定对象的指针，显然该类因为不是SObject对象，故并不负责绑定对象的析构
+			std::list<SObject3D*> children;        ///< 绑定对象的指针，显然该类因为不是SObject对象，故并不负责绑定对象的析构
 
 			Sprite3D() {}
 			inline void addObject(SObject3D* p0) { children.push_back(p0); }

@@ -6,8 +6,8 @@ namespace fl {
 	namespace loader {
 		class ImageLoader :public AutoPtr {
 		public:
-			vector<DWORD*> content;
-			vector<BITMAP> info;
+			std::vector<DWORD*> content;
+			std::vector<BITMAP> info;
 			ImageLoader() :AutoPtr() {}
 			~ImageLoader() { for (DWORD* p : content) delete p; }
 			int load(const wstring& path, int width, int height, int type = IMAGE_BITMAP);
@@ -21,10 +21,10 @@ namespace fl {
 		private:
 			ImageLoader* uv_loader;
 		public:
-			vector<geom::SObject3D*> models;
+			std::vector<geom::SObject3D*> models;
 			ModelLoader() :AutoPtr() { uv_loader = new ImageLoader(); }
 			~ModelLoader() { for (geom::SObject3D* p : models) delete p; delete uv_loader; }
-			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12.0, bool leftTopOrigin = false);
+			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
 		};
 	}
 }

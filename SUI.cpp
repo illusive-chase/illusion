@@ -9,7 +9,7 @@ extern HWND g_hWnd;
 
 
 fl::ui::Roamer::Roamer(geom::Stage3D* link, int move_speed, int rotate_speed) :
-	link(link), speed(move_speed), rad(0.01 * rotate_speed), centerX(link->width >> 1), centerY(link->height >> 1),
+	link(link), speed(move_speed), rad(scalar(0.01) * rotate_speed), centerX(link->width >> 1), centerY(link->height >> 1),
 	x(0), y(0)
 {
 	stage.keyboardEventListener.add(this, WM_KEYDOWN, &Roamer::keyDown);

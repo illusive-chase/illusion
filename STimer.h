@@ -9,7 +9,7 @@ namespace fl{
 
 		class Timer {
 		public:
-			static list<Timer*> global_timers;
+			static std::list<Timer*> global_timers;
 			static void global_tick(int dt);
 			static DWORD base_time;
 			static DWORD delay_time;
