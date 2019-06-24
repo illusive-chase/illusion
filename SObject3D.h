@@ -45,11 +45,11 @@ namespace fl {
 			/// @return int
 			int addSurface(int pa, int pb, int pc, const Texture& texture, int uva = 0, int uvb = 0, int uvc = 0);
 
-			/// @brief 添加物理实体
+			/// @brief 添加物理实体，返回自身的指针
 			/// @note 物理实体的缺省值为空
 			/// @param[in] obj 物理实体
-			/// @return void
-			void addPObject(fl::physics::PObject3D* obj);
+			/// @return SObject3D*
+			SObject3D* addPObject(fl::physics::PObject3D* obj);
 
 
 			void rotateX(const Rad& rad);//clockwise

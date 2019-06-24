@@ -31,8 +31,8 @@ ModelLoader* ml;
 /// @return void
 ///
 void fl::Setup() {
-
-	ImageLoader* ld = new ImageLoader();
+	
+	/*ImageLoader* ld = new ImageLoader();
 	stage.addRecycleListener(ld);
 	ld->load(L"src\\sky.bmp");
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
@@ -47,11 +47,21 @@ void fl::Setup() {
 	stage.addRecycleListener(ml = new ModelLoader());
 	ml->loadMMD(L"C:\\Users\\Ò¶¿ª\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
 	wd->addObject(new SObject3D(*(ml->models[0])));
-
+	
 	//Texture suf(Color::RED);
 	//PObject3D* partice = new PObject3D(10, Vector3D()); partice->addForce(PFGravity(0.098f)); stage.addRecycleListener(partice);
 	//SObject3D* cube = new Cube3D(Vector3D(0, 0, 0), suf); cube->addPObject(partice); wd->addObjectWithPosition(cube);
 
-	stage.addRecycleListener(new Roamer(wd));
+	stage.addRecycleListener(new Roamer(wd));*/
+	
+
+	stage.addConsole();
+
+	Phase* ph = new Phase(0.098f, 0.1f);
+	ph->addObject(new PSphere(1.0f, Vector3D(), 10.0f, 1.0f), true);
+	ph->addObject(new PSphere(0.0f, Vector3D(0.0f, -10.0f, 0.0f), 10.0f, 1.0f), true);
+
+	stage.frameEventListener.add(ph, WM_FRAME, &Phase::framing);
+	stage.addRecycleListener(ph);
 	InitWindow();
 }

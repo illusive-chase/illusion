@@ -191,7 +191,7 @@ namespace fl {
 
 			ILL_INLINE Vector3D& operator -=(const Vector3D& tar) {
 #ifdef ILL_SSE_IN_API
-				m_vec128 = _mm_add_ps(m_vec128, tar.m_vec128);
+				m_vec128 = _mm_sub_ps(m_vec128, tar.m_vec128);
 #else
 				x -= tar.x; y -= tar.y; z -= tar.z; 
 #endif
@@ -229,6 +229,14 @@ namespace fl {
 				return _mm_cvtss_f32(vd);
 #else
 				return x * tar.x + y * tar.y + z * tar.z;
+#endif
+			}
+
+			ILL_INLINE Vector3D operator /(const Vector3D& tar) const {
+#ifdef ILL_SSE_IN_API
+				return Vector3D(_mm_div_ps(m_vec128, tar.m_vec128));
+#else
+				return Vector3D(x / tar.x, y / tar.y, z / tar.z);
 #endif
 			}
 
@@ -299,6 +307,14 @@ namespace fl {
 				y = rad.c * y - rad.s * x;
 				x = temp;
 				return *this;
+			}
+
+			ILL_INLINE operator float*() {
+				return m_floats;
+			}
+
+			ILL_INLINE operator const float*() const {
+				return m_floats;
 			}
 
 		};
@@ -531,6 +547,91 @@ namespace fl {
 		ILL_INLINE Vector3D normalVector(const Vector3D& a, const Vector3D& b) {
 			return Vector3D(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 		}
+
+
+		class AxisAlignedBoundingBox {
+			using Vector3D = geom::Vector3D;
+
+		public:
+			Vector3D mi, mx;
+			AxisAlignedBoundingBox(const Vector3D& mi, const Vector3D& mx) :mi(mi), mx(mx) {}
+			AxisAlignedBoundingBox() :mi(), mx() {}
+			ILL_INLINE Vector3D center() const { return (mi + mx) * scalar(0.5); }
+			ILL_INLINE Vector3D size() const { return mx - mi; }
+			ILL_INLINE bool contain(const AxisAlignedBoundingBox& a) const {
+				return ((mi.x <= a.mi.x) &&
+					(mi.y <= a.mi.y) &&
+					(mi.z <= a.mi.z) &&
+					(mx.x >= a.mx.x) &&
+					(mx.y >= a.mx.y) &&
+					(mx.z >= a.mx.z));
+			}
+			ILL_INLINE bool nequal(const AxisAlignedBoundingBox& a) const {
+				return ((mi.x != a.mi.x) ||
+					(mi.y != a.mi.y) ||
+					(mi.z != a.mi.z) ||
+					(mx.x != a.mx.x) ||
+					(mx.y != a.mx.y) ||
+					(mx.z != a.mx.z));
+			}
+			ILL_INLINE void merge(const AxisAlignedBoundingBox& a) {
+#ifdef ILL_SSE
+				__m128 ami(_mm_load_ps(a.mi));
+				__m128 amx(_mm_load_ps(a.mx));
+				ami = _mm_min_ps(ami, _mm_load_ps(mi));
+				amx = _mm_max_ps(amx, _mm_load_ps(mx));
+				_mm_store_ps(mi, ami);
+				_mm_store_ps(mx, amx);
+#else 
+				for (int i = 0; i < 3; ++i) {
+					if (a.mi[i] < mi[i]) mi[i] = a.mi[i];
+					if (a.mx[i] > mx[i]) mx[i] = a.mx[i];
+				}
+#endif
+			}
+			ILL_INLINE bool merge(const AxisAlignedBoundingBox& a, const AxisAlignedBoundingBox& b) {
+				AxisAlignedBoundingBox old(mi, mx);
+#ifdef ILL_SSE
+				__m128 ami(_mm_load_ps(a.mi));
+				__m128 amx(_mm_load_ps(a.mx));
+				ami = _mm_min_ps(ami, _mm_load_ps(b.mi));
+				amx = _mm_max_ps(amx, _mm_load_ps(b.mx));
+				_mm_store_ps(mi, ami);
+				_mm_store_ps(mx, amx);
+#else 
+				for (int i = 0; i < 3; ++i) {
+					mi[i] = (a.mi[i] < b.mi[i]) ? a.mi[i] : b.mi[i];
+					mx[i] = (a.mx[i] > b.mx[i]) ? a.mx[i] : b.mx[i];
+				}
+#endif
+				return nequal(old);
+			}
+
+			ILL_INLINE void expand(const Vector3D& e) {
+				if (e.x > 0) mx.x = (mx.x + e[0]);
+				else mi.x = (mi.x + e[0]);
+				if (e.y > 0) mx.y = (mx.y + e[1]);
+				else mi.y = (mi.y + e[1]);
+				if (e.z > 0) mx.z = (mx.z + e[2]);
+				else mi.z = (mi.z + e[2]);
+			}
+
+			ILL_INLINE bool intersect(const AxisAlignedBoundingBox& a) {
+#ifdef ILL_SSE_IN_API
+				const __m128 rt(_mm_or_ps(_mm_cmplt_ps(_mm_load_ps(mx), _mm_load_ps(a.mi)),
+					_mm_cmplt_ps(_mm_load_ps(a.mx), _mm_load_ps(mi))));
+				const int* pu((const int*)&rt);
+				return !(pu[0] | pu[1] | pu[2]);
+#else
+				return (a.mi.x <= mx.x) &&
+					(a.mx.x >= mi.x) &&
+					(a.mi.y <= mx.y) &&
+					(a.mx.y >= mi.y) &&
+					(a.mi.z <= mx.z) &&
+					(a.mx.z >= mi.z);
+#endif
+			}
+		};
 
 	}
 }

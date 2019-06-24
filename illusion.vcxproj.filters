@@ -147,6 +147,15 @@
     <ClInclude Include="SLog.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Struct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Phase.h">
+      <Filter>头文件\top_element\physics3D</Filter>
+    </ClInclude>
+    <ClInclude Include="PBroadCollision.h">
+      <Filter>头文件\top_element\physics3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
