@@ -87,4 +87,62 @@ namespace fl {
 		arr = new_arr;
 	}
 
+
+
+	class TypeTrait {
+	private:
+		template<typename A, typename B>
+		struct TypeEqual { static constexpr bool value = false; };
+
+		template<typename B>
+		struct TypeEqual<B, B> { static constexpr bool value = true; };
+
+		template<unsigned Index, typename ...Args>
+		struct TypeArrayValue;
+
+		template<unsigned Index, typename First, typename ...Rest>
+		struct TypeArrayValue<Index, First, Rest...> { using value = typename TypeArrayValue<Index - 1, Rest...>::value; };
+
+		template<typename First, typename ...Rest>
+		struct TypeArrayValue<0, First, Rest...> { using value = First; };
+
+		template<typename ...Args>
+		struct TypeArrayLength;
+
+		template<typename First, typename ...Rest>
+		struct TypeArrayLength<First, Rest...> { static constexpr int value = TypeArrayLength<Rest...>::value + 1; };
+
+		template<typename Last>
+		struct TypeArrayLength<Last> { static constexpr int value = 1; };
+
+		template<typename Find, typename ...Args>
+		struct TypeArrayBase;
+
+		template<typename Find, typename First, typename ...Rest>
+		struct TypeArrayBase<Find, First, Rest...> {
+			static constexpr unsigned getIndex() {
+				return TypeEqual<First, Find>::value ? 0 : (TypeArrayBase<Find, Rest...>::getIndex() + 1);
+			}
+		};
+
+		template<typename Find, typename Last>
+		struct TypeArrayBase<Find, Last> {
+			static constexpr unsigned getIndex() { return 1 - TypeEqual<Last, Find>::value; }
+		};
+
+	public:
+
+		template<typename ...Element>
+		struct TypeArray {
+			static constexpr int length = TypeArrayLength<Element...>::value;
+			template<typename Find> static constexpr unsigned getIndex() {
+				return TypeArrayBase<Find, Element...>::getIndex();
+			}
+			template<unsigned Index>
+			using type = typename TypeArrayValue<Index, Element...>::value;
+		};
+
+	};
+
+
 }

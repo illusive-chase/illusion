@@ -242,6 +242,7 @@
     <ClInclude Include="Phase.h" />
     <ClInclude Include="PBroadCollision.h" />
     <ClInclude Include="PForce.h" />
+    <ClInclude Include="PNarrowCollision.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SAlignedAllocator.h" />
     <ClInclude Include="SBitmap.h" />

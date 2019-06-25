@@ -54,15 +54,17 @@ namespace fl {
 
 			ILL_INLINE void add(void* oa, void* ob) {
 				OP p(oa, ob);
-				if (l_set.find(p) != l_set.end()) {
-					l_set.insert(p);
-					g_set.insert(p);
-				}
+				l_set.insert(p);
+				g_set.insert(p);
 			}
 
 			ILL_INLINE void cleanup() {
 				l_set.clear();
 				g_set.clear();
+			}
+
+			ILL_INLINE bool contain(void* oa, void* ob) const {
+				return l_set.find(OP(oa, ob)) != l_set.end();
 			}
 		};
 
@@ -149,7 +151,11 @@ namespace fl {
 			
 			
 			void insert(Node* leaf) {
-				if (!m_root) return m_root = leaf, void();
+				if (!m_root) {
+					m_root = leaf;
+					++m_leaves;
+					return;
+				}
 				Node* root;
 				for (root = m_root; !m_root->is_leaf();) {
 					root = root->children[select(leaf->aabb, root->lc->aabb, root->rc->aabb)];
@@ -159,7 +165,9 @@ namespace fl {
 				root->pa = n_pa;
 				n_pa->lc = root;
 				n_pa->rc = leaf;
+				leaf->pa = n_pa;
 				if (pa) pa->children[pa->lc == root ? 0 : 1] = n_pa;
+				else m_root = n_pa;
 				for (; n_pa && n_pa->aabb.contain(leaf->aabb); n_pa = n_pa->pa) {
 					n_pa->aabb.merge(leaf->aabb);
 				}
@@ -172,10 +180,14 @@ namespace fl {
 			}
 
 			void remove(Node* leaf) {
-				if (!leaf->pa) return m_root = 0, void();
+				if (!leaf->pa) {
+					m_root = 0;
+					--m_leaves;
+					return;
+				}
 				Node* pa = leaf->pa;
 				Node* ppa = pa->pa;
-				Node* bro = pa->children[pa->lc == leaf ? 0 : 1];
+				Node* bro = pa->children[pa->lc == leaf ? 1 : 0];
 				bro->pa = ppa;
 				if (ppa) ppa->children[ppa->lc == pa ? 0 : 1] = bro;
 				else m_root = bro;
@@ -222,14 +234,14 @@ namespace fl {
 						stk.pop();
 						if (n->aabb.intersect(leaf->aabb)) {
 							if (n->is_leaf()) {
-								if (n != leaf) op.add(n->obj, leaf->obj);
+								if (n != leaf && !op.contain(n->obj, leaf->obj)) op.add(n->obj, leaf->obj);
 							} else stk.push(n->lc), stk.push(n->rc);
 						}
 					} while (!stk.empty());
 				}
 			}
 
-			void collide(std::stack<void*>& stk_obj, Node* leaf) const {
+			void collide(OverlappingPairs& op, std::stack<void*>& stk_obj, Node* leaf) const {
 				if (m_root) {
 					std::stack<Node*> stk;
 					stk.push(m_root);
@@ -238,7 +250,7 @@ namespace fl {
 						stk.pop();
 						if (n->aabb.intersect(leaf->aabb)) {
 							if (n->is_leaf()) {
-								if (n != leaf) stk_obj.push(n->obj);
+								if (n != leaf && !op.contain(n->obj, leaf->obj)) stk_obj.push(n->obj), op.add(n->obj, leaf->obj);
 							} else stk.push(n->lc), stk.push(n->rc);
 						}
 					} while (!stk.empty());
@@ -286,8 +298,8 @@ namespace fl {
 			ILL_INLINE int createStaticProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, void* obj) {
 				BVH::Node* leaf = static_bvh.createLeafNode(aabb, obj, 0);
 				leaves.push_back(Proxy(leaf, false));
-				static_bvh.collide(stk_obj, leaf);
-				dynamic_bvh.collide(stk_obj, leaf);
+				static_bvh.collide(m_op, stk_obj, leaf);
+				dynamic_bvh.collide(m_op, stk_obj, leaf);
 				static_bvh.insert(leaf);
 				return (int)leaves.size() - 1;
 			}
@@ -295,8 +307,8 @@ namespace fl {
 			ILL_INLINE int createDynamicProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, void* obj) {
 				BVH::Node* leaf = dynamic_bvh.createLeafNode(aabb, obj, 0);
 				leaves.push_back(Proxy(leaf, true));
-				static_bvh.collide(stk_obj, leaf);
-				dynamic_bvh.collide(stk_obj, leaf);
+				static_bvh.collide(m_op, stk_obj, leaf);
+				dynamic_bvh.collide(m_op, stk_obj, leaf);
 				dynamic_bvh.insert(leaf);
 
 				return (int)leaves.size() - 1;
@@ -334,8 +346,8 @@ namespace fl {
 				leaf->aabb = aabb;
 				leaf->aabb.expand(vel);
 				dynamic_bvh.update(leaf);
-				static_bvh.collide(stk_obj, leaf);
-				dynamic_bvh.collide(stk_obj, leaf);
+				static_bvh.collide(m_op, stk_obj, leaf);
+				dynamic_bvh.collide(m_op, stk_obj, leaf);
 			}
 
 			ILL_INLINE void cleanup() { m_op.cleanup(); }

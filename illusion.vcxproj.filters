@@ -156,6 +156,9 @@
     <ClInclude Include="PBroadCollision.h">
       <Filter>头文件\top_element\physics3D</Filter>
     </ClInclude>
+    <ClInclude Include="PNarrowCollision.h">
+      <Filter>头文件\top_element\physics3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

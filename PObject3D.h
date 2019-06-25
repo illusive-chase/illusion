@@ -1,7 +1,7 @@
 #pragma once
 #include "SPointer.h"
 #include "SGeomMath.h"
-#include "SEvent.h"
+#include "Struct.h"
 
 namespace fl {
 	namespace physics {
@@ -45,7 +45,7 @@ namespace fl {
 			
 			PObject3D(scalar mass, const geom::Vector3D& pos, const geom::AxisAlignedBoundingBox& aabb,
 				scalar recovery = scalar(0))
-				:mass(mass), pos(pos), aabb(aabb), recovery(recovery) {
+				:mass(mass), pos(pos), aabb(aabb.mi + pos, aabb.mx + pos), recovery(recovery) {
 			}
 
 #if USE_FORCE_GENERATOR
@@ -57,12 +57,14 @@ namespace fl {
 				aabb.mx += vel;
 				aabb.mi += vel;
 				vel += acc;
-				printf("pos : %f,%f,%f\nvel : %f,%f,%f\nacc : %f,%f,%f\n\n", pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, acc.x, acc.y, acc.z);
+				//printf("pos : %f,%f,%f\nvel : %f,%f,%f\nacc : %f,%f,%f\n\n", pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, acc.x, acc.y, acc.z);
 				acc = geom::Vector3D();
 #if USE_FORCE_GENERATOR
 				if (mass) force(this);
 #endif
 			}
+
+			unsigned virtual uid() const = 0;
 
 
 		};
@@ -73,12 +75,29 @@ namespace fl {
 
 			PSphere(scalar mass, const geom::Vector3D& pos, scalar radius, scalar recovery)
 				:PObject3D(mass, pos, geom::AxisAlignedBoundingBox(
-					geom::Vector3D(-radius, -radius, -radius), geom::Vector3D(radius, radius, radius)
+					geom::Vector3D(-radius, -radius, -radius),
+					geom::Vector3D(radius, radius, radius)
 				), recovery), radius(radius) {
 			}
 
+			unsigned uid() const;
+
 		};
 
-		
-	}
+		class Platform :public PObject3D {
+		public:
+
+			Platform(scalar mass, const geom::Vector3D& pos, scalar radius, scalar recovery)
+				:PObject3D(mass, pos, geom::AxisAlignedBoundingBox(
+					geom::Vector3D(-radius, -radius, -radius),
+					geom::Vector3D(radius, radius, radius)
+				), recovery) {
+			}
+
+			unsigned uid() const;
+
+		};
+
+		using PShapeArray = TypeTrait::TypeArray<PSphere>;
+    }
 }

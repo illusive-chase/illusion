@@ -1,6 +1,7 @@
 #pragma once
 #include "PObject3D.h"
 #include "PBroadCollision.h"
+#include "PNarrowCollision.h"
 
 namespace fl {
 	namespace physics{
@@ -97,14 +98,6 @@ namespace fl {
 			PBroadCollision pbc;
 			static constexpr scalar COLLISION_SEPARATE_ACC_WHEN_CREATED = scalar(0.5);
 
-			static ILL_INLINE void separate(PObject3D* a, PObject3D* b) {
-				a->vel = b->vel = Vector3D();
-			}
-
-			static ILL_INLINE void separateInstant(PObject3D* a, PObject3D* b) {
-				a->vel = b->vel = Vector3D();
-			}
-
 		public:
 			bool enable;
 			PFCollision() :enable(true) {}
@@ -114,18 +107,19 @@ namespace fl {
 				else pbc.createStaticProxyInstant(stk, obj->aabb, obj);
 				while (!stk.empty()) {
 					PObject3D* p = reinterpret_cast<PObject3D*>(stk.top());
-					separateInstant(obj, p);
+					PNarrowCollision::collide(obj, p);
 					stk.pop();
 				}
 			}
 			ILL_INLINE void apply() {
 				std::stack<void*> stk;
+				pbc.cleanup();
 				for (int i = (int)pbc.leaves.size() - 1; i >= 0; --i) {
 					PObject3D* obj = reinterpret_cast<PObject3D*>(pbc.leaves[i].leaf->obj);
 					pbc.setProxyInstant(stk, i, obj->aabb, obj->vel);
 					while (!stk.empty()) {
 						PObject3D* p = reinterpret_cast<PObject3D*>(stk.top());
-						separate(obj, p);
+						PNarrowCollision::collide(obj, p);
 						stk.pop();
 					}
 				}
