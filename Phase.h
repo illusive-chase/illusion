@@ -26,10 +26,10 @@ namespace fl {
 
 			ILL_INLINE void framing(events::FrameEvent e) {
 				for (PObject3D* obj : objs) obj->framing();
-				g_collision.apply();
 				g_elastic.apply();
 				g_resistance.apply();
 				g_gravity.apply();
+				g_collision.apply();
 			}
 
 		};

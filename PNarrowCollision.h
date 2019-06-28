@@ -58,8 +58,8 @@ namespace fl {
 			if (sb > sa && k > 0) {
 				ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery * (scalar(2) - k);
 				Vector3D va = d * sa , vb = d * sb;
-				a.acc -= va * rec, a.vel -= va * k;
-				b.acc -= vb * rec, b.vel -= vb * k;
+				a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
+				b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
 			}
 		}
 
