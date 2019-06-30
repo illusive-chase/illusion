@@ -1,26 +1,46 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #pragma once
-
-
 #include "Shape.h"
 #include "SFont.h"
 #include "SEvent.h"
 
 namespace fl {
 	namespace display {
+
+		// Class SText inherits class AutoPtr indirectly, which means it must be allocated on the heap.
+		// Each SText object keeps a HFONT handle, which refers to a font.
+		// Class SText can be inherited.
 		class SText :public Shape {
 		private:
 			HFONT hfont;
-			SFont font;
-
+			
 		public:
-			wstringstream caption;
+			SFont font;
+			wstringstream caption; // mutable
+
+			// It is used to listen for painting events.
+			// In fact, the event is only responded when function SText::paint is called.
 			fl::events::Signal<fl::events::SimpleEvent<SText*>> paintEventListener;
 			
-			SText(int _x, int _y, const wstring& _caption, const SFont& _font = SFont(20), Shape* parent = nullptr) 
-				:Shape(parent), caption(_caption), font(_font)
+			SText(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape* parent = nullptr) 
+				:Shape(parent), caption(caption), font(font)
 			{
-				x = _x;
-				y = _y;
+				this->x = x;
+				this->y = y;
 				width = 0;
 				height = 0;
 				hfont = CreateFont(font.size, 0, 0, 0,
@@ -29,11 +49,22 @@ namespace fl {
 					TRANSLATE_FONT[font.style].c_str());
 				enabled = false;
 			}
-			void framing() {}
-			~SText() { DeleteObject(hfont); }
+
+			// It implements the corresponding virtual function of class Shape.
+			// The function is empty as the text is static.
+			// But it does not mean the text is not mutable, only means the text will not change by itself.
+			virtual void framing() {}
+
+			virtual ~SText() { DeleteObject(hfont); }
+
+			// The text should never be hit.
+			// If necessary, use hidden rectangle for hit-test instead.
 			bool hitTestPoint(int gx, int gy) { return false; }
-			virtual void paint(HDC hdc) {
-				paintEventListener(this);
+
+			// It implements the corresponding virtual function of class Shape.
+			// It updates the width and height, so the size number is correct even if you change the caption.
+			void paint(HDC hdc) {
+				paintEventListener(this); // respond
 				if (visible) {
 					SetBkMode(hdc, TRANSPARENT);
 					SetTextColor(hdc, font.color);

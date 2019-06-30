@@ -1,9 +1,25 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #pragma once
 #include "SPointer.h"
 #include "SObject3D.h"
 
 namespace fl {
 	namespace loader {
+		// Class ImageLoader inherits class AutoPtr, which means it must be allocated on the heap.
 		class ImageLoader :public AutoPtr {
 		public:
 			std::vector<DWORD*> content;
@@ -17,6 +33,8 @@ namespace fl {
 			inline DWORD* src(int i) { return content[i]; }
 		};
 
+		// Class ModelLoader inherits class AutoPtr, which means it must be allocated on the heap.
+		// Class ModelLoader only have one interface now. It can only load MMD model now.
 		class ModelLoader :public AutoPtr {
 		private:
 			ImageLoader* uv_loader;

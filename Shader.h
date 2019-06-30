@@ -1,3 +1,18 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #pragma once
 #include "SGeomMath.h"
 #include "STexture.h"
@@ -5,25 +20,38 @@
 namespace fl {
 	namespace geom {
 
+
+		// Class MapTrait provides rendering information for class Shader.
+		// Each MapTrait object corresponds to one sample pixel.
+		// There is a MapTrait array saved in the class SwapChain. See class Stage3D::SwapChain in Stage3D.h.
+		// Class Shader writes color information and depth information into this struct and 
+		// then the color will be painted on the screen later.
+		// See class Shader in Shader.h or function Stage3D::render in Stage3D.cpp.
 		ILL_ATTRIBUTE_ALIGNED16(struct) MapTrait {
 #ifdef ILL_SSE
 			union {
-				struct { scalar r, g, b, z_depth; };
+				struct { scalar r, g, b, z_depth; }; // In fact, 'z_depth' is the reciprocal of the actual z depth.
 				struct { f4 m_rgbz; };
 			};
 #else
 			scalar z_depth, r, g, b;
 #endif
 #ifdef ILL_DEBUG
-			void* object;
+			// 'object' saved the address of the object from which the color information and the depth information come.
+			// But in the shade function of class Shader, the 'object' is not set.
+			// So it is deactivated now.
+			void* object; 
 			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
 #endif
-
+			// 'z_depth' is set to 0 initially, which means the actual z depth is infinity.
+			// It should be guaranteed that z_depth > 0.
 			MapTrait() :z_depth(0), r(0), g(0), b(0) {}
 
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};
 
+		// Class Shader is a helper class to set the depth and color information of the MapTrait.
+		// See function Stage3D::drawTriangle and Stage3D::drawTriangleMSAA in Stage3D.cpp.
 		class Shader {
 		public:
 			const BYTE* const src;
@@ -69,7 +97,6 @@ namespace fl {
 			ILL_INLINE void shade(const LerpX& shadee, DWORD mask = 0x00FFFFFFU) {
 				if (map_trait->z_depth < shadee.z) {
 					int index = shadee.getU() + src_wid * shadee.getV();
-					//if (index < 0 || index >= src_size) return;
 					*write = reinterpret_cast<const DWORD*>(src)[index];
 #ifdef ILL_SSE
 					map_trait->m_rgbz = shadee.m_rgbz;
@@ -85,6 +112,8 @@ namespace fl {
 				}
 			}
 
+
+			// This function is used for MSA. See function Stage3D::drawTriangleMSAA in Stage3D.cpp.
 			ILL_INLINE void shade_follow(scalar z, int id) {
 				if (map_trait->z_depth < z) {
 					*write = write[-id];

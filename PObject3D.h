@@ -1,3 +1,18 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #pragma once
 #include "SPointer.h"
 #include "SGeomMath.h"
@@ -8,6 +23,9 @@ namespace fl {
 
 		class PObject3D :public AutoPtr {
 		private:
+
+			// Once, physical force was implemented with local generators.
+			// Now, force is implemented with global manager. See PForce.h.
 #ifdef USE_FORCE_GENERATOR
 			class PForceGenerator {
 			private:
@@ -35,8 +53,8 @@ namespace fl {
 #endif
 
 		public:
-			const scalar mass;
-			scalar recovery;
+			const scalar mass; // 0 is used to presented infinity.
+			scalar recovery; // The recovery coefficient in the collision of objects A and B is equal to A.recovery * B.recovery.
 			geom::Vector3D pos;
 			geom::Vector3D vel;
 			geom::Vector3D acc;
@@ -52,19 +70,20 @@ namespace fl {
 			template<typename ExactForceType> void addForce(ExactForceType f) { force.add(f); }
 #endif
 
+			// Update pos first, then vel, finally acc.
+			// That's very important for collision detection.
 			ILL_INLINE void framing() {
 				pos += vel;
 				aabb.mx += vel;
 				aabb.mi += vel;
 				vel += acc;
-				//printf("pos : %f,%f,%f\nvel : %f,%f,%f\nacc : %f,%f,%f\n\n", pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, acc.x, acc.y, acc.z);
 				acc = geom::Vector3D();
 #if USE_FORCE_GENERATOR
 				if (mass) force(this);
 #endif
 			}
 
-			unsigned virtual uid() const = 0;
+			unsigned virtual uid() const = 0; // All of the definition of function uid is in file PObject3D.cpp.
 
 
 		};
@@ -87,8 +106,8 @@ namespace fl {
 		class Platform :public PObject3D {
 		public:
 
-			Platform(scalar mass, const geom::Vector3D& pos, scalar radius, scalar recovery)
-				:PObject3D(mass, pos, geom::AxisAlignedBoundingBox(
+			Platform(const geom::Vector3D& pos, scalar radius, scalar recovery)
+				:PObject3D(scalar(0), pos, geom::AxisAlignedBoundingBox(
 					geom::Vector3D(-radius, -radius, -radius),
 					geom::Vector3D(radius, radius, radius)
 				), recovery) {
@@ -98,6 +117,6 @@ namespace fl {
 
 		};
 
-		using PShapeArray = TypeTrait::TypeArray<PSphere>;
+		using PShapeArray = TypeTrait::TypeArray<PSphere>; // Here is used TMP. See class TypeTrait in Struct.h.
     }
 }

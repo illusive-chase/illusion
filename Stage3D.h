@@ -1,3 +1,18 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #pragma once
 #include "SObject3D.h"
 #include "Shape.h"
@@ -6,41 +21,65 @@
 #include "SText3D.h"
 #include "Shader.h"
 
+// As the details of sampling is too complicated to describe
+// and I do not think there will be some people that are interested in
+// my project and want to know these details,
+// I temporarily omitted the annotations about these details.
+// If you really want to know, email me at ye_kai@pku.edu.cn and I will add them later.
+
+
 namespace fl {
 	namespace geom {
 
+		// Class Camera is, as the name suggests, a helper class that encapsulates the screen camera.
 		class Camera {
 		public:
-			Vector3D pos;
+			Vector3D pos; // the position
+
+			// Camera orientation:
+			// 'dir' is the direction vector.
+			// 'dir_h' is a horizontal vector(y is equal to 0) perpendicular to 'dir'.
+			// 'dir_v' is a vector perpendicular to 'dir' and 'dir_h' with y >= 0.
 			Vector3D dir, dir_h, dir_v;
-			scalar nearPlatform, farPlatform;
-			scalar scale;
+
+			scalar nearPlatform, farPlatform; // the near platform and far platform of the frustum
+			scalar scale; // the magnification factor when 3D space is projected onto the screen
+
 			Camera(scalar nearPlatform, scalar farPlatform, scalar scale) :
 				nearPlatform(nearPlatform), farPlatform(farPlatform), scale(scale) {
 			}
 
+			// rotate horizontally
 			void rotateH(const Rad& rad);
 
+			// rotate vertically
 			void rotateV(const Rad& rad);
 
-			//move right
-			inline void moveH(int x) { pos += dir_h * scalar(x); }
+			//move right (that is, along the vector 'dir_h')
+			ILL_INLINE void moveH(int x) { pos += dir_h * scalar(x); }
 
 			//move up
-			inline void moveV(int x) { pos.y += x; }
+			ILL_INLINE void moveV(int x) { pos.y += x; }
 
 			//move forward
-			inline void moveD(int x) { pos += dir * (x / dir.mod()); }
+			ILL_INLINE void moveD(int x) { pos += dir * (x / dir.mod()); }
 
-			void setCamera(const Vector3D& pos, const Vector3D& dir, int width, int height);
+			// It sets 'pos' and 'dir'.
+			void setCamera(const Vector3D& pos, const Vector3D& dir);
 
 		private:
-			void update();
+			// It calculates 'dir_h' and 'dir_v' every time 'dir' is changed.
+			void update(); 
 		};
 
 
 		class Stage3D :public display::Shape {
 		public:
+
+			// The lowest two bits of RenderMode is used to represent the multi-sampling mode.
+			// The third lowest bit is used to represent whether MLAA is used.
+			// That is, any of MODE_NOSAMPLING, MODE_SSAA, MODE_MSAA can be used along with MODE_MLAA,
+			// but any two of those three modes cannot be used at the same time.
 			const enum RenderMode {
 				MODE_NOSAMPLING = 0,
 				MODE_SSAA = 1,
@@ -59,11 +98,14 @@ namespace fl {
 			const scalar* const sample_x;
 			const scalar* const sample_y;
 
+			// the x coordinates of the sampling position in a pixel
 			const scalar SAMPLE_X[3][4] = { 
 				{scalar(0.5),0,0,0},
 			{scalar(0.375),scalar(0.875),scalar(0.125),scalar(0.625)},
 			{scalar(0.375),scalar(0.875),scalar(0.125),scalar(0.625)}
 			};
+
+			// the y coordinates of the sampling position in a pixel
 			const scalar SAMPLE_Y[3][4] = { 
 				{scalar(0.5),0,0,0}, 
 			{scalar(0.125),scalar(0.375),scalar(0.625),scalar(0.875)},
@@ -72,6 +114,7 @@ namespace fl {
 
 		private:
 
+			// Class SwapChain is allocated on the heap, and will form a circular linked list.
 			class SwapChain {
 			public:
 				DWORD* sample;
@@ -109,21 +152,28 @@ namespace fl {
 			std::vector<SText3D*> txt;
 			SkyBox* const skybox;
 			
-			SwapChain* swap_chain;
+			SwapChain* swap_chain; // circular linked list
 
-			Shadee* vertex2D;
+			Shadee* vertex2D; // a temporary array allocated on the heap
+
+			// When the number of Shadee increases, this boolean will be set to true to allow the reallocating of array 'vertex2D'.
+			// See function Stage3D::addObject(SObject*).
 			bool update_Shadee;
-			int size_Shadee;
 
-			void render();
-			void drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj);
-			void drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj);
-			void post_filtering_MLAA();
-			void project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod);
-			void project(Shadee& src, Vector3D p, scalar cameraDir_mod);
+			int size_Shadee; // the number of Shadee
+
+			void render(); // main function to perform rendering
+			void drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj); // helper function
+			void drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj); // helper function
+			void postFilteringMLAA(); // helper function
+			void project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod); // helper function
+			void project(Shadee& src, Vector3D p, scalar cameraDir_mod); // helper function
+
+			// It is used for position showing. See SText3D.h, array Stage3D::txt and function Stage3D::paint.
 			static void showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p);
 
 		public:
+			// Parameter 'swapChainNum' is the length of the circular linked list.
 			Stage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
 				DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox* skybox = nullptr, Shape* parent = nullptr);
 
@@ -131,17 +181,17 @@ namespace fl {
 
 			bool hitTestPoint(int gx, int gy);
 			void paint(HDC hdc);
-			virtual void framing();
+			void framing();
 
-			inline void addObject(SText3D* text) { txt.push_back(text); }
+			ILL_INLINE void addObject(SText3D* text) { txt.push_back(text); }
 
-			inline void addObject(SObject3D* tar) {
+			ILL_INLINE void addObject(SObject3D* tar) {
 				obj.push_back(tar);
 				update_Shadee = true;
 				size_Shadee += (int)tar->vertex.size();
 			}
 
-			void addObjectWithPosition(SObject3D* tar) {
+			ILL_INLINE void addObjectWithPosition(SObject3D* tar) {
 				addObject(tar);
 				for (Vector3D& v : tar->vertex) {
 					SText3D* p = new SText3D(v, tar, L"undefined");
@@ -150,21 +200,21 @@ namespace fl {
 				}
 			}
 
-			inline void addObject(Sprite3D* tar) { for (SObject3D* it : tar->children) addObject(it); }
+			ILL_INLINE void addObject(Sprite3D* tar) { for (SObject3D* it : tar->children) addObject(it); }
 
-			inline void removeObject(SObject3D* tar) {
+			ILL_INLINE void removeObject(SObject3D* tar) {
 				for (auto it = obj.begin(); it != obj.end();) {
 					if (*it == tar) it = obj.erase(it);
 					else ++it;
 				}
 			}
 
-			inline void setCamera(const Vector3D& pos, const Vector3D& dir) { camera.setCamera(pos, dir, width, height); }
+			ILL_INLINE void setCamera(const Vector3D& pos, const Vector3D& dir) { camera.setCamera(pos, dir); }
 
-			inline void addLight(Light3D* light) { lit.push_back(light); }
-			inline const std::vector<SObject3D*>& getObjects() const { return obj; }
+			ILL_INLINE void addLight(Light3D* light) { lit.push_back(light); }
+			ILL_INLINE const std::vector<SObject3D*>& getObjects() const { return obj; }
 #ifdef ILL_DEBUG
-			inline const SObject3D* getObjectAt(int x, int y) const { 
+			ILL_INLINE const SObject3D* getObjectAt(int x, int y) const {
 				return static_cast<SObject3D*>(swap_chain->prev->map_trait[y * width + x].object);
 			}
 #endif

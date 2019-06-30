@@ -1,8 +1,37 @@
-/// @file SGeomMath.h
-/// @brief 3D数学库，包括矩阵类、RGB混合方法、定点数类、向量类、着色点类、线性插值类
-/// @date 2019/6/22
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
+
+/*
+Bullet Continuous Collision Detection and Physics Library
+Copyright (c) 2003-2013 Erwin Coumans  http://bulletphysics.org
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the use of this software.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
+subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+*/
 
 #pragma once
+// Provide 3D math, including matrix, vector, fixed point number, interpolation, coloring, etc.
+// The implementation of vector partially draws on the vector of the engine bullet.
 
 #include "Scalar.h"
 #include "SAlignedAllocator.h"
@@ -17,14 +46,14 @@ namespace fl {
 			scalar s, c;
 			Rad(scalar rad) :s(illSin(rad)), c(illCos(rad)) {}
 			Rad(scalar s, scalar c) :s(s), c(c) {}
-			Rad operator -() const { return Rad(-s, c); }
+
+			Rad operator -() const { return Rad(-s, c); } // as cos(-rad) equals cos(rad)
 		};
 
-		/// @brief 矩阵类（未完成）
-		///
+		// unfinished
 		class Matrix3D {
 		public:
-			scalar value[4][4];            ///< 矩阵各项值
+			scalar value[4][4];
 			Matrix3D() {
 				memset(value, 0, sizeof value);
 			}
@@ -37,31 +66,24 @@ namespace fl {
 			}
 		};
 
-		/// @brief 将UV坐标映射成一个32位整型
-		/// @param[in] u U坐标，0~65535的整数
-		/// @param[in] v V坐标，0~65535的整数
-		/// @return DWORD
+		// It maps UV coordinates to a 32-bit integer.
 		ILL_INLINE DWORD UV(DWORD u, DWORD v) {
 			return u << 16 | v;
 		}
 
-		/// @brief 根据权重调整R/G/B，返回调整后的值
-		/// @param[in] a R/G/B值，0~255的整数
-		/// @param[in] w 权重，非负实数
-		/// @return BYTE
+		// It multiplies the color RGB value by a weight.
 		ILL_INLINE BYTE MIX(BYTE a, scalar w) {
 			int c = int(a * w);
 			return c > 0xFF ? 0xFF : BYTE(c);
 		}
 
-		/// @brief 根据权重混合两个RGB，混合后的值赋值给第一个参数
-		/// @param[in] c RGB值，32位整型
-		/// @param[in] w_e 参数e表示的颜色的权重，0~1的实数
-		/// @param[in] e RGB值，32位整型
-		/// @note 第一个参数的最高4位不会改变
-		/// @return void
+		// Alpha Blend
+		// It mixes two RGB according to the weight, and assigns the mixed value to the first parameter.
+		// ATTENTION:
+		// 1. w_e must be in range [0, 1].
+		// 2. The highest byte does not change.
 		ILL_INLINE void MIX32(DWORD& c, scalar w_e, DWORD e) {
-			scalar w_c = 1.0f - w_e;
+			scalar w_c = scalar(1) - w_e;
 #ifdef ILL_SSE
 			__m128i c1 = _mm_cvtsi32_si128(c);
 			__m128i c2 = _mm_cvtsi32_si128(e);
@@ -85,8 +107,8 @@ namespace fl {
 #endif
 		}
 
-		/// @brief 顶点数（未完成）
-		///
+		// unfinished
+		// Actually, this is what I wrote a long time ago, so it’s so terrible that I don’t want to write this class anymore.
 		class fixed {
 		public:
 			const static lint FIXED_MAX = (1i64 << 55) - 1i64;
@@ -142,9 +164,7 @@ namespace fl {
 
 
 
-
-		/// @brief 向量类
-		///
+		// Here borrowed some of the vector of the engine bullet.
 		ILL_ATTRIBUTE_ALIGNED16(class) Vector3D {
 		public:
 #if defined(ILL_SSE)
@@ -319,6 +339,16 @@ namespace fl {
 
 		};
 
+
+		// The name Shadee is related to Shader(like employer and employee).
+		// Class Shadee carrys some important data of a point, used for rendering.
+		// The variables x,y are the x,y coordinates in screen space.
+		// The variables u,v are the UV coordinates multiplied by z.
+		// The variables r,g,b are the RGB value of the light color multiplied by z.
+		// The variable z is the reciprocal of the z depth in 3D space.
+	    // ATTENTION: It is z depth, NOT z coordinates. Z depth of the point means the depth of the point in screen space.
+		// The u,v,r,g,b,z values are different from the actual because of the need for perspective correction interpolation.
+		// The above attributes belong to one point in 3D space.
 		ILL_ATTRIBUTE_ALIGNED16(class) Shadee {
 		public:
 			ILL_DECLARE_ALIGNED_ALLOCATOR
@@ -336,6 +366,10 @@ namespace fl {
 			};
 #endif
 			Shadee() {}
+
+			// Interpolation.
+			// It constructs a Shadee of which y equals y0 and 
+			// of which (x,y) is on the line connecting (va->x, va->y) and (vb->x, vb->y).
 			Shadee(Shadee* va, Shadee* vb, scalar y0) {
 				scalar ILL_ATTRIBUTE_ALIGNED16(t) = (y0 - va->y) / (vb->y - va->y);
 				scalar ILL_ATTRIBUTE_ALIGNED16(rt) = scalar(1) - t;
@@ -359,9 +393,12 @@ namespace fl {
 				}
 #endif
 			}
-			ILL_INLINE void set(scalar _x, scalar _y, const Vector3D& color, scalar _z) {
-				x = _x;
-				y = _y;
+
+			// It is just for convenience.
+			// See the function Stage3D::project, which is the only place this function is called.
+			ILL_INLINE void set(scalar x, scalar y, const Vector3D& color, scalar z) {
+				this->x = x;
+				this->y = y;
 #ifdef ILL_SSE
 				m_rgbz = color.m_vec128;
 #else
@@ -369,13 +406,22 @@ namespace fl {
 				g = color.y;
 				b = color.z;
 #endif
-				z = _z;
+				this->z = z;
 			}
+
+			// It returns true if and only if the three points respectively presented by a,b,c in the screen space
+			// are arranged clockwise.
 			static bool clockwise(const Shadee& a, const Shadee& b, const Shadee& c) {
 				return (c.x - a.x)*b.y + (b.x - c.x)*a.y + (a.x - b.x)*c.y < scalar(0);
 			}
 		};
 
+		// Class LerpY is a helper class that interpolates along the y-axis. 
+		// Class LerpY carrys the same data as that class Shadee carrys.
+		// In fact, it can be considered a Shadee itself and it is like a sliding Shadee on a line between two Shadee.
+		// Every time it slides, y will increase by 1.
+		// For an attribute p, dp represents the amount of change in attribute p after each slide.
+		// Obviously, dy must be 1.
 		ILL_ATTRIBUTE_ALIGNED16(class) LerpY {
 		public:
 			ILL_DECLARE_ALIGNED_ALLOCATOR
@@ -392,18 +438,33 @@ namespace fl {
 				struct { scalar floats[16]; };
 			};
 #endif
+			// The constructor is used to determine on the line connecting which two Shadee it is sliding.
+			// The parameter 'step' indicates the amount of change in y (namely dy) per slide (default is 1).
+			// The silding starts from 'sa'.
 			LerpY(const Shadee& sa, const Shadee& sb, const scalar& step);
+
+			// The constructor is used to determine on the line connecting which two Shadee it is sliding.
+			// The dy is equal to 1 by default.
+			// The silding starts from 'sa'.
 			LerpY(const Shadee& sa, const Shadee& sb);
 
-			ILL_INLINE void start(int ay, scalar sample_y){ move(ay - y + sample_y); }
+			// The parameter 'sample_y' is related to the sampling at the time of rendering.
+			// See Stage3D::drawTriangle and Stage3D::drawTriangleMSAA in Stage3D.cpp.
+			ILL_INLINE void start(int ay, scalar sample_y) { move(ay - y + sample_y); }
 
+			// Do a slide.
 			ILL_INLINE void move() {
 #ifdef ILL_SSE_IN_API
 				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
 				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
 #else
 				x += dx;
+
+				// Actually, if ILL_SSE_IN_API is not defined, dy may be not equal to 1.
+				// This is because I am too lazy to design carefully.
+				// So I just use 1 instead of dy here.
 				y += scalar(1);
+
 				z += dz;
 				u += du;
 				v += dv;
@@ -413,6 +474,8 @@ namespace fl {
 #endif
 			}
 
+			// Do a partial slide.
+			// For example, when 'step' is equal to 0.25, it means sliding a quarter step.
 			ILL_INLINE void move(const scalar& step) {
 #ifdef ILL_SSE_IN_API
 				f4 m_step = _mm_load_ps1(&step);
@@ -420,7 +483,12 @@ namespace fl {
 				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
 #else
 				x += dx * step;
+
+				// Actually, if ILL_SSE_IN_API is not defined, dy may be not equal to 1.
+				// This is because I am too lazy to design carefully.
+				// So I just use step instead of dy*step here.
 				y += step;
+
 				z += dz * step;
 				u += du * step;
 				v += dv * step;
@@ -430,7 +498,8 @@ namespace fl {
 #endif
 			}
 
-
+			// Reset it to the starting position.
+			// The parameter 'sa' MUST be the same Shadee as the 'sa' in constructor.
 			ILL_INLINE void reset(const Shadee& sa) {
 #ifdef ILL_SSE
 				m_xyuv = sa.m_xyuv;
@@ -448,6 +517,13 @@ namespace fl {
 			}
 		};
 
+		// Class LerpX is a helper class that interpolates along the x-axis. 
+		// Class LerpX carrys the same data as that class Shadee carrys.
+		// In fact, it can be considered a Shadee itself and it is like 
+		// a sliding Shadee on a line between two Shadee(actually two LerpY).
+		// Every time it slides, x will increase by 1.
+		// For an attribute p, dp represents the amount of change in attribute p after each slide.
+		// Obviously, dx must be 1.
 		ILL_ATTRIBUTE_ALIGNED16(class) LerpX {
 		public:
 			ILL_DECLARE_ALIGNED_ALLOCATOR
@@ -464,15 +540,24 @@ namespace fl {
 				struct { scalar floats[16]; };
 			};
 #endif
+			// The constructor is used to determine on the line connecting which two Shadee(actually LerpY) it is sliding.
+			// The dx is equal to 1 by default.
+			// The silding starts from 'sa'.
 			LerpX(const LerpY& sa, const LerpY& sb);
+
 			ILL_INLINE void start(int ax, scalar sample_x) { move(ax - x + sample_x); }
 
+			// Do a slide.
 			ILL_INLINE void move() {
 #ifdef ILL_SSE_IN_API
 				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
 				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
 #else
+				// Actually, if ILL_SSE_IN_API is not defined, dx may be not equal to 1.
+				// This is because I am too lazy to design carefully.
+				// So I just use 1 instead of dx here.
 				x += scalar(1);
+
 				y += dy;
 				z += dz;
 				u += du;
@@ -483,13 +568,19 @@ namespace fl {
 #endif
 			}
 
+			// Do a partial slide.
+			// For example, when 'step' is equal to 0.25, it means sliding a quarter step.
 			ILL_INLINE void move(const scalar& step) {
 #ifdef ILL_SSE_IN_API
 				f4 m_step = _mm_load_ps1(&step);
 				m_rgbz = _mm_add_ps(m_rgbz, _mm_mul_ps(m_drgbz, m_step));
 				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
 #else
+				// Actually, if ILL_SSE_IN_API is not defined, dx may be not equal to 1.
+				// This is because I am too lazy to design carefully.
+				// So I just use step instead of dx*step here.
 				x += step;
+
 				y += dy * step;
 				z += dz * step;
 				u += du * step;
@@ -499,13 +590,35 @@ namespace fl {
 				g += dg * step;
 #endif
 			}
-
+			
+			// As I say in class Shadee, the u value it holds is the result of the actual u value multiplied by the z value it holds.
+			// In other word, the u value it holds is the result of the actual u value divided by the actual z value.
+			// So to get the actual u value, this function returns u/z.
 			ILL_INLINE int getU() const { return int(u / z); }
+
+			// As I say in class Shadee, the v value it holds is the result of the actual v value multiplied by the z value it holds.
+			// In other word, the v value it holds is the result of the actual v value divided by the actual z value.
+			// So to get the actual v value, this function returns v/z.
 			ILL_INLINE int getV() const { return int(v / z); }
 		};
 
+
+		// Class LerpZ is a helper class that interpolates along the z-axis.
+		// ATTENTION:
+		// Class LerpZ is completely different from class LerpX or class LerpY.
+		// It cannot be considered a Shadee and only provide static method.
 		class LerpZ {
 		public:
+			// This function is used for frustum cutting.
+			// It calculates the point SRC whose z equals a given value on the line between two points A and B.
+			// It saves the point SRC in 3D space to the parameter 'v_src',
+			// and saves the point SRC in screen space to the parameter 'src'.
+			// As I say above, the z value of each Shadee is not z coordinates but z depth,
+			// so the z value is related to camera orientation.
+			// Therefore, parameter 'vz' provides the camera orientation, and 'vz_mod' provides its length.
+			// The parameter 'z' provides that given value, that is, src.z is equal to the parameter z.
+			// Finally, the parameter va,vb provides the points A,B in 3D space, 
+			// and the parameter sa,sb provides them in screen space.
 			static void cut(Shadee& src, Vector3D& v_src, const Vector3D & va, const Vector3D & vb,
 				const Shadee& sa, const Shadee& sb, const Vector3D& vz, scalar vz_mod, scalar z) 
 			{
@@ -543,21 +656,21 @@ namespace fl {
 		};
 
 
-		//02*01
+		// It returns cross product of a and b, which is not guaranteed to be unit length.
 		ILL_INLINE Vector3D normalVector(const Vector3D& a, const Vector3D& b) {
 			return Vector3D(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 		}
 
-
+		// The AABB is determined by two vectors mi,mx, representing a box whose size is equal to mx-mi and center is (mi+mx)/2.
 		class AxisAlignedBoundingBox {
-			using Vector3D = geom::Vector3D;
-
 		public:
 			Vector3D mi, mx;
 			AxisAlignedBoundingBox(const Vector3D& mi, const Vector3D& mx) :mi(mi), mx(mx) {}
 			AxisAlignedBoundingBox() :mi(), mx() {}
 			ILL_INLINE Vector3D center() const { return (mi + mx) * scalar(0.5); }
 			ILL_INLINE Vector3D size() const { return mx - mi; }
+
+			// It tells if this AABB completely contains 'a'.
 			ILL_INLINE bool contain(const AxisAlignedBoundingBox& a) const {
 				return ((mi.x <= a.mi.x) &&
 					(mi.y <= a.mi.y) &&
@@ -566,6 +679,8 @@ namespace fl {
 					(mx.y >= a.mx.y) &&
 					(mx.z >= a.mx.z));
 			}
+
+			// It tells if this AABB is different from 'a'.
 			ILL_INLINE bool nequal(const AxisAlignedBoundingBox& a) const {
 				return ((mi.x != a.mi.x) ||
 					(mi.y != a.mi.y) ||
@@ -574,6 +689,8 @@ namespace fl {
 					(mx.y != a.mx.y) ||
 					(mx.z != a.mx.z));
 			}
+
+			// It merges this AABB with 'a'.
 			ILL_INLINE void merge(const AxisAlignedBoundingBox& a) {
 #ifdef ILL_SSE
 				__m128 ami(_mm_load_ps(a.mi));
@@ -589,6 +706,9 @@ namespace fl {
 				}
 #endif
 			}
+
+			// It merges 'a' with 'b' and saves the result to this AABB.
+			// In addition, it tells if this AABB is changed after the result is saved.
 			ILL_INLINE bool merge(const AxisAlignedBoundingBox& a, const AxisAlignedBoundingBox& b) {
 				AxisAlignedBoundingBox old(mi, mx);
 #ifdef ILL_SSE
@@ -607,6 +727,8 @@ namespace fl {
 				return nequal(old);
 			}
 
+
+			// It expands this AABB along the direction indicated by parameter 'e'.
 			ILL_INLINE void expand(const Vector3D& e) {
 				if (e.x > 0) mx.x = (mx.x + e[0]);
 				else mi.x = (mi.x + e[0]);
@@ -616,7 +738,8 @@ namespace fl {
 				else mi.z = (mi.z + e[2]);
 			}
 
-			ILL_INLINE bool intersect(const AxisAlignedBoundingBox& a) {
+			// It tells if this AABB intersects with 'a'.
+			ILL_INLINE bool intersect(const AxisAlignedBoundingBox& a) const {
 #ifdef ILL_SSE_IN_API
 				const __m128 rt(_mm_or_ps(_mm_cmplt_ps(_mm_load_ps(mx), _mm_load_ps(a.mi)),
 					_mm_cmplt_ps(_mm_load_ps(a.mx), _mm_load_ps(mi))));

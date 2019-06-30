@@ -159,7 +159,7 @@ void fl::geom::Stage3D::render() {
 		p1++;
 #endif
 	}
-	if (render_mode & MODE_MLAA) post_filtering_MLAA();
+	if (render_mode & MODE_MLAA) postFilteringMLAA();
 	//printf("%d %d\n", cnt, clock() - cl);
 }
 
@@ -167,7 +167,7 @@ void fl::geom::Stage3D::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t
 	if (a->y > b->y) std::swap(a, b);
 	if (b->y > c->y) std::swap(b, c);
 	if (a->y > b->y) std::swap(a, b);
-	if (sample_mode == 2) return drawTriangle_MSAA(a, b, c, t, obj);
+	if (sample_mode == 2) return drawTriangleMSAA(a, b, c, t, obj);
 	Shader shader(swap_chain->sample, swap_chain->map_trait, width, obj, *t, sample_offset);
 	Shadee r_cut(a, c, b->y);
 	Shadee* cut = &r_cut;
@@ -231,7 +231,7 @@ void fl::geom::Stage3D::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t
 }
 
 
-void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj) {
+void fl::geom::Stage3D::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj) {
 	Shader shader(swap_chain->sample, swap_chain->map_trait, width, obj, *t, sample_offset);
 	Shadee r_cut(a, c, b->y);
 	Shadee* cut = &r_cut;
@@ -385,7 +385,7 @@ void fl::geom::Stage3D::drawTriangle_MSAA(Shadee* a, Shadee* b, Shadee* c, Textu
 	}
 }
 
-void fl::geom::Stage3D::post_filtering_MLAA() {
+void fl::geom::Stage3D::postFilteringMLAA() {
 #ifdef ILL_SSE
 	MorphologicalAntialiasingAgent agent;
 	agent.Execute((DWORD*)swap_chain->colors, width, height);
@@ -488,14 +488,14 @@ void fl::geom::Stage3D::framing() {
 	for (SObject3D* it : obj) it->framing();
 }
 
-void fl::geom::Camera::rotateH(const Rad& rad) {//right rotate
+void fl::geom::Camera::rotateH(const Rad& rad) {
 	dir.rotateY(rad);
 	update();
 }
 
-void fl::geom::Camera::rotateV(const Rad& rad) {//up rotate
-	//what if ss == 0?
-	//here remains a bug
+void fl::geom::Camera::rotateV(const Rad& rad) {
+	//what if 'ss' is equal to 0?
+	//There seems to be a bug.
 	scalar cc = dir.y;
 	scalar ss = sqrt(dir.mod2() - cc * cc);
 	scalar k = rad.c - cc * rad.s / ss;
@@ -505,7 +505,7 @@ void fl::geom::Camera::rotateV(const Rad& rad) {//up rotate
 	update();
 }
 
-void fl::geom::Camera::setCamera(const Vector3D & pos, const Vector3D & dir, int width, int height) {
+void fl::geom::Camera::setCamera(const Vector3D & pos, const Vector3D & dir) {
 	this->dir = dir;
 	this->pos = pos;
 	update();

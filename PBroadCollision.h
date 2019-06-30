@@ -1,11 +1,45 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
+
+/*
+Bullet Continuous Collision Detection and Physics Library
+Copyright (c) 2003-2013 Erwin Coumans  http://bulletphysics.org
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the use of this software.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
+subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+*/
 #pragma once
 #include "SGeomMath.h"
 #include <set>
 #include <stack>
 
+// The implementation of BVH partially draws on the dynamic bvh of the engine bullet.
+
 namespace fl {
 	namespace physics {
 
+		// Class OverlappingPairs saves all the pairs of physical objects whose AABBs intersect
+		// and provides methods to searching, adding, removing these pairs.
 		class OverlappingPairs {
 
 			struct OP { 
@@ -22,7 +56,7 @@ namespace fl {
 					}
 				};
 				union {
-					struct { void* a, *b; };
+					struct { void* a, *b; }; // a,b is two pointers of the two physical objects in a pair.
 					struct { size_t ia, ib; };
 				};
 				OP(void* x, void* y) {
@@ -68,6 +102,7 @@ namespace fl {
 			}
 		};
 
+		// Class BVH is a Bounding Volume Hierarchy.
 		class BVH {
 			using AxisAlignedBoundingBox = geom::AxisAlignedBoundingBox;
 
@@ -83,7 +118,9 @@ namespace fl {
 				union {
 					struct { Node* lc, *rc; };
 					struct { Node* children[2]; };
-					struct { size_t child; void* obj; };
+					// 'child' is considered as a boolean, that 'child' equals 0 means that 'lc' is nullptr,
+					// that is, this node is a leaf node. In this case, 'obj' saves the pointer of the object.
+					struct { size_t child; void* obj; }; 
 				};
 
 				ILL_INLINE bool is_leaf() const { return !child; }
@@ -261,6 +298,9 @@ namespace fl {
 
 		};
 
+		// Class PBroadCollision encapsulates two BVH (one for static objects and another for dynamic objects).
+		// It provides interfaces to help with detecting broad collision.
+		// ATTENTION: PBroadCollision detects potential collision, that is, the collision which will occur in the next frame.
 		class PBroadCollision {
 		private:
 			using AxisAlignedBoundingBox = geom::AxisAlignedBoundingBox;
