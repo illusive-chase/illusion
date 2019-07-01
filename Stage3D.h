@@ -73,7 +73,7 @@ namespace fl {
 		};
 
 
-		class Stage3D :public display::Shape {
+		class Stage3D final :public display::Shape {
 		public:
 
 			// The lowest two bits of RenderMode is used to represent the multi-sampling mode.
@@ -179,9 +179,9 @@ namespace fl {
 
 			virtual ~Stage3D();
 
-			bool hitTestPoint(int gx, int gy);
-			void paint(HDC hdc);
-			void framing();
+			bool hitTestPoint(int gx, int gy) override;
+			void paint(HDC hdc) override;
+			void framing() override;
 
 			ILL_INLINE void addObject(SText3D* text) { txt.push_back(text); }
 

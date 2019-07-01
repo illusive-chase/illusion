@@ -23,7 +23,6 @@ namespace fl {
 
 		// Class SText inherits class AutoPtr indirectly, which means it must be allocated on the heap.
 		// Each SText object keeps a HFONT handle, which refers to a font.
-		// Class SText can be inherited.
 		class SText :public Shape {
 		private:
 			HFONT hfont;
@@ -50,20 +49,18 @@ namespace fl {
 				enabled = false;
 			}
 
-			// It implements the corresponding virtual function of class Shape.
 			// The function is empty as the text is static.
 			// But it does not mean the text is not mutable, only means the text will not change by itself.
-			virtual void framing() {}
+			virtual void framing() override {}
 
 			virtual ~SText() { DeleteObject(hfont); }
 
 			// The text should never be hit.
 			// If necessary, use hidden rectangle for hit-test instead.
-			bool hitTestPoint(int gx, int gy) { return false; }
+			bool hitTestPoint(int gx, int gy) override { return false; }
 
-			// It implements the corresponding virtual function of class Shape.
 			// It updates the width and height, so the size number is correct even if you change the caption.
-			void paint(HDC hdc) {
+			void paint(HDC hdc) override {
 				paintEventListener(this); // respond
 				if (visible) {
 					SetBkMode(hdc, TRANSPARENT);

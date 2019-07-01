@@ -50,12 +50,9 @@ namespace fl {
 			void disable() { for (Shape* child : children) child->enabled = false; }
 			void enable() { for (Shape* child : children) child->enabled = true; }
 
-			// It implements the corresponding virtual function of class Shape.
-			virtual void framing() { for (Shape* child : children) child->framing(); }
-			// It implements the corresponding virtual function of class Shape.
-			virtual bool hitTestPoint(int x, int y);
-			// It implements the corresponding virtual function of class Shape.
-			virtual void paint(HDC hdc);
+			virtual void framing() override { for (Shape* child : children) child->framing(); }
+			virtual bool hitTestPoint(int x, int y) override;
+			virtual void paint(HDC hdc) override;
 		};
 	}
 }

@@ -23,7 +23,6 @@ namespace fl {
 
 		// Class Shape is a virtual class which inherits class AutoPtr,
 		// which means its derived classes must be allocated on the heap.
-		// Class Shape can be inherited.
 		class Shape :public AutoPtr {
 		public:
 			Shape* parent; // the container(see its interface in Sprite.h) containing the instance of this class

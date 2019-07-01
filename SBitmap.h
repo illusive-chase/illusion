@@ -23,8 +23,7 @@ namespace fl {
 
 		// Class SBitmap inherits class AutoPtr indirectly, which means it must be allocated on the heap.
 		// Each SBitmap object keeps a HBITMAP handle, which refers to a bitmap.
-		// Class SBitmap cannot be inherited.
-		class SBitmap :public Shape {
+		class SBitmap final :public Shape {
 		private:
 			HBITMAP hbmp;
 
@@ -40,23 +39,20 @@ namespace fl {
 				this->height = height;
 			}
 
-			// It implements the corresponding virtual function of class Shape.
 			// The hit-test area is rectangular.
-			bool hitTestPoint(int gx, int gy) {
+			bool hitTestPoint(int gx, int gy) override {
 				if (!enabled) return false;
 				transGlobalPosToLocal(gx, gy);
 				return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
 			}
 
-			// It implements the corresponding virtual function of class Shape.
 			// The function is empty as the bitmap is static.
-			void framing() {}
+			void framing() override {}
 
 			~SBitmap() { DeleteObject(hbmp); }
 
-			// It implements the corresponding virtual function of class Shape.
 			// It uses TransparentBlt, which allows the bitmap to be displayed transparently.
-			void paint(HDC hdc) {
+			void paint(HDC hdc) override {
 				if (visible) {
 					HDC mdc = CreateCompatibleDC(hdc);
 					HBITMAP hbp_old = (HBITMAP)SelectObject(mdc, hbmp);

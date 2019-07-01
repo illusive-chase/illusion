@@ -42,10 +42,11 @@ namespace fl {
 			// So it is deactivated now.
 			void* object; 
 			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
-#endif
+#else
 			// 'z_depth' is set to 0 initially, which means the actual z depth is infinity.
 			// It should be guaranteed that z_depth > 0.
 			MapTrait() :z_depth(0), r(0), g(0), b(0) {}
+#endif
 
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};

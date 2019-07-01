@@ -22,7 +22,6 @@ namespace fl {
 	namespace display {
 
 		// Class SEllipse inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Class SEllipse cannot be inherited.
 		class SEllipse :public Shape {
 		public:
 			bool filled;
@@ -31,10 +30,9 @@ namespace fl {
 			int pwid; // pen's thickness
 			COLORREF pcolor; // pen's color
 
-			// It implements the corresponding virtual function of class Shape and is empty as the shape is static.
-			void framing() {}
+			void framing() override {}
 
-			~SEllipse() {}
+			virtual ~SEllipse() {}
 
 			SEllipse(int x, int y, int width, int height, bool filled, COLORREF color,
 				int pen_style_PS = PS_SOLID, int pen_width = 1,
@@ -52,18 +50,15 @@ namespace fl {
 				pcolor = pen_color;
 			}
 
-			// It implements the corresponding virtual function of class Shape.
 			// The hit-test area is an accurately calculated ellipse.
-			bool hitTestPoint(int gx, int gy) {
+			bool hitTestPoint(int gx, int gy) override {
 				if (!filled || !enabled) return false;
 				transGlobalPosToLocal(gx, gy);
 				scalar a = (gx - x) / scalar(width) - scalar(0.5), b = (gy - y) / scalar(height) - scalar(0.5);
 				return (a * a + b * b) < scalar(1);
 			}
 
-		private:
-			// It implements the corresponding virtual function of class Shape.
-			void paint(HDC hdc) {
+			void paint(HDC hdc) override {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
@@ -78,7 +73,6 @@ namespace fl {
 
 
 		// Class SLine inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Class SLine cannot be inherited.
 		class SLine :public Shape {
 		public:
 			DWORD ps; // pen's style
@@ -86,10 +80,9 @@ namespace fl {
 			COLORREF pcolor; //pen's color
 			int x0, y0, x1, y1; // This line points from (x0, y0) to (x1, y1)
 
-			// It implements the corresponding virtual function of class Shape and is empty as the shape is static.
-			void framing() {} 
+			void framing() override {}
 
-			~SLine() {}
+			virtual ~SLine() {}
 
 			SLine(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
 				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) 
@@ -118,11 +111,9 @@ namespace fl {
 			}
 
 			// Lines will never be hit.
-			bool hitTestPoint(int gx, int gy) { return false; } 
+			bool hitTestPoint(int gx, int gy) override { return false; }
 
-		private:
-			// It implements the corresponding virtual function of class Shape.
-			void paint(HDC hdc) {
+			void paint(HDC hdc) override {
 				if (visible) {
 					DeleteObject(SelectObject(hdc, CreatePen(ps, pwid, pcolor)));
 					int gx = x, gy = y;
@@ -134,7 +125,6 @@ namespace fl {
 		};
 
 		// Class SRect inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Class SRect cannot be inherited.
 		class SRect :public Shape {
 		public:
 			bool filled;
@@ -144,9 +134,9 @@ namespace fl {
 			COLORREF pcolor; // pen's color
 
 			// It implements the corresponding virtual function of class Shape and is empty as the shape is static.
-			void framing() {}
+			void framing() override {}
 
-			~SRect() {}
+			virtual ~SRect() {}
 			
 			SRect(int x, int y, int width, int height, bool filled, COLORREF color, 
 				int pen_style_PS = PS_INSIDEFRAME, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), 
@@ -163,16 +153,13 @@ namespace fl {
 				pcolor = pen_color;
 			}
 
-			// It implements the corresponding virtual function of class Shape.
-			bool hitTestPoint(int gx, int gy) {
+			bool hitTestPoint(int gx, int gy) override {
 				if (!filled || !enabled) return false;
 				transGlobalPosToLocal(gx, gy);
 				return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
 			}
 
-		private:
-			// It implements the corresponding virtual function of class Shape.
-			void paint(HDC hdc) {
+			void paint(HDC hdc) override {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);

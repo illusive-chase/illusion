@@ -27,8 +27,7 @@ namespace fl {
 		public:
 			const int size; // a half of side length
 
-			// It implements the corresponding virtual function of class SObject3D and is empty as the shape is static.
-			inline void framing() {}
+			ILL_INLINE void framing() override {}
 
 			// It uses 'tex' as a texture for the four sides
 			// and automatically generates the top texture by vertex interpolation.

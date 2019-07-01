@@ -41,7 +41,7 @@ namespace fl {
 			PointLight3D(const Vector3D& pos, const Vector3D& intensity, scalar k_c, scalar k_l) :Light3D(intensity), pos(pos), k_c(k_c), k_l(k_l) {
 				type = 1;
 			}
-			
+			virtual ~PointLight3D() {}
 		};
 
 		class DirectionalLight3D :public Light3D {
@@ -53,7 +53,7 @@ namespace fl {
 				this->dir.normalize();
 				type = 2;
 			}
-			
+			virtual ~DirectionalLight3D() {}
 		};
 	}
 }

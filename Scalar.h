@@ -73,25 +73,15 @@ subject to the following restrictions:
 #if defined ILL_SSE_IN_API
 #ifdef _WIN32
 
-#ifndef ILL_NAN
-static int b3NanMask = 0x7F800001;
-#define ILL_NAN (*(float *)&b3NanMask)
-#endif
-
-#ifndef ILL_INFINITY_MASK
-static int b3InfinityMask = 0x7F800000;
-#define ILL_INFINITY_MASK (*(float *)&b3InfinityMask)
-#endif
-
-inline __m128 operator+(const __m128 A, const __m128 B) {
+ILL_INLINE __m128 operator+(const __m128 A, const __m128 B) {
 	return _mm_add_ps(A, B);
 }
 
-inline __m128 operator-(const __m128 A, const __m128 B) {
+ILL_INLINE __m128 operator-(const __m128 A, const __m128 B) {
 	return _mm_sub_ps(A, B);
 }
 
-inline __m128 operator*(const __m128 A, const __m128 B) {
+ILL_INLINE __m128 operator*(const __m128 A, const __m128 B) {
 	return _mm_mul_ps(A, B);
 }
 
@@ -113,23 +103,8 @@ inline __m128 operator*(const __m128 A, const __m128 B) {
 #endif  //__MINGW32__
 
 #ifdef ILL_DEBUG
-#ifdef _MSC_VER
-#include <stdio.h>
-#define ILLAssert(x)               \
-	{                             \
-		if (!(x))                 \
-		{                         \
-			ILLError(              \
-				"Assert "__FILE__ \
-				":%u (" #x ")\n", \
-				__LINE__);        \
-			__debugbreak();       \
-		}                         \
-	}
-#else  //_MSC_VER
 #include <assert.h>
 #define ILLAssert assert
-#endif  //_MSC_VER
 #else
 #define ILLAssert(x)
 #endif
