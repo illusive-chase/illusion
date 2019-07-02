@@ -21,14 +21,11 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace events {
 
-		class NoneType {
-		public:
-			static NoneType * ptr;
-		};
-
 		template<typename Para>
 		class Slot {
 		private:
+			class NoneType {};
+
 			class slot_base {
 			public:
 				virtual void Execute(Para& para) = 0;
@@ -47,10 +44,9 @@ namespace fl {
 			template<>
 			class slot_impl<NoneType> :public slot_base {
 			private:
-				NoneType* caller;
 				void (*method)(Para);
 			public:
-				slot_impl(NoneType*, void (*method)(Para)) :caller(nullptr), method(method) {}
+				slot_impl(void(*method)(Para)) : method(method) {}
 				void Execute(Para& para) { method(para); }
 			};
 
@@ -66,8 +62,8 @@ namespace fl {
 				slotBase = new slot_impl<Caller>(caller, method);
 			}
 
-			Slot(NoneType*, DWORD type, void(*method)(Para)) : caller(nullptr), type(type) {
-				slotBase = new slot_impl<NoneType>(nullptr, method);
+			Slot(DWORD type, void(*method)(Para)) : caller(nullptr), type(type) {
+				slotBase = new slot_impl<NoneType>(method);
 			}
 
 			Slot(const Slot<Para>& cp) { 
@@ -92,7 +88,7 @@ namespace fl {
 			template<typename Caller>
 			void add(Caller* caller, DWORD type, void(Caller::*method)(Para)) { slots.push_back(Slot<Para>(caller, type, method)); }
 			
-			void add(DWORD type, void(*method)(Para)) { slots.push_back(Slot<Para>(NoneType::ptr, type, method)); }
+			void add(DWORD type, void(*method)(Para)) { slots.push_back(Slot<Para>(type, method)); }
 			
 			void remove(void* caller) {
 				for (auto it = slots.begin(); it != slots.end();) {

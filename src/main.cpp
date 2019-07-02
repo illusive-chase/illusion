@@ -1,13 +1,27 @@
+/*
+MIT License
+
+Copyright (c) 2019 illusive-chase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 ////////////////////////////////////////////
 /// Illusion Library
 /// GUI for Windows
 ///
 ///
 /// @file main.cpp
-/// @brief 外部接口文件，核心：Setup函数
 /// @author illusion
-/// @version 1.5
-/// @date 2019/6/5
+/// @version 0.1
+/// @date 2019/7/2
 ////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -26,10 +40,7 @@ Stage3D* wd;
 ModelLoader* ml;
 
 
-/// @brief 外部接口函数，调用于窗口初始化
-/// @param void
-/// @return void
-///
+// Initialize
 void fl::Setup() {
 	
 	/*ImageLoader* ld = new ImageLoader();
