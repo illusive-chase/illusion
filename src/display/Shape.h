@@ -15,8 +15,8 @@ copies or substantial portions of the Software.
 */
 #pragma once
 
-#include "SPointer.h"
-#include "SEvent.h"
+#include "../top_element/SPointer.h"
+#include "../top_element/SEvent.h"
 
 namespace fl {
 	namespace display {

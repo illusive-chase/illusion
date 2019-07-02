@@ -18,7 +18,7 @@ copies or substantial portions of the Software.
 
 // The lighting haven¡¯t been designed well yet, and the annotations here are temporarily omitted.
 
-#include "SPointer.h"
+#include "../top_element/SPointer.h"
 #include "SGeomMath.h"
 
 namespace fl {

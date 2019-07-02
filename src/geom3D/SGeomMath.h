@@ -33,9 +33,9 @@ subject to the following restrictions:
 // Provide 3D math, including matrix, vector, fixed point number, interpolation, coloring, etc.
 // The implementation of vector partially draws on the vector of the engine bullet.
 
-#include "Scalar.h"
-#include "SAlignedAllocator.h"
-#include "SColor.h"
+#include "../top_element/Scalar.h"
+#include "../top_element/SAlignedAllocator.h"
+#include "../display/SColor.h"
 
 namespace fl {
 	namespace geom {

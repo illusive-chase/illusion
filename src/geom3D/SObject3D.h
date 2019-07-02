@@ -15,10 +15,10 @@ copies or substantial portions of the Software.
 */
 #pragma once
 
-#include "SPointer.h"
+#include "../top_element/SPointer.h"
 #include "SGeomMath.h"
 #include "Surface.h"
-#include "PObject3D.h"
+#include "../physics3D/PObject3D.h"
 
 namespace fl {
 	namespace geom {

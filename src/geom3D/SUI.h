@@ -14,23 +14,27 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
 #pragma once
-#include "Scalar.h"
+#include "../top_element/SPointer.h"
+#include "Stage3D.h"
+#include "../display/Sprite.h"
+
 
 namespace fl {
 
-	// ATTENTION: It is different from the default macro RGB and is the only CORRECT color format in 3D rendering.
-	ILL_INLINE DWORD RGB3D(BYTE r, BYTE g, BYTE b) { return (r << 16) | (g << 8) | b; }
+	namespace ui {
 
-	namespace display {
-
-		// ATTENTION:
-		// 1. These colors are NOT compile-time constants because Class Texture will use their address.
-		// 2. These colors are mutable, so you can customize them.
-		class Color {
+		class Roamer :public AutoPtr {
 		public:
-			static DWORD RED, BLUE, GREEN, YELLOW, PURPLE, VIOLET, BLACK, WHITE, ORANGE, SILVER, GREY, GOLD, BROWN, PINK, CYAN, FUCHSIA, LIME;
-			virtual ~Color() = 0;
+			Roamer(geom::Stage3D* link, int move_speed = 7, int rotate_speed = 5);
+			void keyDown(events::KeyboardEvent e);
+			void mouseMove(events::MouseEvent e);
+			void update(events::SystemEvent e);
+		private:
+			geom::Stage3D* link;
+			geom::Rad rad;
+			int centerX, centerY;
+			int x, y;
+			int speed;
 		};
-
 	}
 }

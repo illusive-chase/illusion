@@ -15,7 +15,7 @@ copies or substantial portions of the Software.
 */
 #pragma once
 #include "SPointer.h"
-#include "SObject3D.h"
+#include "../geom3D/SObject3D.h"
 
 namespace fl {
 	namespace loader {

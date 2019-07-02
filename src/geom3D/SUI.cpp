@@ -1,7 +1,7 @@
 #include "SUI.h"
-#include "Stage.h"
+#include "../top_element/Stage.h"
 #include "SObject3D.h"
-#include "SText.h"
+#include "../display/SText.h"
 
 extern fl::display::Stage stage;
 extern HWND g_hWnd;

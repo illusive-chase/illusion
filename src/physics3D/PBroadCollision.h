@@ -29,7 +29,7 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 #pragma once
-#include "SGeomMath.h"
+#include "../geom3D/SGeomMath.h"
 #include <set>
 #include <stack>
 

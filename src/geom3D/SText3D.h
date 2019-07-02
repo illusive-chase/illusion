@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #pragma once
 
 #include "SObject3D.h"
-#include "SText.h"
+#include "../display/SText.h"
 
 namespace fl {
 	namespace geom {

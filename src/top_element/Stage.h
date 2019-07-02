@@ -15,9 +15,8 @@ copies or substantial portions of the Software.
 */
 #pragma once
 
-#include "Sprite.h"
+#include "../display/Sprite.h"
 #include "STimer.h"
-#include "SMovieClip.h"
 using namespace fl::events;
 using namespace fl::time;
 

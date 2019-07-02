@@ -17,7 +17,7 @@
 /// @see м╥нд╪Ч SImport.h
 ///
 #define import_all
-#include "SImport.h"
+#include "top_element/SImport.h"
 
 extern Stage stage;
 

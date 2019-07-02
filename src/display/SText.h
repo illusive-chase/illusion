@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #pragma once
 #include "Shape.h"
 #include "SFont.h"
-#include "SEvent.h"
+#include "../top_element/SEvent.h"
 
 namespace fl {
 	namespace display {

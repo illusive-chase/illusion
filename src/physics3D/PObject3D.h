@@ -14,9 +14,9 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
 #pragma once
-#include "SPointer.h"
-#include "SGeomMath.h"
-#include "Struct.h"
+#include "../top_element/SPointer.h"
+#include "../geom3D/SGeomMath.h"
+#include "../top_element/Struct.h"
 
 namespace fl {
 	namespace physics {

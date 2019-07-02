@@ -15,7 +15,7 @@ copies or substantial portions of the Software.
 */
 #pragma once
 #include "SObject3D.h"
-#include "Shape.h"
+#include "../display/Shape.h"
 #include "SkyBox.h"
 #include "SLight.h"
 #include "SText3D.h"
