@@ -17,42 +17,40 @@ copies or substantial portions of the Software.
 
 
 
-bool fl::display::Sprite::removeChildAt(int index) {
+bool fl::display::SpriteImpl::removeChildAt(int index) {
 	if (!children.size()) return false;
 	index++;
 	if (index < 1) index = 1;
 	else if (index > (int)children.size()) index = (int)children.size();
-	delete children[(int)children.size() - index];
 	children.erase(children.end() - index);
 	return true;
 }
 
-void fl::display::Sprite::swapChild(int index1, int index2) {
+void fl::display::SpriteImpl::swapChild(int index1, int index2) {
 	std::swap(children[index1], children[index2]);
 }
 
 
-void fl::display::Sprite::addChildAt(Shape* shape, int index) {
+void fl::display::SpriteImpl::addChildAt(Shape shape, int index) {
 	shape->parent = this;
 	if (index < 0) index = 0;
 	else if (index > (int)children.size()) index = (int)children.size();
 	children.insert(children.end() - index, shape);
 }
 
-void fl::display::Sprite::clear() {
-	for (Shape* shape : children) delete shape;
+void fl::display::SpriteImpl::clear() {
 	children.clear();
 }
 
-bool fl::display::Sprite::hitTestPoint(int x, int y) {
-	for (Shape* child : children) {
+bool fl::display::SpriteImpl::hitTestPoint(int x, int y) {
+	for (Shape child : children) {
 		if (child->hitTestPoint(x, y)) return true;
 	}
 	return false;
 }
 
-void fl::display::Sprite::paint(HDC hdc) {
+void fl::display::SpriteImpl::paint(HDC hdc) {
 	if (visible) {
-		for (Shape* shape : children) shape->paint(hdc);
+		for (Shape shape : children) shape->paint(hdc);
 	}
 }

@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #include "PObject3D.h"
 using namespace fl::physics;
 
-#define DECLARE_UID(shape) unsigned shape::uid() const { return PShapeArray::getIndex<shape>(); }
+#define DECLARE_UID(shape) unsigned shape::uid() const { return PShapeArray::getIndex<fl::sptr<shape>>(); }
 
-DECLARE_UID(PSphere)
-DECLARE_UID(Platform)
+DECLARE_UID(PSphereImpl)
+DECLARE_UID(PlatformImpl)

@@ -23,37 +23,50 @@ copies or substantial portions of the Software.
 
 namespace fl {
 	namespace geom {
-		class Light3D :public AutoPtr {
+		class Light3DImpl {
 		public:
 			Vector3D intensity;
 			int type;
-			Light3D(const Vector3D& intensity) :AutoPtr(), intensity(intensity), type(0) {}
-			virtual ~Light3D() {}
-
-			
+			Light3DImpl(const Vector3D& intensity) : intensity(intensity), type(0) {}
+			virtual ~Light3DImpl() {}
 		};
 
-		class PointLight3D :public Light3D {
+		using Light3D = sptr<Light3DImpl>;
+		ILL_INLINE Light3D MakeLight3D(const Vector3D& intensity) {
+			return Light3D(new Light3DImpl(intensity));
+		}
+
+		class PointLight3DImpl :public Light3DImpl {
 		public:
 			Vector3D pos;
 			scalar k_c, k_l;
 
-			PointLight3D(const Vector3D& pos, const Vector3D& intensity, scalar k_c, scalar k_l) :Light3D(intensity), pos(pos), k_c(k_c), k_l(k_l) {
+			PointLight3DImpl(const Vector3D& pos, const Vector3D& intensity, scalar k_c, scalar k_l) :Light3DImpl(intensity), pos(pos), k_c(k_c), k_l(k_l) {
 				type = 1;
 			}
-			virtual ~PointLight3D() {}
+			virtual ~PointLight3DImpl() {}
 		};
 
-		class DirectionalLight3D :public Light3D {
+		using PointLight3D = sptr<PointLight3DImpl>;
+		ILL_INLINE PointLight3D MakePointLight3D(const Vector3D& pos, const Vector3D& intensity, scalar k_c, scalar k_l) {
+			return PointLight3D(new PointLight3DImpl(pos, intensity, k_c, k_l));
+		}
+
+		class DirectionalLight3DImpl :public Light3DImpl {
 		public:
 			Vector3D dir;
 			Vector3D intensity;
 
-			DirectionalLight3D(const Vector3D& dir, const Vector3D& intensity) :Light3D(intensity), dir(dir) {
+			DirectionalLight3DImpl(const Vector3D& dir, const Vector3D& intensity) :Light3DImpl(intensity), dir(dir) {
 				this->dir.normalize();
 				type = 2;
 			}
-			virtual ~DirectionalLight3D() {}
+			virtual ~DirectionalLight3DImpl() {}
 		};
+
+		using DirectionalLight3D = sptr<DirectionalLight3DImpl>;
+		ILL_INLINE DirectionalLight3D MakeDirectionalLight3D(const Vector3D& pos, const Vector3D& intensity) {
+			return DirectionalLight3D(new DirectionalLight3DImpl(pos, intensity));
+		}
 	}
 }

@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #include "SLoader.h"
 #include <map>
 
-int fl::loader::ImageLoader::load(const wstring& path, int width, int height, int type) {
+int fl::loader::ImageLoaderImpl::load(const wstring& path, int width, int height, int type) {
 	HBITMAP hbmp = (HBITMAP)LoadImage(NULL, path.c_str(), type, width, height, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 	if (hbmp == NULL) return -1;
 	BITMAP bmp;
@@ -31,7 +31,7 @@ int fl::loader::ImageLoader::load(const wstring& path, int width, int height, in
 }
 
 
-int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
+int fl::loader::ModelLoaderImpl::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
 	using namespace fl::geom;
 	std::wifstream obj(dir + L"\\" + name);
 	if (!obj.is_open()) return -1;
@@ -64,7 +64,7 @@ int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, sc
 		return -1;
 	}
 	mtl.close();
-	SObject3D* create = new SObject3D(Vector3D());
+	SObject3D create = MakeSObject3D(Vector3D());
 	std::vector<Vector3D> uv_point;
 	std::vector<Vector3D> mesh_point;
 	std::vector<Vector3D> mesh_normal;
@@ -124,7 +124,6 @@ int fl::loader::ModelLoader::loadMMD(const wstring& dir, const wstring& name, sc
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
-		delete create;
 		obj.close();
 		return -1;
 	}

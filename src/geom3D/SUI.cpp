@@ -23,17 +23,17 @@ extern HWND g_hWnd;
 
 
 
-fl::ui::Roamer::Roamer(geom::Stage3D* link, int move_speed, int rotate_speed) :
+fl::ui::RoamerImpl::RoamerImpl(geom::Stage3D link, int move_speed, int rotate_speed) :
 	link(link), speed(move_speed), rad(scalar(0.01) * rotate_speed), centerX(link->width >> 1), centerY(link->height >> 1),
 	x(0), y(0)
 {
-	stage.keyboardEventListener.add(this, WM_KEYDOWN, &Roamer::keyDown);
-	stage.mouseEventListener.add(this, WM_MOUSEMOVE, &Roamer::mouseMove);
-	stage.systemEventListener.add(this, WM_PAINT, &Roamer::update);
+	stage.keyboardEventListener.add(this, WM_KEYDOWN, &RoamerImpl::keyDown);
+	stage.mouseEventListener.add(this, WM_MOUSEMOVE, &RoamerImpl::mouseMove);
+	stage.systemEventListener.add(this, WM_PAINT, &RoamerImpl::update);
 	ShowCursor(FALSE);
 }
 
-void fl::ui::Roamer::keyDown(events::KeyboardEvent e) {
+void fl::ui::RoamerImpl::keyDown(events::KeyboardEvent e) {
 	fl::geom::Vector3D tmp;
 	switch (e.keyCode) {
 	case 'D':
@@ -74,12 +74,12 @@ void fl::ui::Roamer::keyDown(events::KeyboardEvent e) {
 	}
 }
 
-void fl::ui::Roamer::mouseMove(events::MouseEvent e) {
+void fl::ui::RoamerImpl::mouseMove(events::MouseEvent e) {
 	x = e.x;
 	y = e.y;
 }
 
-void fl::ui::Roamer::update(events::SystemEvent e) {
+void fl::ui::RoamerImpl::update(events::SystemEvent e) {
 	if (x > centerX + 2) link->camera.rotateH(rad);
 	else if (x < centerX - 2) link->camera.rotateH(-rad);
 	if (y > centerY + 2) link->camera.rotateV(-rad);

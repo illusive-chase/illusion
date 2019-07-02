@@ -17,7 +17,7 @@ copies or substantial portions of the Software.
 #include "Shader.h"
 #include "SMLAAA.h"
 
-void fl::geom::Stage3D::render() {
+void fl::geom::Stage3DImpl::render() {
 	memset(swap_chain->map_trait, 0, (size << sample_offset) * sizeof(MapTrait));
 	if (update_Shadee) {
 		if (vertex2D) delete[] vertex2D;
@@ -29,13 +29,13 @@ void fl::geom::Stage3D::render() {
 
 	scalar cameraDir_mod = camera.dir.mod();
 
-	std::sort(obj.begin(), obj.end(), [&](SObject3D* a, SObject3D* b)->bool {
+	std::sort(obj.begin(), obj.end(), [&](SObject3D& a, SObject3D& b)->bool {
 		return (a->pos - persPos).mod2() > (b->pos - persPos).mod2();
 	});
 
 	if (skybox) skybox->pos = camera.pos;
 
-	for (SText3D* it : txt) {
+	for (SText3D& it : txt) {
 		Vector3D temp = it->obj->pos - persPos;
 		if (temp * camera.dir > cameraDir_mod * camera.farPlatform) continue;
 		Shadee tmp;
@@ -46,7 +46,7 @@ void fl::geom::Stage3D::render() {
 	}
 
 	int cnt = 0;
-	for (SObject3D* it : obj) {
+	for (SObject3D& it : obj) {
 		Vector3D temp = it->pos - persPos;
 		int index = 0;
 		if (temp * camera.dir > cameraDir_mod * camera.farPlatform) continue;
@@ -81,9 +81,9 @@ void fl::geom::Stage3D::render() {
 				Vector3D n = normalVector(v3D[2] - v3D[0], v3D[1] - v3D[0]);
 				n.normalize();
 
-				for (Light3D* light : lit) {
+				for (Light3D& light : lit) {
 					if (light->type == 2) {
-						Vector3D& lit_dir = dynamic_cast<DirectionalLight3D*>(light)->dir;
+						Vector3D& lit_dir = DirectionalLight3D(light)->dir;
 						scalar tmp = n * lit_dir;
 						if (tmp > scalar(0)) continue;
 						Vector3D tmp_h = n * (scalar(2) * tmp);
@@ -103,7 +103,7 @@ void fl::geom::Stage3D::render() {
 				switch (ZTag) {
 				case 0:
 				{
-					drawTriangle(&p[0], &p[1], &p[2], &(s.texture), static_cast<void*>(it));
+					drawTriangle(&p[0], &p[1], &p[2], &(s.texture));
 				}
 				break;
 				case 4:
@@ -116,8 +116,8 @@ void fl::geom::Stage3D::render() {
 					LerpZ::cut(cut1, temp_cut1, v3D[0], v3D[2], p[0], p[2], camera.dir, cameraDir_mod, cameraDir_mod + camera.nearPlatform);
 					project(cut0, temp_cut0, cameraDir_mod);
 					project(cut1, temp_cut1, cameraDir_mod);
-					drawTriangle(&cut0, &p[1], &p[2], &(s.texture), static_cast<void*>(it));
-					drawTriangle(&cut0, &p[2], &cut1, &(s.texture), static_cast<void*>(it));
+					drawTriangle(&cut0, &p[1], &p[2], &(s.texture));
+					drawTriangle(&cut0, &p[2], &cut1, &(s.texture));
 				}
 				break;
 				case 3:
@@ -130,7 +130,7 @@ void fl::geom::Stage3D::render() {
 					LerpZ::cut(cut1, temp_cut1, v3D[0], v3D[2], p[0], p[2], camera.dir, cameraDir_mod, cameraDir_mod + camera.nearPlatform);
 					project(cut0, temp_cut0, cameraDir_mod);
 					project(cut1, temp_cut1, cameraDir_mod);
-					drawTriangle(&p[0], &cut0, &cut1, &(s.texture), static_cast<void*>(it));
+					drawTriangle(&p[0], &cut0, &cut1, &(s.texture));
 				}
 				break;
 				default:
@@ -178,12 +178,12 @@ void fl::geom::Stage3D::render() {
 	//printf("%d %d\n", cnt, clock() - cl);
 }
 
-void fl::geom::Stage3D::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj) {
+void fl::geom::Stage3DImpl::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t) {
 	if (a->y > b->y) std::swap(a, b);
 	if (b->y > c->y) std::swap(b, c);
 	if (a->y > b->y) std::swap(a, b);
-	if (sample_mode == 2) return drawTriangleMSAA(a, b, c, t, obj);
-	Shader shader(swap_chain->sample, swap_chain->map_trait, width, obj, *t, sample_offset);
+	if (sample_mode == 2) return drawTriangleMSAA(a, b, c, t);
+	Shader shader(swap_chain->sample, swap_chain->map_trait, width, *t, sample_offset);
 	Shadee r_cut(a, c, b->y);
 	Shadee* cut = &r_cut;
 	if (b->x > cut->x) std::swap(cut, b);
@@ -246,8 +246,8 @@ void fl::geom::Stage3D::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t
 }
 
 
-void fl::geom::Stage3D::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj) {
-	Shader shader(swap_chain->sample, swap_chain->map_trait, width, obj, *t, sample_offset);
+void fl::geom::Stage3DImpl::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t) {
+	Shader shader(swap_chain->sample, swap_chain->map_trait, width, *t, sample_offset);
 	Shadee r_cut(a, c, b->y);
 	Shadee* cut = &r_cut;
 	if (b->x > cut->x) std::swap(cut, b);
@@ -400,24 +400,24 @@ void fl::geom::Stage3D::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Textur
 	}
 }
 
-void fl::geom::Stage3D::postFilteringMLAA() {
+void fl::geom::Stage3DImpl::postFilteringMLAA() {
 #ifdef ILL_SSE
 	MorphologicalAntialiasingAgent agent;
 	agent.Execute((DWORD*)swap_chain->colors, width, height);
 #endif
 }
 
-void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod) {
+void fl::geom::Stage3DImpl::project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod) {
 	scalar z_val = cameraDir_mod / (p * camera.dir);
 	Vector3D intensity_diff;
 
 	p *= (cameraDir_mod + camera.nearPlatform) * z_val;
 	p -= (camera.dir * (1 + camera.nearPlatform / cameraDir_mod));
 
-	for (Light3D* light : lit) {
+	for (Light3D& light : lit) {
 		scalar tmp;
 		if (light->type == 2) {
-			tmp = -(((DirectionalLight3D*)light)->dir * normal);
+			tmp = -(DirectionalLight3D(light)->dir * normal);
 			if (tmp > 0.0) intensity_diff += light->intensity * tmp;
 		}
 	}
@@ -429,7 +429,7 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, const Vector3D& normal,
 	);
 }
 
-void fl::geom::Stage3D::project(Shadee& src, Vector3D p, scalar cameraDir_mod) {
+void fl::geom::Stage3DImpl::project(Shadee& src, Vector3D p, scalar cameraDir_mod) {
 	scalar z_val = cameraDir_mod / (p * camera.dir);
 	p *= cameraDir_mod * z_val;
 	p -= camera.dir;
@@ -438,7 +438,7 @@ void fl::geom::Stage3D::project(Shadee& src, Vector3D p, scalar cameraDir_mod) {
 	src.y = (height * scalar(0.5) - p * camera.dir_v * camera.scale);
 }
 
-void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p) {
+void fl::geom::Stage3DImpl::showPosition(fl::events::SimpleEvent<fl::geom::SText3D> p) {
 	p.value->caption.str(L"");
 	p.value->caption.clear();
 	p.value->caption << p.value->pos.x + p.value->obj->pos.x << L',' 
@@ -447,9 +447,9 @@ void fl::geom::Stage3D::showPosition(fl::events::SimpleEvent<fl::geom::SText3D*>
 }
 
 
-fl::geom::Stage3D::Stage3D(int x, int y, int width, int height, scalar nearPlatform, scalar farPlatform, 
-	scalar scale, DWORD renderMode, int swapChainNum, SkyBox * skybox, Shape * parent) :
-	Shape(parent), camera(nearPlatform, farPlatform, scale), size(width * height), skybox(skybox), vertex2D(nullptr),
+fl::geom::Stage3DImpl::Stage3DImpl(int x, int y, int width, int height, scalar nearPlatform, scalar farPlatform, 
+	scalar scale, DWORD renderMode, int swapChainNum, SkyBox skybox, display::Shape parent) :
+	ShapeImpl(parent), camera(nearPlatform, farPlatform, scale), size(width * height), skybox(skybox), vertex2D(nullptr),
 	update_Shadee(false), size_Shadee(0), render_mode(renderMode), sample_mode(renderMode & 3),
 	sample_num(sample_mode ? 4 : 1), sample_offset(sample_mode ? 2 : 0),
 	sample_x(SAMPLE_X[sample_mode]), sample_y(SAMPLE_Y[sample_mode]) 
@@ -460,7 +460,7 @@ fl::geom::Stage3D::Stage3D(int x, int y, int width, int height, scalar nearPlatf
 	this->height = height;
 	setCamera(Vector3D(), Vector3D(0, 0, -100));
 
-	if (skybox) addObject(skybox);
+	if (skybox) addObject(SObject3D(skybox));
 
 	SwapChain* head = new SwapChain(width, height, size, sample_num, nullptr);
 	swap_chain = head;
@@ -470,20 +470,17 @@ fl::geom::Stage3D::Stage3D(int x, int y, int width, int height, scalar nearPlatf
 	head->prev = swap_chain;
 }
 
-fl::geom::Stage3D::~Stage3D() {
-	for (SObject3D* p : obj) delete p;
-	for (SText3D* p : txt) delete p;
-	for (Light3D* l : lit) delete l;
+fl::geom::Stage3DImpl::~Stage3DImpl() {
 	swap_chain->prev->next = nullptr;
 	delete swap_chain;
 }
 
-bool fl::geom::Stage3D::hitTestPoint(int gx, int gy) {
+bool fl::geom::Stage3DImpl::hitTestPoint(int gx, int gy) {
 	transGlobalPosToLocal(gx, gy);
 	return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
 }
 
-void fl::geom::Stage3D::paint(HDC hdc) {
+void fl::geom::Stage3DImpl::paint(HDC hdc) {
 	if (visible) {
 		int x0 = x, y0 = y;
 		transLocalPosToGlobal(x0, y0);
@@ -494,13 +491,13 @@ void fl::geom::Stage3D::paint(HDC hdc) {
 		SelectObject(mdc, hbp_old);
 		DeleteDC(mdc);
 		memset(swap_chain->colors, 0, size * sizeof(*(swap_chain->sample)));
-		for (SText3D* it : txt) { it->paint(hdc); }
+		for (SText3D it : txt) { it->paint(hdc); }
 		swap_chain = swap_chain->next;
 	}
 }
 
-void fl::geom::Stage3D::framing() {
-	for (SObject3D* it : obj) it->framing();
+void fl::geom::Stage3DImpl::framing() {
+	for (SObject3D& it : obj) it->framing();
 }
 
 void fl::geom::Camera::rotateH(const Rad& rad) {

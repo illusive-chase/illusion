@@ -21,15 +21,17 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
-		// Class Shape is a virtual class which inherits class AutoPtr,
-		// which means its derived classes must be allocated on the heap.
-		class Shape :public AutoPtr {
+		class ShapeImpl;
+
+		using Shape = sptr<ShapeImpl>;
+
+		class ShapeImpl {
 		public:
-			Shape* parent; // the container(see its interface in Sprite.h) containing the instance of this class
+			ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
 			bool visible, enabled; // visible: whether to be drawn; enabled: whether to response hit-test
 			int x, y; // screen coordinates
 			int width, height; // width and height of enclosing rectangle
-			Shape(Shape* parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), parent(parent) {}
+			ShapeImpl(Shape parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), parent(parent.raw()) {}
 
 			// It returns true if and only if the shape hit the screen coordinates (gx, gy).
 			// But when 'enabled' is false, it always returns false.
@@ -40,7 +42,7 @@ namespace fl {
 			// in the same name function of class Stage.
 			virtual void paint(HDC hdc) = 0;
 
-			virtual ~Shape() {}
+			virtual ~ShapeImpl() {}
 
 			void transLocalPosToGlobal(int& x, int& y);
 			void transGlobalPosToLocal(int& x, int& y);
@@ -56,5 +58,7 @@ namespace fl {
 			// See the same name function in Stage.h.
 			virtual void framing() = 0;
 		};
+
+		
 	}
 }

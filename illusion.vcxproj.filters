@@ -120,9 +120,6 @@
     <ClInclude Include="src\top_element\SConfig.h">
       <Filter>头文件\top_element</Filter>
     </ClInclude>
-    <ClInclude Include="src\top_element\SEvent.h">
-      <Filter>头文件\top_element</Filter>
-    </ClInclude>
     <ClInclude Include="src\top_element\SImport.h">
       <Filter>头文件\top_element</Filter>
     </ClInclude>
@@ -158,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="src\targetver.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\SEvent.h">
+      <Filter>头文件\top_element</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -197,13 +197,7 @@
     <ClCompile Include="src\top_element\SAlignedAllocator.cpp">
       <Filter>源文件\top_element</Filter>
     </ClCompile>
-    <ClCompile Include="src\top_element\SEvent.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
     <ClCompile Include="src\top_element\SLoader.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
-    <ClCompile Include="src\top_element\SPointer.cpp">
       <Filter>源文件\top_element</Filter>
     </ClCompile>
     <ClCompile Include="src\top_element\Stage.cpp">
@@ -226,21 +220,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="ass\grid.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="ass\map.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="ass\sky.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="ass\test.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="ass\texture.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="ass\illusion.ico">
       <Filter>资源文件</Filter>
     </Image>

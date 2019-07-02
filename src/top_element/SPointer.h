@@ -14,20 +14,106 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
 #pragma once
-
+//#define ILL_NOISY
 
 #include "Scalar.h"
-
+#include <type_traits>
 
 namespace fl {
 
-	// Class AutoPtr is a base class.
-	// All derived classes must be allocated on the heap. (I tend to omit 'the instance of')
-	// They should be deallocated either in destructor of container(this means you don't need to release them manually) or by you.
-	// Actually, I really know that I should use smart pointer instead.
-	// I plan to refactor it in the near future.
-	class AutoPtr {
+	template<typename T>
+	class sptr {
+	protected:
+		unsigned *cnt;
+		T* ptr;
 	public:
-		virtual ~AutoPtr() = 0;
+		template<typename U>
+		friend class sptr;
+
+		template<typename U>
+		sptr(const sptr<U>& uptr) :ptr(static_cast<T*>(uptr.ptr)), cnt(uptr.cnt) { 
+			if (ptr) {
+#ifdef ILL_NOISY
+				printf("constructor: %s\n", typeid(T).name());
+#endif
+				(*cnt)++;
+			}
+		}
+
+		sptr(const sptr<T>& rhs) : ptr(rhs.ptr), cnt(rhs.cnt) {
+			if (ptr) {
+#ifdef ILL_NOISY
+				printf("constructor: %s\n", typeid(T).name());
+#endif
+				(*cnt)++;
+			}
+		}
+
+		template<typename U>
+		sptr(sptr<U>&& uptr) noexcept :ptr(static_cast<T*>(uptr.ptr)), cnt(uptr.cnt) {
+			uptr.ptr = nullptr, uptr.cnt = nullptr;
+		}
+
+		sptr(sptr<T>&& rhs) noexcept :ptr(rhs.ptr), cnt(rhs.cnt) { 
+			rhs.ptr = nullptr, rhs.cnt = nullptr; 
+		}
+
+		sptr() :ptr(nullptr), cnt(nullptr) {}
+		explicit sptr(T* tptr) :ptr(tptr), cnt(tptr ? (new unsigned(1)) : nullptr) {
+#ifdef ILL_NOISY
+			if (ptr) printf("constructor: %s\n", typeid(T).name());
+#endif
+		}
+		sptr(nullptr_t p) :ptr(nullptr), cnt(nullptr) {}
+		~sptr() { 
+#ifdef ILL_NOISY
+			if (ptr) printf("destructor: %s\n", typeid(T).name());
+#endif
+			if (ptr && (--(*cnt) == 0)) { delete cnt; delete ptr; }
+		}
+		
+		ILL_INLINE sptr<T>& operator=(const sptr<T>& rhs) { 
+			if (ptr && (--(*cnt) == 0)) {
+				delete cnt;
+				delete ptr;
+#ifdef ILL_NOISY
+				printf("destructor: %s\n", typeid(T).name());
+#endif
+			}
+			ptr = rhs.ptr;
+			cnt = rhs.cnt;
+			if (ptr) {
+				(*cnt)++;
+#ifdef ILL_NOISY
+				printf("constructor: %s\n", typeid(T).name());
+#endif
+			}
+			return *this;
+		}
+		ILL_INLINE sptr<T>& operator=(nullptr_t) {
+			if (ptr && (--(*cnt) == 0)) { 
+				delete cnt; 
+				delete ptr; 
+#ifdef ILL_NOISY
+				printf("destructor: %s\n", typeid(T).name());
+#endif
+			}
+			ptr = nullptr;
+			cnt = nullptr;
+			return *this;
+		}
+		ILL_INLINE sptr<T>& operator=(sptr<T>&& rhs) noexcept { 
+			ptr = rhs.ptr, cnt = rhs.cnt, rhs.ptr = nullptr, rhs.cnt = nullptr; 
+			return *this;
+		}
+		ILL_INLINE bool operator==(const sptr<T>& rhs) const { return ptr == rhs.ptr; }
+		ILL_INLINE bool operator!=(const sptr<T>& rhs) const { return ptr != rhs.ptr; }
+		ILL_INLINE T& operator*() { return *ptr; }
+		ILL_INLINE unsigned count() const { return *cnt; }
+		ILL_INLINE T* operator->() { return ptr; }
+		ILL_INLINE operator bool() const { return ptr; }
+		ILL_INLINE T* raw() { return ptr; }
+		void operator delete(void* p) = delete;
+		void operator delete[](void* p) = delete;
 	};
 }

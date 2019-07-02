@@ -23,18 +23,23 @@ namespace fl {
 
 	namespace ui {
 
-		class Roamer :public AutoPtr {
+		class RoamerImpl {
 		public:
-			Roamer(geom::Stage3D* link, int move_speed = 7, int rotate_speed = 5);
+			RoamerImpl(geom::Stage3D link, int move_speed = 7, int rotate_speed = 5);
 			void keyDown(events::KeyboardEvent e);
 			void mouseMove(events::MouseEvent e);
 			void update(events::SystemEvent e);
 		private:
-			geom::Stage3D* link;
+			geom::Stage3D link;
 			geom::Rad rad;
 			int centerX, centerY;
 			int x, y;
 			int speed;
 		};
+
+		using Roamer = sptr<RoamerImpl>;
+		ILL_INLINE Roamer MakeRoamer(geom::Stage3D link, int move_speed = 7, int rotate_speed = 5) {
+			return Roamer(new RoamerImpl(link, move_speed, rotate_speed));
+		}
 	}
 }

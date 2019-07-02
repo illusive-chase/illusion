@@ -25,7 +25,7 @@ namespace fl {
 		// determine an array of function pointers at compile time.
 		// This array is used in the only interface PNarrowCollision::collide,
 		// just in order to avoid excessive shape type checking at running time.
-		// If you are interested in the details of TMP, see typedef PShapeArray in PObject3D.h first.
+		// If you are interested in the details of TMP, see typedef PShapeArray in PObject3DImpl.h first.
 		// ATTENTION:
 		// 1. PNarrowCollision detects potential collision, that is, the collision which will occur in the next frame.
 		// 2. Not like PBroadCollision, PNarrowCollision does not only detect collision, but alse deals with it.
@@ -37,14 +37,14 @@ namespace fl {
 
 			template<unsigned I, unsigned J>
 			struct collide_base{
-				ILL_INLINE static void value(PObject3D* a, PObject3D* b) {
-					if (I > J) collide_ref(*static_cast<PShapeArray::type<J>*>(a), *static_cast<PShapeArray::type<I>*>(b));
-					else collide_ref(*static_cast<PShapeArray::type<I>*>(a), *static_cast<PShapeArray::type<J>*>(b));
+				ILL_INLINE static void value(PObject3D a, PObject3D b) {
+					if (I > J) collide_ref(*PShapeArray::type<J>(a), *PShapeArray::type<I>(b));
+					else collide_ref(*PShapeArray::type<I>(a), *PShapeArray::type<J>(b));
 				}
 			};
 			
 
-			typedef void(*callback)(PObject3D*, PObject3D*);
+			typedef void(*callback)(PObject3D, PObject3D);
 
 			template<unsigned I, unsigned J, callback ...CallBack>
 			struct CallBackMatrix {
@@ -70,7 +70,7 @@ namespace fl {
 			// When PBroadCollision detects that 'a' and 'b' will collide in the next frame,
 			// PNarrowCollision::collide will be used to check if narrow collision occurs.
 			// And if so, PNarrowCollision will deal with it to avoid the overlap of 'a' and 'b'.
-			ILL_INLINE static void collide(PObject3D* a, PObject3D* b) {
+			ILL_INLINE static void collide(PObject3D a, PObject3D b) {
 				CallBack::func[a->uid() * PShapeArray::length + b->uid()](a, b);
 			}
 
@@ -79,7 +79,7 @@ namespace fl {
 		// Template specialization here.
 
 		template<>
-		ILL_INLINE static void PNarrowCollision::collide_ref<PSphere, PSphere>(PSphere& a, PSphere& b) {
+		ILL_INLINE static void PNarrowCollision::collide_ref<PSphereImpl, PSphereImpl>(PSphereImpl& a, PSphereImpl& b) {
 			Vector3D d = a.pos - b.pos;
 			ILL_ATTRIBUTE_ALIGNED16(scalar) sd = d.mod();
 			d /= sd;

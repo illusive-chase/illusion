@@ -395,7 +395,7 @@ namespace fl {
 			}
 
 			// It is just for convenience.
-			// See the function Stage3D::project, which is the only place this function is called.
+			// See the function Stage3DImpl::project, which is the only place this function is called.
 			ILL_INLINE void set(scalar x, scalar y, const Vector3D& color, scalar z) {
 				this->x = x;
 				this->y = y;
@@ -449,7 +449,7 @@ namespace fl {
 			LerpY(const Shadee& sa, const Shadee& sb);
 
 			// The parameter 'sample_y' is related to the sampling at the time of rendering.
-			// See Stage3D::drawTriangle and Stage3D::drawTriangleMSAA in Stage3D.cpp.
+			// See Stage3DImpl::drawTriangle and Stage3DImpl::drawTriangleMSAA in Stage3DImpl.cpp.
 			ILL_INLINE void start(int ay, scalar sample_y) { move(ay - y + sample_y); }
 
 			// Do a slide.

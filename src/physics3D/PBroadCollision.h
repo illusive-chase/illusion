@@ -32,6 +32,7 @@ subject to the following restrictions:
 #include "../geom3D/SGeomMath.h"
 #include <set>
 #include <stack>
+#include <list>
 
 // The implementation of BVH partially draws on the dynamic bvh of the engine bullet.
 
@@ -301,6 +302,7 @@ namespace fl {
 		// Class PBroadCollision encapsulates two BVH (one for static objects and another for dynamic objects).
 		// It provides interfaces to help with detecting broad collision.
 		// ATTENTION: PBroadCollision detects potential collision, that is, the collision which will occur in the next frame.
+		template<typename T>
 		class PBroadCollision {
 		private:
 			using AxisAlignedBoundingBox = geom::AxisAlignedBoundingBox;
@@ -309,62 +311,66 @@ namespace fl {
 			struct Proxy {
 				BVH::Node* leaf;
 				bool dynamic;
-				Proxy(BVH::Node* leaf, bool dynamic) :leaf(leaf), dynamic(dynamic) {}
+				T ptr;
+				Proxy(BVH::Node* leaf, bool dynamic, T ptr) :leaf(leaf), dynamic(dynamic), ptr(ptr) {}
 			};
 
+			using iterator_leaf = typename std::list<Proxy>::iterator;
 			BVH static_bvh, dynamic_bvh;
-			std::vector<Proxy> leaves;
+			std::list<Proxy> leaves;
 			OverlappingPairs m_op;
 			
-			ILL_INLINE int createStaticProxy(const AxisAlignedBoundingBox& aabb, void* obj) {
-				BVH::Node* leaf = static_bvh.createLeafNode(aabb, obj, 0);
-				leaves.push_back(Proxy(leaf, false));
+			ILL_INLINE iterator_leaf createStaticProxy(const AxisAlignedBoundingBox& aabb, T obj) {
+				leaves.push_back(Proxy(nullptr, false, obj));
+				BVH::Node* leaf = static_bvh.createLeafNode(aabb, &leaves.back(), 0);
+				leaves.back().leaf = leaf;
 				static_bvh.collide(m_op, leaf);
 				dynamic_bvh.collide(m_op, leaf);
 				static_bvh.insert(leaf);
-				return (int)leaves.size() - 1;
+				return --leaves.end();
 			}
 
-			ILL_INLINE int createDynamicProxy(const AxisAlignedBoundingBox& aabb, void* obj) {
-				BVH::Node* leaf = dynamic_bvh.createLeafNode(aabb, obj, 0);
-				leaves.push_back(Proxy(leaf, true));
+			ILL_INLINE iterator_leaf createDynamicProxy(const AxisAlignedBoundingBox& aabb, T obj) {
+				leaves.push_back(Proxy(nullptr, true, obj));
+				BVH::Node* leaf = dynamic_bvh.createLeafNode(aabb, &leaves.back(), 0);
+				leaves.back().leaf = leaf;
 				static_bvh.collide(m_op, leaf);
 				dynamic_bvh.collide(m_op, leaf);
 				dynamic_bvh.insert(leaf);
-				
-				return (int)leaves.size() - 1;
+				return --leaves.end();
 			}
 
-			ILL_INLINE int createStaticProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, void* obj) {
-				BVH::Node* leaf = static_bvh.createLeafNode(aabb, obj, 0);
-				leaves.push_back(Proxy(leaf, false));
+			ILL_INLINE iterator_leaf createStaticProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, T obj) {
+				leaves.push_back(Proxy(nullptr, false, obj));
+				BVH::Node* leaf = static_bvh.createLeafNode(aabb, &leaves.back(), 0);
+				leaves.back().leaf = leaf;
 				static_bvh.collide(m_op, stk_obj, leaf);
 				dynamic_bvh.collide(m_op, stk_obj, leaf);
 				static_bvh.insert(leaf);
-				return (int)leaves.size() - 1;
+				return --leaves.end();
 			}
 
-			ILL_INLINE int createDynamicProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, void* obj) {
-				BVH::Node* leaf = dynamic_bvh.createLeafNode(aabb, obj, 0);
-				leaves.push_back(Proxy(leaf, true));
+			ILL_INLINE iterator_leaf createDynamicProxyInstant(std::stack<void*>& stk_obj, const AxisAlignedBoundingBox& aabb, T obj) {
+				leaves.push_back(Proxy(nullptr, true, obj));
+				BVH::Node* leaf = dynamic_bvh.createLeafNode(aabb, &leaves.back(), 0);
+				leaves.back().leaf = leaf;
 				static_bvh.collide(m_op, stk_obj, leaf);
 				dynamic_bvh.collide(m_op, stk_obj, leaf);
 				dynamic_bvh.insert(leaf);
-
-				return (int)leaves.size() - 1;
+				return --leaves.end();
 			}
 
-			ILL_INLINE void destroyProxy(int index) {
-				m_op.remove(leaves[index].leaf->obj);
-				if (leaves[index].dynamic) dynamic_bvh.remove_release(leaves[index].leaf);
-				else static_bvh.remove_release(leaves[index].leaf);
-				leaves[index].leaf = 0;
+			ILL_INLINE void destroyProxy(iterator_leaf index) {
+				m_op.remove(index->leaf->obj);
+				if (index->dynamic) dynamic_bvh.remove_release(index->leaf);
+				else static_bvh.remove_release(index->leaf);
+				leaves.erase(index);
 			}
 
-			ILL_INLINE void setProxy(int index, const AxisAlignedBoundingBox& aabb, const geom::Vector3D& vel) {
-				BVH::Node* leaf = leaves[index].leaf;
+			ILL_INLINE void setProxy(iterator_leaf index, const AxisAlignedBoundingBox& aabb, const geom::Vector3D& vel) {
+				BVH::Node* leaf = index->leaf;
 #ifdef ILL_DEBUG
-				ILLAssert(leaves[index].dynamic);
+				ILLAssert(index->dynamic);
 #endif
 				leaf->aabb = aabb;
 				leaf->aabb.expand(vel);
@@ -375,13 +381,13 @@ namespace fl {
 
 			ILL_INLINE void setProxyInstant(
 				std::stack<void*>& stk_obj,
-				int index,
+				iterator_leaf index,
 				const AxisAlignedBoundingBox& aabb,
 				const geom::Vector3D& vel
 			) {
-				BVH::Node* leaf = leaves[index].leaf;
+				BVH::Node* leaf = index->leaf;
 #ifdef ILL_DEBUG
-				ILLAssert(leaves[index].dynamic);
+				ILLAssert(index->dynamic);
 #endif
 				leaf->aabb = aabb;
 				leaf->aabb.expand(vel);

@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #include "SkyBox.h"
 
 
-fl::geom::SkyBox::SkyBox(const Texture& tex, int size) :SObject3D(Vector3D()), size(size >> 1) {
+fl::geom::SkyBoxImpl::SkyBoxImpl(const Texture& tex, int size) :SObject3DImpl(Vector3D()), size(size >> 1) {
 	DWORD uv[10];
 	int w = (tex.width - 1) >> 2;
 	int h = tex.height - 1;

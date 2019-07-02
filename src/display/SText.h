@@ -21,9 +21,12 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
-		// Class SText inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Each SText object keeps a HFONT handle, which refers to a font.
-		class SText :public Shape {
+		class STextImpl;
+
+		using SText = sptr<STextImpl>;
+
+		// Each STextImpl object keeps a HFONT handle, which refers to a font.
+		class STextImpl :public ShapeImpl {
 		private:
 			HFONT hfont;
 			
@@ -32,11 +35,11 @@ namespace fl {
 			wstringstream caption; // mutable
 
 			// It is used to listen for painting events.
-			// In fact, the event is only responded when function SText::paint is called.
-			fl::events::Signal<fl::events::SimpleEvent<SText*>> paintEventListener;
+			// In fact, the event is only responded when function STextImpl::paint is called.
+			fl::events::Signal<fl::events::SimpleEvent<SText>> paintEventListener;
 			
-			SText(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape* parent = nullptr) 
-				:Shape(parent), caption(caption), font(font)
+			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape parent = Shape(nullptr))
+				:ShapeImpl(parent), caption(caption), font(font)
 			{
 				this->x = x;
 				this->y = y;
@@ -53,7 +56,7 @@ namespace fl {
 			// But it does not mean the text is not mutable, only means the text will not change by itself.
 			virtual void framing() override {}
 
-			virtual ~SText() { DeleteObject(hfont); }
+			virtual ~STextImpl() { DeleteObject(hfont); }
 
 			// The text should never be hit.
 			// If necessary, use hidden rectangle for hit-test instead.
@@ -61,7 +64,7 @@ namespace fl {
 
 			// It updates the width and height, so the size number is correct even if you change the caption.
 			void paint(HDC hdc) override {
-				paintEventListener(this); // respond
+				paintEventListener(SText(this)); // respond
 				if (visible) {
 					SetBkMode(hdc, TRANSPARENT);
 					SetTextColor(hdc, font.color);
@@ -77,5 +80,9 @@ namespace fl {
 				}
 			}
 		};
+
+		ILL_INLINE SText MakeSText(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape parent = Shape(nullptr)) {
+			return SText(new STextImpl(x, y, caption, font, parent));
+		}
 	}
 }

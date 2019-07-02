@@ -19,8 +19,7 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace geom {
 
-		// Class SkyBox inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		class SkyBox :public SObject3D {
+		class SkyBoxImpl :public SObject3DImpl {
 		private:
 			DWORD* top_src; // It saves the automatically generated top texture.
 
@@ -31,10 +30,15 @@ namespace fl {
 
 			// It uses 'tex' as a texture for the four sides
 			// and automatically generates the top texture by vertex interpolation.
-			SkyBox(const Texture& tex, int size);
+			SkyBoxImpl(const Texture& tex, int size);
 
-			~SkyBox() { if (top_src) delete[] top_src; }
+			~SkyBoxImpl() { if (top_src) delete[] top_src; }
 		};
+
+		using SkyBox = sptr<SkyBoxImpl>;
+		ILL_INLINE SkyBox MakeSkyBox(const Texture& tex, int size) {
+			return SkyBox(new SkyBoxImpl(tex, size));
+		}
 	}
 }
 

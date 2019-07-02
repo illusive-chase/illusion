@@ -19,13 +19,12 @@ copies or substantial portions of the Software.
 
 namespace fl {
 	namespace loader {
-		// Class ImageLoader inherits class AutoPtr, which means it must be allocated on the heap.
-		class ImageLoader :public AutoPtr {
+		class ImageLoaderImpl {
 		public:
 			std::vector<DWORD*> content;
 			std::vector<BITMAP> info;
-			ImageLoader() :AutoPtr() {}
-			~ImageLoader() { for (DWORD* p : content) delete p; }
+			ImageLoaderImpl() {}
+			~ImageLoaderImpl() { for (DWORD* p : content) delete p; }
 			int load(const wstring& path, int width, int height, int type = IMAGE_BITMAP);
 			inline int load(const wstring& path, int type = IMAGE_BITMAP) { return load(path, 0, 0, type); }
 			inline int width(int i) { return info[i].bmWidth; }
@@ -33,16 +32,25 @@ namespace fl {
 			inline DWORD* src(int i) { return content[i]; }
 		};
 
-		// Class ModelLoader inherits class AutoPtr, which means it must be allocated on the heap.
-		// Class ModelLoader only have one interface now. It can only load MMD model now.
-		class ModelLoader :public AutoPtr {
+		using ImageLoader = sptr<ImageLoaderImpl>;
+		ILL_INLINE ImageLoader MakeImageLoader() {
+			return ImageLoader(new ImageLoaderImpl());
+		}
+
+		// Class ModelLoaderImpl only have one interface now. It can only load MMD model now.
+		class ModelLoaderImpl {
 		private:
-			ImageLoader* uv_loader;
+			ImageLoader uv_loader;
 		public:
-			std::vector<geom::SObject3D*> models;
-			ModelLoader() :AutoPtr() { uv_loader = new ImageLoader(); }
-			~ModelLoader() { for (geom::SObject3D* p : models) delete p; delete uv_loader; }
+			std::vector<geom::SObject3D> models;
+			ModelLoaderImpl() {}
+			~ModelLoaderImpl() {}
 			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
 		};
+
+		using ModelLoader = sptr<ModelLoaderImpl>;
+		ILL_INLINE ModelLoader MakeModelLoader() {
+			return ModelLoader(new ModelLoaderImpl());
+		}
 	}
 }

@@ -73,7 +73,7 @@ namespace fl {
 		};
 
 
-		class Stage3D final :public display::Shape {
+		class Stage3DImpl final :public display::ShapeImpl {
 		public:
 
 			// The lowest two bits of RenderMode is used to represent the multi-sampling mode.
@@ -147,62 +147,62 @@ namespace fl {
 				}
 			};
 
-			std::vector<SObject3D*> obj;
-			std::vector<Light3D*> lit;
-			std::vector<SText3D*> txt;
-			SkyBox* const skybox;
+			std::vector<SObject3D> obj;
+			std::vector<Light3D> lit;
+			std::vector<SText3D> txt;
+			SkyBox skybox;
 			
 			SwapChain* swap_chain; // circular linked list
 
 			Shadee* vertex2D; // a temporary array allocated on the heap
 
 			// When the number of Shadee increases, this boolean will be set to true to allow the reallocating of array 'vertex2D'.
-			// See function Stage3D::addObject(SObject*).
+			// See function Stage3DImpl::addObject(SObject*).
 			bool update_Shadee;
 
 			int size_Shadee; // the number of Shadee
 
 			void render(); // main function to perform rendering
-			void drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj); // helper function
-			void drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t, void* obj); // helper function
+			void drawTriangle(Shadee* a, Shadee* b, Shadee* c, Texture* t); // helper function
+			void drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Texture* t); // helper function
 			void postFilteringMLAA(); // helper function
 			void project(Shadee& src, Vector3D p, const Vector3D& normal, scalar cameraDir_mod); // helper function
 			void project(Shadee& src, Vector3D p, scalar cameraDir_mod); // helper function
 
-			// It is used for position showing. See SText3D.h, array Stage3D::txt and function Stage3D::paint.
-			static void showPosition(fl::events::SimpleEvent<fl::geom::SText3D*> p);
+			// It is used for position showing. See SText3DImpl.h, array Stage3DImpl::txt and function Stage3DImpl::paint.
+			static void showPosition(fl::events::SimpleEvent<fl::geom::SText3D> p);
 
 		public:
 			// Parameter 'swapChainNum' is the length of the circular linked list.
-			Stage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
-				DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox* skybox = nullptr, Shape* parent = nullptr);
+			Stage3DImpl(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
+				DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::Shape parent = nullptr);
 
-			virtual ~Stage3D();
+			virtual ~Stage3DImpl();
 
 			bool hitTestPoint(int gx, int gy) override;
 			void paint(HDC hdc) override;
 			void framing() override;
 
-			ILL_INLINE void addObject(SText3D* text) { txt.push_back(text); }
+			ILL_INLINE void addObject(SText3D text) { txt.push_back(text); }
 
-			ILL_INLINE void addObject(SObject3D* tar) {
+			ILL_INLINE void addObject(SObject3D tar) {
 				obj.push_back(tar);
 				update_Shadee = true;
 				size_Shadee += (int)tar->vertex.size();
 			}
 
-			ILL_INLINE void addObjectWithPosition(SObject3D* tar) {
+			ILL_INLINE void addObjectWithPosition(SObject3D tar) {
 				addObject(tar);
 				for (Vector3D& v : tar->vertex) {
-					SText3D* p = new SText3D(v, tar, L"undefined");
+					SText3D p = MakeSText3D(v, tar, L"undefined");
 					p->renderEventListener.add(0, showPosition);
 					addObject(p);
 				}
 			}
 
-			ILL_INLINE void addObject(Sprite3D* tar) { for (SObject3D* it : tar->children) addObject(it); }
+			ILL_INLINE void addObject(Sprite3D tar) { for (SObject3D it : tar->children) addObject(it); }
 
-			ILL_INLINE void removeObject(SObject3D* tar) {
+			ILL_INLINE void removeObject(SObject3D tar) {
 				for (auto it = obj.begin(); it != obj.end();) {
 					if (*it == tar) it = obj.erase(it);
 					else ++it;
@@ -211,13 +211,20 @@ namespace fl {
 
 			ILL_INLINE void setCamera(const Vector3D& pos, const Vector3D& dir) { camera.setCamera(pos, dir); }
 
-			ILL_INLINE void addLight(Light3D* light) { lit.push_back(light); }
-			ILL_INLINE const std::vector<SObject3D*>& getObjects() const { return obj; }
+			ILL_INLINE void addLight(Light3D light) { lit.push_back(light); }
+			ILL_INLINE const std::vector<SObject3D>& getObjects() const { return obj; }
 #ifdef ILL_DEBUG
-			ILL_INLINE const SObject3D* getObjectAt(int x, int y) const {
-				return static_cast<SObject3D*>(swap_chain->prev->map_trait[y * width + x].object);
+			ILL_INLINE const SObject3D getObjectAt(int x, int y) const {
+				return SObject3D(reinterpret_cast<SObject3DImpl*>(swap_chain->prev->map_trait[y * width + x].object));
 			}
 #endif
 		};
+
+		using Stage3D = sptr<Stage3DImpl>;
+		ILL_INLINE Stage3D MakeStage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
+			DWORD renderMode = Stage3DImpl::MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::Shape parent = nullptr) {
+			return Stage3D(new Stage3DImpl(x, y, width, height, nearPlatform, farPlatform, scale, renderMode, swapChainNum,
+				skybox, parent));
+		}
 	}
 }

@@ -34,7 +34,7 @@ void fl::display::Stage::removeEventListener() {
 void fl::display::Stage::paint(HDC hdc) {
 	Rectangle(hdc, -1, -1, width + 1, height + 1);
 	if (visible) {
-		for (Shape* shape : children) shape->paint(hdc);
+		for (Shape shape : children) shape->paint(hdc);
 	}
 }
 
@@ -64,7 +64,7 @@ void fl::display::Stage::destroy() {
 
 void fl::display::Stage::framing() { 
 	frameEventListener(fl::events::FrameEvent(WM_FRAME));
-	for (Shape* child : children) child->framing();
+	for (Shape& child : children) child->framing();
 }
 
 RECT fl::display::Stage::getWindowArea() const {

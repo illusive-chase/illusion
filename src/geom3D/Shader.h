@@ -23,10 +23,10 @@ namespace fl {
 
 		// Class MapTrait provides rendering information for class Shader.
 		// Each MapTrait object corresponds to one sample pixel.
-		// There is a MapTrait array saved in the class SwapChain. See class Stage3D::SwapChain in Stage3D.h.
+		// There is a MapTrait array saved in the class SwapChain. See class Stage3DImpl::SwapChain in Stage3DImpl.h.
 		// Class Shader writes color information and depth information into this struct and 
 		// then the color will be painted on the screen later.
-		// See class Shader in Shader.h or function Stage3D::render in Stage3D.cpp.
+		// See class Shader in Shader.h or function Stage3DImpl::render in Stage3DImpl.cpp.
 		ILL_ATTRIBUTE_ALIGNED16(struct) MapTrait {
 #ifdef ILL_SSE
 			union {
@@ -52,11 +52,10 @@ namespace fl {
 		};
 
 		// Class Shader is a helper class to set the depth and color information of the MapTrait.
-		// See function Stage3D::drawTriangle and Stage3D::drawTriangleMSAA in Stage3D.cpp.
+		// See function Stage3DImpl::drawTriangle and Stage3DImpl::drawTriangleMSAA in Stage3DImpl.cpp.
 		class Shader {
 		public:
 			const BYTE* const src;
-			void* obj;
 
 			const int src_wid;
 			const int src_size;
@@ -70,10 +69,10 @@ namespace fl {
 			DWORD* write;
 			MapTrait* map_trait;
 
-			Shader(DWORD* write_src, MapTrait* map_trait_src, int width, void* obj, const Texture& t, const int offset = 0)
+			Shader(DWORD* write_src, MapTrait* map_trait_src, int width, const Texture& t, const int offset = 0)
 				:src(reinterpret_cast<const BYTE*>(t.src)), src_wid(t.width), src_size(t.width * t.height),
 				offset(offset), step(1 << offset), write_src(write_src),
-				map_trait_src(map_trait_src), width(width), obj(obj) 
+				map_trait_src(map_trait_src), width(width)
 			{
 				write = write_src;
 				map_trait = map_trait_src;
@@ -107,14 +106,11 @@ namespace fl {
 					map_trait->b = shadee.b;
 					map_trait->z_depth = shadee.z;
 #endif
-#ifdef ILL_DEBUG
-					map_trait->object = obj;
-#endif
 				}
 			}
 
 
-			// This function is used for MSA. See function Stage3D::drawTriangleMSAA in Stage3D.cpp.
+			// This function is used for MSA. See function Stage3DImpl::drawTriangleMSAA in Stage3DImpl.cpp.
 			ILL_INLINE void shade_follow(scalar z, int id) {
 				if (map_trait->z_depth < z) {
 					*write = write[-id];

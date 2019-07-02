@@ -23,12 +23,14 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace geom {
 
-		// Class SObject3D inherits class AutoPtr, which means it must be allocated on the heap.
-		// Class SObject3D can be inherited.
+		class SObject3DImpl;
+
+		using SObject3D = sptr<SObject3DImpl>;
+
 		// ATTENTION:
 		// The design of 3D transform operation still needs to be improved, 
 		// as it seems to have poor performance.
-		class SObject3D :public AutoPtr {
+		class SObject3DImpl {
 		public:
 			Vector3D pos;
 
@@ -41,12 +43,12 @@ namespace fl {
 			aligned_vector<Vector3D> normal;  // the normal vectors of vertexes
 			aligned_vector<Surface3D> surface;  // the surface that should be painted
 
-			// It points to the physical object to which the instance of class SObject3D is bound.
+			// It points to the physical object to which the instance of class SObject3DImpl is bound.
 			// It can be nullptr, which means the this instance is not bound to any physical object.
-			fl::physics::PObject3D* pobj;  
+			fl::physics::PObject3D pobj;  
 
-			SObject3D(const Vector3D& pos) :pos(pos), m_x(1, 0, 0), m_y(0, 1, 0), m_z(0, 0, 1), pobj(nullptr) {}
-			virtual ~SObject3D() {}
+			SObject3DImpl(const Vector3D& pos) :pos(pos), m_x(1, 0, 0), m_y(0, 1, 0), m_z(0, 0, 1), pobj(nullptr) {}
+			virtual ~SObject3DImpl() {}
 
 			// It adds a point with its normal vector and returns the index of 'p' in array 'vertex'.
 			int addPoint(const Vector3D& p, const Vector3D& n);
@@ -62,8 +64,8 @@ namespace fl {
 			// which are represented as an interger that equals ((u << 16) + v). See function fl::geom::UV in SGeomMath.h.
 			int addSurface(int pa, int pb, int pc, const Texture& texture, int uva = 0, int uvb = 0, int uvc = 0);
 
-			// It sets the physical object, and it returns the 'this' pointer for convenience.
-			SObject3D* addPObject(fl::physics::PObject3D* obj);
+			// It sets the physical object.
+			void addPObject(fl::physics::PObject3D obj);
 
 			void rotateX(const Rad& rad); // That rad > 0 means rotating clockwise.
 			void rotateY(const Rad& rad); // That rad > 0 means rotating clockwise.
@@ -75,7 +77,7 @@ namespace fl {
 			void rotateZ(const Rad& rad, const Vector3D& refv); // rotate around the point 'refv'
 			void scale(scalar factor, const Vector3D& refv); // scale around the point 'refv'
 
-			// It is called in the same name function of class Stage3D in every LOGICAL FRAME.
+			// It is called in the same name function of class Stage3DImpl in every LOGICAL FRAME.
 			// In fact, what always happens is that it is called directly or indirectly in the same name function of class Stage.
 			// ATTENTION:
 			// 1. You can also override this method in your custom derived class.
@@ -87,23 +89,29 @@ namespace fl {
 			
 		};
 
-		// Class Sprite3D inherits class AutoPtr, which means it must be allocated on the heap.
-		// Class Sprite3D cannot be inherited.
-		// It is not responsible for the destruction of children.
-		// It is used to perform batch transformation of SObject3D.
-		class Sprite3D :public AutoPtr {
-		public:
-			std::list<SObject3D*> children;
+		
+		ILL_INLINE SObject3D MakeSObject3D(const Vector3D& pos) { return SObject3D(new SObject3DImpl(pos)); }
 
-			Sprite3D() {}
-			ILL_INLINE void addObject(SObject3D* p0) { children.push_back(p0); }
-			ILL_INLINE void addObject(SObject3D* p0, SObject3D* p1) { addObject(p0); addObject(p1); }
-			ILL_INLINE void addObject(SObject3D* p0, SObject3D* p1, SObject3D* p2) { addObject(p0, p1); addObject(p2); }
-			ILL_INLINE void rotateX(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateX(rad, refv); }
-			ILL_INLINE void rotateY(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateY(rad, refv); }
-			ILL_INLINE void rotateZ(const Rad& rad, const Vector3D& refv) { for (SObject3D* it : children) it->rotateZ(rad, refv); }
-			ILL_INLINE void scale(scalar factor, const Vector3D& refv) { for (SObject3D* it : children) it->scale(factor, refv); }
-			ILL_INLINE void move(const Vector3D& dir) { for (SObject3D* it : children) it->move(dir); }
+		
+
+		// It is used to perform batch transformation of SObject3DImpl.
+		class Sprite3DImpl {
+		public:
+			std::list<SObject3D> children;
+
+			Sprite3DImpl() {}
+			ILL_INLINE void addObject(SObject3D p0) { children.push_back(p0); }
+			ILL_INLINE void addObject(SObject3D p0, SObject3D p1) { addObject(p0); addObject(p1); }
+			ILL_INLINE void addObject(SObject3D p0, SObject3D p1, SObject3D p2) { addObject(p0, p1); addObject(p2); }
+			ILL_INLINE void rotateX(const Rad& rad, const Vector3D& refv) { for (SObject3D it : children) it->rotateX(rad, refv); }
+			ILL_INLINE void rotateY(const Rad& rad, const Vector3D& refv) { for (SObject3D it : children) it->rotateY(rad, refv); }
+			ILL_INLINE void rotateZ(const Rad& rad, const Vector3D& refv) { for (SObject3D it : children) it->rotateZ(rad, refv); }
+			ILL_INLINE void scale(scalar factor, const Vector3D& refv) { for (SObject3D it : children) it->scale(factor, refv); }
+			ILL_INLINE void move(const Vector3D& dir) { for (SObject3D it : children) it->move(dir); }
 		};
+
+		using Sprite3D = sptr<Sprite3DImpl>;
+
+		ILL_INLINE Sprite3D MakeSprite3D() { return Sprite3D(new Sprite3DImpl()); }
 	}
 }

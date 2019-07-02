@@ -21,8 +21,7 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
-		// Class SEllipse inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		class SEllipse :public Shape {
+		class SEllipseImpl :public ShapeImpl {
 		public:
 			bool filled;
 			COLORREF color; // fill color
@@ -32,12 +31,12 @@ namespace fl {
 
 			void framing() override {}
 
-			virtual ~SEllipse() {}
+			virtual ~SEllipseImpl() {}
 
-			SEllipse(int x, int y, int width, int height, bool filled, COLORREF color,
+			SEllipseImpl(int x, int y, int width, int height, bool filled, COLORREF color,
 				int pen_style_PS = PS_SOLID, int pen_width = 1,
-				COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) 
-				:Shape(parent) 
+				COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				:ShapeImpl(parent) 
 			{
 				this->x = x;
 				this->y = y;
@@ -71,9 +70,15 @@ namespace fl {
 			}
 		};
 
+		using SEllipse = sptr<SEllipseImpl>;
+		ILL_INLINE SEllipse MakeSEllipse(int x, int y, int width, int height, bool filled, COLORREF color,
+			int pen_style_PS = PS_SOLID, int pen_width = 1,
+			COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			return SEllipse(new SEllipseImpl(x, y, width, height, filled, color, pen_style_PS, pen_width, pen_color, parent));
+		}
 
-		// Class SLine inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		class SLine :public Shape {
+
+		class SLineImpl :public ShapeImpl {
 		public:
 			DWORD ps; // pen's style
 			int pwid; // pen's thickness
@@ -82,11 +87,11 @@ namespace fl {
 
 			void framing() override {}
 
-			virtual ~SLine() {}
+			virtual ~SLineImpl() {}
 
-			SLine(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
-				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) 
-				:Shape(parent), x0(x0), y0(y0), x1(x1), y1(y1) 
+			SLineImpl(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
+				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				:ShapeImpl(parent), x0(x0), y0(y0), x1(x1), y1(y1) 
 			{
 				x = min(x0, x1);
 				y = min(y0, y1);
@@ -101,13 +106,13 @@ namespace fl {
 			}
 
 			// Another constructor uses polar coordinates.
-			SLine(int x0, int y0, scalar rad, int length, int PEN_STYLE = PS_SOLID,
-				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape* parent = nullptr) 
-				:Shape(parent)
+			SLineImpl(int x0, int y0, scalar rad, int length, int pen_style_PS = PS_SOLID,
+				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				:ShapeImpl(parent)
 			{
 				int x1 = x0 + int(round(length * cos(rad)));
 				int y1 = y0 + int(round(length * sin(rad)));
-				SLine(x0, y0, x1, y1, PEN_STYLE, pen_width, pen_color, parent);
+				SLineImpl(x0, y0, x1, y1, pen_style_PS, pen_width, pen_color, parent);
 			}
 
 			// Lines will never be hit.
@@ -124,8 +129,18 @@ namespace fl {
 			}
 		};
 
-		// Class SRect inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		class SRect :public Shape {
+		using SLine = sptr<SLineImpl>;
+		ILL_INLINE SLine MakeSLine(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			return SLine(new SLineImpl(x0, y0, x1, y1, pen_style_PS, pen_width, pen_color, parent));
+		}
+
+		ILL_INLINE SLine MakeSLine(int x0, int y0, scalar rad, int length, int pen_style_PS = PS_SOLID,
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			return SLine(new SLineImpl(x0, y0, rad, length, pen_style_PS, pen_width, pen_color, parent));
+		}
+
+		class SRectImpl :public ShapeImpl {
 		public:
 			bool filled;
 			COLORREF color; // fill color
@@ -133,14 +148,14 @@ namespace fl {
 			int pwid; // pen's thickness
 			COLORREF pcolor; // pen's color
 
-			// It implements the corresponding virtual function of class Shape and is empty as the shape is static.
+			// It implements the corresponding virtual function of class ShapeImpl and is empty as the shape is static.
 			void framing() override {}
 
-			virtual ~SRect() {}
+			virtual ~SRectImpl() {}
 			
-			SRect(int x, int y, int width, int height, bool filled, COLORREF color, 
+			SRectImpl(int x, int y, int width, int height, bool filled, COLORREF color, 
 				int pen_style_PS = PS_INSIDEFRAME, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), 
-				Shape* parent = nullptr) :Shape(parent) 
+				Shape parent = nullptr) :ShapeImpl(parent) 
 			{
 				this->x = x;
 				this->y = y;
@@ -171,5 +186,11 @@ namespace fl {
 				}
 			}
 		};
+
+		using SRect = sptr<SRectImpl>;
+		ILL_INLINE SRect MakeSRect(int x0, int y0, int width, int height, bool filled, COLORREF color, int pen_style_PS = PS_SOLID,
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			return SRect(new SRectImpl(x0, y0, width, height, filled, color, pen_style_PS, pen_width, pen_color, parent));
+		}
 	}
 }

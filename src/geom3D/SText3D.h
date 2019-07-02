@@ -20,26 +20,34 @@ copies or substantial portions of the Software.
 
 namespace fl {
 	namespace geom {
+		
+		class SText3DImpl;
 
-		// Class SText3D inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Each SText3D object keeps a HFONT handle, which refers to a font.
-		// Class SText3D inherits class SText, which may need to be improved because SText3D never uses SText::paintEventListener.
-		class SText3D :public fl::display::SText {
+		using SText3D= sptr<SText3DImpl>;
+
+		// Each SText3DImpl object keeps a HFONT handle, which refers to a font.
+		// Class SText3DImpl inherits class STextImpl, which may need to be improved because SText3DImpl never uses STextImpl::paintEventListener.
+		class SText3DImpl :public fl::display::STextImpl {
 		public:
 			Vector3D pos; // the relative position to the coordinate space of the linked object
-			SObject3D* obj; // the linked object 
+			SObject3D obj; // the linked object 
 
 			// It is used to listen for painting events.
-			// In fact, the event is only responded when function Stage3D::render is called.
-			// See Stage3D::render in Stage3D.cpp.
-			fl::events::Signal<fl::events::SimpleEvent<SText3D*>> renderEventListener;
+			// In fact, the event is only responded when function Stage3DImpl::render is called.
+			// See Stage3DImpl::render in Stage3DImpl.cpp.
+			fl::events::Signal<fl::events::SimpleEvent<SText3D>> renderEventListener;
 
-			SText3D(const Vector3D& pos, SObject3D* obj, const wstring& caption,
-				const fl::display::SFont& sfont = fl::display::SFont(20), Shape* parent = nullptr)
-				:SText(0, 0, caption, sfont, parent), pos(pos), obj(obj) {
+			SText3DImpl(const Vector3D& pos, SObject3D obj, const wstring& caption,
+				const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::Shape parent = nullptr)
+				:STextImpl(0, 0, caption, sfont, parent), pos(pos), obj(obj) {
 			}
 
 		};
+
+		ILL_INLINE SText3D MakeSText3D(const Vector3D& pos, SObject3D obj, const wstring& caption,
+			const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::Shape parent = nullptr) {
+			return SText3D(new SText3DImpl(pos, obj, caption, sfont, parent));
+		}
 
 	}
 }

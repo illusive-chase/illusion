@@ -15,15 +15,15 @@ copies or substantial portions of the Software.
 */
 #include "Shape.h"
 
-void fl::display::Shape::transLocalPosToGlobal(int & x, int & y) {
-	for (Shape* fa = parent; fa; fa = fa->parent) {
+void fl::display::ShapeImpl::transLocalPosToGlobal(int & x, int & y) {
+	for (ShapeImpl* fa = parent; fa; fa = fa->parent) {
 		x += fa->x;
 		y += fa->y;
 	}
 }
 
-void fl::display::Shape::transGlobalPosToLocal(int & x, int & y) {
-	for (Shape* fa = parent; fa; fa = fa->parent) {
+void fl::display::ShapeImpl::transGlobalPosToLocal(int & x, int & y) {
+	for (ShapeImpl* fa = parent; fa; fa = fa->parent) {
 		x -= fa->x;
 		y -= fa->y;
 	}

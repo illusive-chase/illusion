@@ -20,24 +20,23 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
-		// Class Sprite inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Class Sprite implement the function of the container and can be inherited.
-		class Sprite :public Shape {
+		// Class SpriteImpl implement the function of the container.
+		class SpriteImpl :public ShapeImpl {
 		public:
 			// Use vector to make it possible to get an object by index.
 			// ATTENTION: There is an implicit convention that objects with smaller index 
 			// will be overlaid on objects with larger indexes when drawing.
-			std::vector<Shape*> children;
+			std::vector<Shape> children;
 
-			Sprite(int x, int y, Shape* parent = nullptr) : Shape(parent) { this->x = x, this->y = y; width = height = 0; }
-			virtual ~Sprite() { for (Shape* child : children) delete child; }
+			SpriteImpl(int x, int y, Shape parent = nullptr) : ShapeImpl(parent) { this->x = x, this->y = y; width = height = 0; }
+			virtual ~SpriteImpl() {}
 			unsigned childrenNum() { return (unsigned)children.size(); }
 
 			// insert
-			void addChildAt(Shape* shape, int index); 
+			void addChildAt(Shape shape, int index); 
 
 			// That is, the newly added objects will be stacked on top.
-			void addChild(Shape* shape) { addChildAt(shape, 0); } 
+			void addChild(Shape shape) { addChildAt(shape, 0); } 
 
 			// Actually, it also delete the child.
 			bool removeChildAt(int index);
@@ -47,12 +46,17 @@ namespace fl {
 			// remove all children
 			void clear();
 
-			void disable() { for (Shape* child : children) child->enabled = false; }
-			void enable() { for (Shape* child : children) child->enabled = true; }
+			void disable() { for (Shape child : children) child->enabled = false; }
+			void enable() { for (Shape child : children) child->enabled = true; }
 
-			virtual void framing() override { for (Shape* child : children) child->framing(); }
+			virtual void framing() override { for (Shape child : children) child->framing(); }
 			virtual bool hitTestPoint(int x, int y) override;
 			virtual void paint(HDC hdc) override;
 		};
+
+		using Sprite = sptr<SpriteImpl>;
+		ILL_INLINE Sprite MakeSprite(int x, int y, Shape parent = nullptr) {
+			return Sprite(new SpriteImpl(x, y, parent));
+		}
 	}
 }

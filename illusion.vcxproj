@@ -296,20 +296,13 @@
     <ClCompile Include="src\physics3D\PObject3D.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
     <ClCompile Include="src\top_element\SAlignedAllocator.cpp" />
-    <ClCompile Include="src\top_element\SEvent.cpp" />
     <ClCompile Include="src\top_element\SLoader.cpp" />
-    <ClCompile Include="src\top_element\SPointer.cpp" />
     <ClCompile Include="src\top_element\Stage.cpp" />
     <ClCompile Include="src\top_element\STimer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="ass\grid.bmp" />
     <Image Include="ass\illusion.ico" />
-    <Image Include="ass\map.bmp" />
-    <Image Include="ass\sky.bmp" />
     <Image Include="ass\small.ico" />
-    <Image Include="ass\test.bmp" />
-    <Image Include="ass\texture.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ass\illusion.rc" />

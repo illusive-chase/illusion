@@ -21,17 +21,16 @@ namespace fl {
 	namespace display {
 
 
-		// Class SBitmap inherits class AutoPtr indirectly, which means it must be allocated on the heap.
-		// Each SBitmap object keeps a HBITMAP handle, which refers to a bitmap.
-		class SBitmap final :public Shape {
+		// Each SBitmapImpl object keeps a HBITMAP handle, which refers to a bitmap.
+		class SBitmapImpl final :public ShapeImpl {
 		private:
 			HBITMAP hbmp;
 
 		public:
 			// ATTENTION: A bitmap created by function CreateBitmap will be selected slower than one created by 
 		    // function CreateCompatibleBitmap. So, there seems to be a potential improvement.
-			SBitmap(int x, int y, DWORD* src, int width, int height, Shape* parent = nullptr)
-				:Shape(parent) {
+			SBitmapImpl(int x, int y, DWORD* src, int width, int height, Shape parent = nullptr)
+				:ShapeImpl(parent) {
 				hbmp = CreateBitmap(width, height, 1, 32, src);
 				this->x = x;
 				this->y = y;
@@ -49,7 +48,7 @@ namespace fl {
 			// The function is empty as the bitmap is static.
 			void framing() override {}
 
-			~SBitmap() { DeleteObject(hbmp); }
+			~SBitmapImpl() { DeleteObject(hbmp); }
 
 			// It uses TransparentBlt, which allows the bitmap to be displayed transparently.
 			void paint(HDC hdc) override {
@@ -63,6 +62,12 @@ namespace fl {
 					DeleteDC(mdc);
 				}
 			}
+
 		};
+
+		using SBitmap = sptr<SBitmapImpl>;
+		ILL_INLINE SBitmap MakeSBitmap(int x, int y, DWORD* src, int width, int height, Shape parent = nullptr) {
+			return SBitmap(new SBitmapImpl(x, y, src, width, height, parent));
+		}
 	}
 }
