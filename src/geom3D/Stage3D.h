@@ -213,11 +213,6 @@ namespace fl {
 
 			ILL_INLINE void addLight(Light3D light) { lit.push_back(light); }
 			ILL_INLINE const std::vector<SObject3D>& getObjects() const { return obj; }
-#ifdef ILL_DEBUG
-			ILL_INLINE const SObject3D getObjectAt(int x, int y) const {
-				return SObject3D(reinterpret_cast<SObject3DImpl*>(swap_chain->prev->map_trait[y * width + x].object));
-			}
-#endif
 		};
 
 		using Stage3D = sptr<Stage3DImpl>;

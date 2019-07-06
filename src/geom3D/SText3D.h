@@ -26,7 +26,8 @@ namespace fl {
 		using SText3D= sptr<SText3DImpl>;
 
 		// Each SText3DImpl object keeps a HFONT handle, which refers to a font.
-		// Class SText3DImpl inherits class STextImpl, which may need to be improved because SText3DImpl never uses STextImpl::paintEventListener.
+		// Class SText3DImpl inherits class STextImpl, 
+		// which may need to be improved because SText3DImpl never uses STextImpl::paintEventListener.
 		class SText3DImpl :public fl::display::STextImpl {
 		public:
 			Vector3D pos; // the relative position to the coordinate space of the linked object

@@ -17,7 +17,10 @@ copies or substantial portions of the Software.
 //#define ILL_NOISY
 
 #include "Scalar.h"
+#ifdef ILL_NOISY
 #include <type_traits>
+#endif
+
 
 namespace fl {
 
@@ -27,8 +30,29 @@ namespace fl {
 		unsigned *cnt;
 		T* ptr;
 	public:
+
+		class wptr {
+		private:
+			const T* ptr;
+			const unsigned* cnt;
+		public:
+			template<typename U>
+			wptr(const sptr<U>& uptr) :ptr(static_cast<T*>(uptr.ptr)), cnt(uptr.cnt) {}
+			wptr() :ptr(nullptr), cnt(nullptr) {}
+			wptr(const sptr<T>& ptr) :ptr(ptr.ptr), cnt(ptr.cnt) {}
+
+			ILL_INLINE const T& operator*() const { return *ptr; }
+			ILL_INLINE unsigned count() const { return *cnt; }
+			ILL_INLINE const T* operator->() const { return ptr; }
+			ILL_INLINE operator bool() const { return ptr; }
+
+		};
+
+
 		template<typename U>
 		friend class sptr;
+
+		friend class wptr;
 
 		template<typename U>
 		sptr(const sptr<U>& uptr) :ptr(static_cast<T*>(uptr.ptr)), cnt(uptr.cnt) { 

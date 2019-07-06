@@ -21,6 +21,7 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
+		// graphics base class
 		class ShapeImpl;
 
 		using Shape = sptr<ShapeImpl>;

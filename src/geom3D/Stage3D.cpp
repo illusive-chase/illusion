@@ -83,7 +83,7 @@ void fl::geom::Stage3DImpl::render() {
 
 				for (Light3D& light : lit) {
 					if (light->type == 2) {
-						Vector3D& lit_dir = DirectionalLight3D(light)->dir;
+						const Vector3D& lit_dir = DirectionalLight3D::wptr(light)->dir;
 						scalar tmp = n * lit_dir;
 						if (tmp > scalar(0)) continue;
 						Vector3D tmp_h = n * (scalar(2) * tmp);
@@ -417,7 +417,7 @@ void fl::geom::Stage3DImpl::project(Shadee& src, Vector3D p, const Vector3D& nor
 	for (Light3D& light : lit) {
 		scalar tmp;
 		if (light->type == 2) {
-			tmp = -(DirectionalLight3D(light)->dir * normal);
+			tmp = -(DirectionalLight3D::wptr(light)->dir * normal);
 			if (tmp > 0.0) intensity_diff += light->intensity * tmp;
 		}
 	}

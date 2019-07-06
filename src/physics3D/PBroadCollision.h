@@ -132,9 +132,8 @@ namespace fl {
 			Node* m_root;
 			Node* m_free;
 			int m_leaves;
-			int m_opath;
 
-			BVH() :m_root(0), m_free(0), m_leaves(0), m_opath(0) {}
+			BVH() :m_root(0), m_free(0), m_leaves(0) {}
 
 			ILL_INLINE Node* createLeafNode(const AxisAlignedBoundingBox& aabb, void* obj, Node* pa) {
 				Node* ret;
@@ -234,22 +233,6 @@ namespace fl {
 				AxisAlignedBoundingBox temp;
 				for (; ppa && ppa->aabb.merge(ppa->lc->aabb, ppa->rc->aabb); ppa = ppa->pa);
 				--m_leaves;
-			}
-
-			void optimize(int passes) {
-				if (passes < 0) passes = m_leaves;
-				if (m_root) {
-					while (passes--) {
-						unsigned bit = 0;
-						Node* root;
-						for (root = m_root; !root->is_leaf(); ) {
-							root = root->children[(m_opath >> bit) & 1];
-							bit = (bit + 1) & 31;
-						}
-						update(root);
-						++m_opath;
-					}
-				}
 			}
 
 			ILL_INLINE void update(Node* leaf) {

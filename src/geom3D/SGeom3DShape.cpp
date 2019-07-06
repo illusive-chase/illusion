@@ -17,7 +17,7 @@ copies or substantial portions of the Software.
 using namespace fl::geom;
 using namespace fl;
 
-static SObject3D&& init(int size, const Vector3D & pos, const Texture & top, const Texture & bottom, const Texture & front,
+static SObject3D init(int size, const Vector3D & pos, const Texture & top, const Texture & bottom, const Texture & front,
 	const Texture & behind, const Texture & left, const Texture & right) 
 {
 	scalar sz = scalar(size >> 1);
@@ -93,7 +93,7 @@ SObject3D fl::geom::MakeSphere3D(const Vector3D & pos, const Texture & texture, 
 #undef ID
 #undef UVID
 
-	return ptr;
+	return std::move(ptr);
 }
 
 SObject3D fl::geom::MakeSQuadr3D(const Vector3D & pos, const Vector3D & width_vec, const Vector3D & height_vec, const Texture & texture)
@@ -106,7 +106,7 @@ SObject3D fl::geom::MakeSQuadr3D(const Vector3D & pos, const Vector3D & width_ve
 	ptr->addPoint(height_vec - width_vec);
 	ptr->addSurface(0, 1, 2, texture, UV(w, 0), UV(w, h), UV(0, h));
 	ptr->addSurface(0, 2, 3, texture, UV(w, 0), UV(0, h), UV(0, 0));
-	return ptr;
+	return std::move(ptr);
 }
 
 SObject3D fl::geom::MakeCube3D(const Vector3D & pos, const Texture & top, const Texture & bottom,

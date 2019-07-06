@@ -97,6 +97,7 @@ namespace fl {
 				std::stack<void*> stk;
 				pbc.cleanup();
 				for (PBroadCollision<PObject3D>::iterator_leaf pr = pbc.leaves.begin(); pr != pbc.leaves.end(); ++pr) {
+					if (!pr->ptr->mass) continue;
 					PObject3D obj = pr->ptr;
 					pbc.setProxyInstant(stk, pr, obj->aabb, obj->vel);
 					while (!stk.empty()) {

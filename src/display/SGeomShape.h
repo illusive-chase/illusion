@@ -148,7 +148,6 @@ namespace fl {
 			int pwid; // pen's thickness
 			COLORREF pcolor; // pen's color
 
-			// It implements the corresponding virtual function of class ShapeImpl and is empty as the shape is static.
 			void framing() override {}
 
 			virtual ~SRectImpl() {}

@@ -67,7 +67,7 @@ namespace fl {
 				), recovery), radius(radius) {
 			}
 			~PSphereImpl() {}
-			unsigned uid() const;
+			unsigned uid() const override;
 
 		};
 
@@ -76,25 +76,49 @@ namespace fl {
 			return PSphere(new PSphereImpl(mass, pos, radius, recovery));
 		}
 
-		class PlatformImpl :public PObject3DImpl {
+		class PQuadImpl :public PObject3DImpl {
 		public:
-
-			PlatformImpl(const geom::Vector3D& pos, scalar radius, scalar recovery)
-				:PObject3DImpl(scalar(0), pos, geom::AxisAlignedBoundingBox(
-					geom::Vector3D(-radius, -radius, -radius),
-					geom::Vector3D(radius, radius, radius)
-				), recovery) {
+			geom::Vector3D sa, sb, sn;
+			PQuadImpl(const geom::Vector3D& pos, const geom::Vector3D& sa, const geom::Vector3D& sb, scalar recovery)
+				:PObject3DImpl(scalar(0), pos, geom::AxisAlignedBoundingBox(), recovery), sa(sa), sb(sb),
+				sn(normalVector(sa, sb))
+			{
+				sn.normalize();
+				// There might be a faster method using SSE.
+				if (sa.x > 0) {
+					if (sb.x < 0) aabb.mi.x = sb.x - sa.x;
+					else aabb.mi.x = -sa.x - sb.x;
+				} else {
+					if (sb.x < 0) aabb.mi.x = sa.x + sb.x;
+					else aabb.mi.x = sa.x - sb.x;
+				}
+				if (sa.y > 0) {
+					if (sb.y < 0) aabb.mi.y = sb.y - sa.y;
+					else aabb.mi.y = -sa.y - sb.y;
+				} else {
+					if (sb.y < 0) aabb.mi.y = sa.y + sb.y;
+					else aabb.mi.y = sa.y - sb.y;
+				}
+				if (sa.z > 0) {
+					if (sb.z < 0) aabb.mi.z = sb.z - sa.z;
+					else aabb.mi.z = -sa.z - sb.z;
+				} else {
+					if (sb.z < 0) aabb.mi.z = sa.z + sb.z;
+					else aabb.mi.z = sa.z - sb.z;
+				}
+				aabb.mx = pos - aabb.mi;
+				aabb.mi += pos;
 			}
-			~PlatformImpl() {}
-			unsigned uid() const;
+			~PQuadImpl() {}
+			unsigned uid() const override;
 
 		};
 
-		using Platform = sptr<PlatformImpl>;
-		ILL_INLINE Platform MakePlatform(const geom::Vector3D& pos, scalar radius, scalar recovery) {
-			return Platform(new PlatformImpl(pos, radius, recovery));
+		using PQuad = sptr<PQuadImpl>;
+		ILL_INLINE PQuad MakePQuad(const geom::Vector3D& pos, const geom::Vector3D& sa, const geom::Vector3D& sb, scalar recovery) {
+			return PQuad(new PQuadImpl(pos, sa, sb, recovery));
 		}
 
-		using PShapeArray = TypeTrait::TypeArray<PSphere>; // Here is used TMP. See class TypeTrait in Struct.h.
+		using PShapeArray = TypeTrait::TypeArray<PSphere, PQuad>; // Here used is TMP. See class TypeTrait in Struct.h.
     }
 }

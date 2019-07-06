@@ -20,7 +20,7 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
-		// Class SpriteImpl implement the function of the container.
+		// Class SpriteImpl is a container class.
 		class SpriteImpl :public ShapeImpl {
 		public:
 			// Use vector to make it possible to get an object by index.

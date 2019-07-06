@@ -16,7 +16,7 @@ copies or substantial portions of the Software.
 #pragma once
 #include "../stdafx.h"
 
-// Here is implemented a Qt-like signal-slot.
+// Here implemented is a Qt-like signal-slot.
 
 namespace fl {
 	namespace events {

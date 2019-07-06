@@ -19,4 +19,4 @@ using namespace fl::physics;
 #define DECLARE_UID(shape) unsigned shape::uid() const { return PShapeArray::getIndex<fl::sptr<shape>>(); }
 
 DECLARE_UID(PSphereImpl)
-DECLARE_UID(PlatformImpl)
+DECLARE_UID(PQuadImpl)

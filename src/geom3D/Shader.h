@@ -36,17 +36,9 @@ namespace fl {
 #else
 			scalar z_depth, r, g, b;
 #endif
-#ifdef ILL_DEBUG
-			// 'object' saved the address of the object from which the color information and the depth information come.
-			// But in the shade function of class Shader, the 'object' is not set.
-			// So it is deactivated now.
-			void* object; 
-			MapTrait() :z_depth(0), r(0), g(0), b(0), object(nullptr) {}
-#else
 			// 'z_depth' is set to 0 initially, which means the actual z depth is infinity.
 			// It should be guaranteed that z_depth > 0.
 			MapTrait() :z_depth(0), r(0), g(0), b(0) {}
-#endif
 
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 		};

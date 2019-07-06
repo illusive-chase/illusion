@@ -21,7 +21,7 @@ namespace fl {
 
 
 		// Class PNarrowCollision detects narrow collision of objects with certain shape and DEALS with it.
-		// Here is used some template meta-programming, but the purpose is very simple:
+		// Here used is some template meta-programming, but the purpose is very simple:
 		// determine an array of function pointers at compile time.
 		// This array is used in the only interface PNarrowCollision::collide,
 		// just in order to avoid excessive shape type checking at running time.
@@ -88,9 +88,14 @@ namespace fl {
 			// If two objects(will collide in the next frame) are still getting closer to each other, avoid the overlap.
 			if (sb > sa && k > 0) {  
 				ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery * (scalar(2) - k);
-				Vector3D va = d * sa , vb = d * sb;
-				a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
-				b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
+				if (a.mass) {
+					Vector3D va = d * sa;
+					a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
+				}
+				if (b.mass) {
+					Vector3D vb = d * sb;
+					b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
+				}
 				// I think the position should not be changed at this stage,
 				// and the velocity should not be reversed immediately(in that case, two objects will possibly never contact).
 				// So I remove the excess velocity along the line connecting two objects
@@ -101,6 +106,57 @@ namespace fl {
 				// Finally, I compensate this loss as well(Item 'd*(a.acc*d)' and 'd*(b.acc*d)').
 			}
 			// Otherwise, there is no need to deal with the collsion.
+		}
+
+		template<>
+		ILL_INLINE static void PNarrowCollision::collide_ref<PSphereImpl, PQuadImpl>(PSphereImpl& a, PQuadImpl& b) {
+			Vector3D vx = a.pos - b.pos;
+			ILL_ATTRIBUTE_ALIGNED16(scalar) sd = vx * b.sn;
+			Vector3D d(b.sn);
+			if (sd < 0) sd = -sd, d = -d;
+			ILL_ATTRIBUTE_ALIGNED16(scalar) sa = a.vel * d, sb = b.vel * d;
+			ILL_ATTRIBUTE_ALIGNED16(scalar) k = scalar(1) - (sd - a.radius) / (sb - sa);
+			if (sb > sa && k > 0) {
+				Vector3D p = vx - d * sd;
+				// Assume p = b.sa*a + b.sb*b.
+				// Then a = (b.sb.x*p.y-b.sb.y*p.x)/(b.sb.x*b.sa.y-b.sa.x*b.sb.y),
+				//      b = (b.sa.x*p.y-b.sa.y*p.x)/(b.sa.x*b.sb.y-b.sb.x*b.sa.y).
+				// A valid collide should guarantee that -1<a<1 and -1<b<1.
+				// Let exy = |b.sa.x*b.sb.y - b.sb.x*b.sa.y|.
+				// Therefore, |b.sa.x*p.y-b.sa.y*p.x| < exy and |b.sb.y*p.x-b.sb.x*p.y| < exy.
+				
+				scalar exy, esb, esa;
+				if (d == Vector3D(0, 1, 0)) { // avoid degeneracy
+					exy = illFabs(b.sa.x*b.sb.z - b.sb.x*b.sa.z);
+					esb = illFabs(b.sa.x*p.z - b.sa.z*p.x);
+					esa = illFabs(b.sb.z*p.x - b.sb.x*p.z);
+				} else if (d == Vector3D(1, 0, 0)) { // avoid degeneracy
+					exy = illFabs(b.sa.z*b.sb.y - b.sb.z*b.sa.y);
+					esb = illFabs(b.sa.z*p.y - b.sa.y*p.z);
+					esa = illFabs(b.sb.y*p.z - b.sb.z*p.y);
+				} else {
+					exy = illFabs(b.sa.x*b.sb.y - b.sb.x*b.sa.y);
+					esb = illFabs(b.sa.x*p.y - b.sa.y*p.x);
+					esa = illFabs(b.sb.y*p.x - b.sb.x*p.y);
+				}
+				if (exy < esa || exy < esb);
+				else {
+					ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery * (scalar(2) - k);
+					if (a.mass) {
+						Vector3D va = d * sa;
+						a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
+					}
+					if (b.mass) {
+						Vector3D vb = d * sb;
+						b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
+					}
+				}
+			}
+		}
+
+		template<>
+		ILL_INLINE static void PNarrowCollision::collide_ref<PQuadImpl, PQuadImpl>(PQuadImpl& a, PQuadImpl& b) {
+			// pass
 		}
 
 	}

@@ -40,6 +40,23 @@ ModelLoader ml;
 Roamer roamer;
 ImageLoader ld;
 Phase ph;
+PObject3D ptrace, ptrace2;
+
+
+void trace(FrameEvent e) {
+	printf("mi x: %f, y: %f, z: %f\nmx x: %f, y: %f, z: %f\n", ptrace->aabb.mi.x, ptrace->aabb.mi.y, ptrace->aabb.mi.z,
+		ptrace->aabb.mx.x, ptrace->aabb.mx.y, ptrace->aabb.mx.z);
+	printf("mi x: %f, y: %f, z: %f\nmx x: %f, y: %f, z: %f\n", ptrace2->aabb.mi.x, ptrace2->aabb.mi.y, ptrace2->aabb.mi.z,
+		ptrace2->aabb.mx.x, ptrace2->aabb.mx.y, ptrace2->aabb.mx.z);
+}
+
+void addBall(const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
+	PSphere psp = MakePSphere(1.0f, pos, 10, 1.0f);
+	psp->acc = vel0;
+	ph->addObject(psp, true);
+	SObject3D sp = MakeSphere3D(Vector3D(), Color::RED, 10, 10, 10);
+	wd->addObject((sp->addPObject(psp), sp));
+}
 
 
 // Initialize
@@ -73,25 +90,19 @@ void fl::Setup() {
 	ld = MakeImageLoader();
 	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
-
-	ph = MakePhase(9.8f, 0.0f);
-	PSphere psp = MakePSphere(1.0f, Vector3D(0, 900, -300), 100.0f, 1.0f);
-	PSphere psp2 = MakePSphere(0.0f, Vector3D(0, -100, -300), 100.0f, 1.0f);
-
-	ph->addObject(psp, true);
-	ph->addObject(psp2, true);
-
+	ph = MakePhase(.98f, 0.0f);
+	PQuad pqd = MakePQuad(Vector3D(0, -20, -60), Vector3D(200, 0, 0), Vector3D(0, 0, 200), 1.0f);
+	ph->addObject(pqd, true);
 	stage.frameEventListener.add(ph.raw(), WM_FRAME, &PhaseImpl::framing);
-
 	stage.addChild(wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 1, MakeSkyBox(tx, 2000)));
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
-	SObject3D sp = MakeSphere3D(Vector3D(), Color::RED, 15, 15, 100);
-	SObject3D sp2 = MakeSphere3D(Vector3D(), Color::GREEN, 15, 15, 100);
-	wd->addObject((sp->addPObject(psp), sp));
-	wd->addObject((sp2->addPObject(psp2), sp2));
+	SObject3D sq = MakeSQuadr3D(Vector3D(), Vector3D(0, 0, 200), Vector3D(200, 0, 0), Color::GREEN);
+	wd->addObject((sq->addPObject(pqd), sq));
 	roamer = MakeRoamer(wd);
 
+	addBall(Vector3D(0, 200, -60));
+	addBall(Vector3D(0, 100, -60));
 	InitWindow();
 }
