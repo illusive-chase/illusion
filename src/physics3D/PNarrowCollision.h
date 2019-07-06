@@ -83,27 +83,24 @@ namespace fl {
 			Vector3D d = a.pos - b.pos;
 			ILL_ATTRIBUTE_ALIGNED16(scalar) sd = d.mod();
 			d /= sd;
-			ILL_ATTRIBUTE_ALIGNED16(scalar) sa = a.vel * d, sb = b.vel * d;
-			ILL_ATTRIBUTE_ALIGNED16(scalar) k = scalar(1) - (sd - a.radius - b.radius) / (sb - sa);
+			ILL_ATTRIBUTE_ALIGNED16(scalar) sr = b.vel * d - a.vel * d;
+			ILL_ATTRIBUTE_ALIGNED16(scalar) k = scalar(1) - (sd - a.radius - b.radius) / sr;
 			// If two objects(will collide in the next frame) are still getting closer to each other, avoid the overlap.
-			if (sb > sa && k > 0) {  
-				ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery * (scalar(2) - k);
+			if (sr > 0 && k > 0) {
+				ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery + scalar(1) - k;
+				ILL_ATTRIBUTE_ALIGNED16(scalar) rec2 = a.recovery * b.recovery * (scalar(1) - k);
 				if (a.mass) {
-					Vector3D va = d * sa;
-					a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
+					Vector3D va = d * (-sr);
+					a.acc -= va * rec + d * (a.acc*d*rec2), a.vel -= va * k;
 				}
 				if (b.mass) {
-					Vector3D vb = d * sb;
-					b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
+					Vector3D vb = d * sr;
+					b.acc -= vb * rec + d * (b.acc*d*rec2), b.vel -= vb * k;
 				}
 				// I think the position should not be changed at this stage,
 				// and the velocity should not be reversed immediately(in that case, two objects will possibly never contact).
 				// So I remove the excess velocity along the line connecting two objects
-				// in order to let them exactly contact with each other in the next frame;
-				// I also compensate for this loss by add the loss velocity to their acceleration(Item 'va*rec' and 'vb*rec').
-				// But I notice that this will let their velocity add an additional acceleration along the line connecting two objects,
-				// which leads to violation of energy conservation.
-				// Finally, I compensate this loss as well(Item 'd*(a.acc*d)' and 'd*(b.acc*d)').
+				// in order to let them exactly contact with each other in the next frame.
 			}
 			// Otherwise, there is no need to deal with the collsion.
 		}
@@ -141,15 +138,13 @@ namespace fl {
 				}
 				if (exy < esa || exy < esb);
 				else {
-					ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery * (scalar(2) - k);
+					ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery + scalar(1) - k;
+					ILL_ATTRIBUTE_ALIGNED16(scalar) rec2 = a.recovery * b.recovery * (scalar(1) - k);
 					if (a.mass) {
 						Vector3D va = d * sa;
-						a.acc -= va * rec + d * (a.acc * d), a.vel -= va * k;
+						a.acc -= va * rec + d * (a.acc*d*rec2), a.vel -= va * k;
 					}
-					if (b.mass) {
-						Vector3D vb = d * sb;
-						b.acc -= vb * rec + d * (b.acc * d), b.vel -= vb * k;
-					}
+					// b.mass should always be 0.
 				}
 			}
 		}

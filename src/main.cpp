@@ -102,7 +102,7 @@ void fl::Setup() {
 	wd->addObject((sq->addPObject(pqd), sq));
 	roamer = MakeRoamer(wd);
 
-	addBall(Vector3D(0, 200, -60));
-	addBall(Vector3D(0, 100, -60));
+	addBall(Vector3D(8, 100, -60));
+	addBall(Vector3D(0, -10, -60));
 	InitWindow();
 }
