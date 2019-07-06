@@ -36,13 +36,13 @@ namespace fl {
 			
 			PhaseImpl(scalar gravity_c, scalar resistance_c) :g_gravity(gravity_c), g_resistance(resistance_c) {}
 
-			ILL_INLINE void addObject(PObject3D obj, bool collisible) {
+			ILL_INLINE void addObject(PObject3D obj, bool collisible, bool dynamic = true) {
 				objs.push_back(obj);
-				if (obj->mass) {
+				if (dynamic) {
 					g_gravity.addObject(obj);
 					g_resistance.addObject(obj);
 				}
-				if (collisible) g_collision.addObject(obj, obj->mass);
+				if (collisible) g_collision.addObject(obj, dynamic);
 			}
 
 			ILL_INLINE void framing(events::FrameEvent e) {
@@ -51,6 +51,7 @@ namespace fl {
 				g_resistance.apply();
 				g_gravity.apply();
 				g_collision.apply();
+				g_collision.apply(); // Call twice to avoid error from the calculation sequence.
 			}
 
 		};

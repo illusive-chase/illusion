@@ -50,8 +50,8 @@ void trace(FrameEvent e) {
 		ptrace2->aabb.mx.x, ptrace2->aabb.mx.y, ptrace2->aabb.mx.z);
 }
 
-void addBall(const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
-	PSphere psp = MakePSphere(1.0f, pos, 10, 1.0f);
+void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
+	PSphere psp = MakePSphere(w, pos, 10, 1.0f);
 	psp->acc = vel0;
 	ph->addObject(psp, true);
 	SObject3D sp = MakeSphere3D(Vector3D(), Color::RED, 10, 10, 10);
@@ -90,8 +90,8 @@ void fl::Setup() {
 	ld = MakeImageLoader();
 	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
-	ph = MakePhase(.98f, 0.0f);
-	PQuad pqd = MakePQuad(Vector3D(0, -20, -60), Vector3D(200, 0, 0), Vector3D(0, 0, 200), 1.0f);
+	ph = MakePhase(.98f, 0.1f);
+	PQuad pqd = MakePQuad(Vector3D(0, -20, -60), Vector3D(200, 0, 0), Vector3D(0, 0, 200), 0.8f);
 	ph->addObject(pqd, true);
 	stage.frameEventListener.add(ph.raw(), WM_FRAME, &PhaseImpl::framing);
 	stage.addChild(wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 1, MakeSkyBox(tx, 2000)));
@@ -102,7 +102,7 @@ void fl::Setup() {
 	wd->addObject((sq->addPObject(pqd), sq));
 	roamer = MakeRoamer(wd);
 
-	addBall(Vector3D(8, 100, -60));
-	addBall(Vector3D(0, -10, -60));
+	addBall(10.0f, Vector3D(8, 100, -60));
+	addBall(1.0f, Vector3D(0, -10, -60));
 	InitWindow();
 }

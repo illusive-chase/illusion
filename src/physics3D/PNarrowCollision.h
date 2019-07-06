@@ -89,12 +89,16 @@ namespace fl {
 			if (sr > 0 && k > 0) {
 				ILL_ATTRIBUTE_ALIGNED16(scalar) rec = a.recovery * b.recovery + scalar(1) - k;
 				ILL_ATTRIBUTE_ALIGNED16(scalar) rec2 = a.recovery * b.recovery * (scalar(1) - k);
+				scalar fac_a = b.mass ? (b.mass / (a.mass + b.mass)) : scalar(1);
+				scalar fac_b = a.mass ? (a.mass / (a.mass + b.mass)) : scalar(1);
 				if (a.mass) {
-					Vector3D va = d * (-sr);
+					ILL_ATTRIBUTE_ALIGNED16(scalar) fac = -sr * fac_a;
+					Vector3D va = d * fac;
 					a.acc -= va * rec + d * (a.acc*d*rec2), a.vel -= va * k;
 				}
 				if (b.mass) {
-					Vector3D vb = d * sr;
+					ILL_ATTRIBUTE_ALIGNED16(scalar) fac = sr * fac_b;
+					Vector3D vb = d * fac;
 					b.acc -= vb * rec + d * (b.acc*d*rec2), b.vel -= vb * k;
 				}
 				// I think the position should not be changed at this stage,

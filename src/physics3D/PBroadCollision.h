@@ -194,7 +194,7 @@ namespace fl {
 					return;
 				}
 				Node* root;
-				for (root = m_root; !m_root->is_leaf();) {
+				for (root = m_root; !root->is_leaf();) {
 					root = root->children[select(leaf->aabb, root->lc->aabb, root->rc->aabb)];
 				}
 				Node* pa = root->pa;
