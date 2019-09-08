@@ -13,7 +13,75 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
-#include "System.h"
+#pragma once
+#include "..\stdafx.h"
+#include "..\resource.h"
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#define WM_FRAME (WM_USER+1)
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+					  _In_opt_ HINSTANCE hPrevInstance,
+					  _In_ LPWSTR    lpCmdLine,
+					  _In_ int       nCmdShow);
+
+namespace fl {
+
+	class System {
+	private:
+		friend int APIENTRY::wWinMain(_In_ HINSTANCE hInstance,
+									  _In_opt_ HINSTANCE hPrevInstance,
+									  _In_ LPWSTR    lpCmdLine,
+									  _In_ int       nCmdShow);
+		static constexpr int MAX_LOADSTRING = 100;
+		static HINSTANCE g_hInstance;
+		static HDC g_hdc;
+		static HDC g_hmemdc;
+		static HBITMAP g_hbitmap;
+		static HWND g_hWnd;
+		static int init_nCmdShow;
+		static HINSTANCE hInst;                                // 当前实例
+		static WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
+		static WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
+
+		static ATOM                MyRegisterClass(HINSTANCE hInstance);
+		static BOOL                InitInstance(HINSTANCE, int, int, int, int, int);
+		static INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+		System() = delete;
+		~System() = delete;
+
+	public:
+		static bool InitWindow(const wstring& title = L"Program", int xpos = 20, int ypos = 20, int width = 1024, int height = 768);
+		static void Setup();
+		static wstring CurrentExe();
+
+#ifdef GetCurrentDirectory
+#undef GetCurrentDirectory
+#endif
+		static wstring GetCurrentDirectory();
+
+#ifdef SetCurrentDirectory
+#undef SetCurrentDirectory
+#endif
+		static bool SetCurrentDirectory(const wstring& dir);
+
+#ifdef GetEnvironmentVariable
+#undef GetEnvironmentVariable
+#endif
+		static wstring GetEnvironmentVariable(const wstring& name);
+		static void PrintLastError();
+
+		static bool IsAdmin(bool& isadmin);
+	};
+}
+
+
+#endif
+
+
 #include <ctime>
 #include <algorithm>
 #include "SConfig.h"
@@ -61,39 +129,41 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
 
-	MSG msg;
+	MSG msg = {};
 	tagRECT lprect;
 	DWORD curr_time = 0, prev_time = 0;
 
 	// 主消息循环:
-	Timer::base_time = GetTickCount();
+	fl::time::Timer::base_time = GetTickCount();
 
 	LARGE_INTEGER li = {};
 	li.QuadPart = -100000;
 	HANDLE m_hTimer = CreateWaitableTimer(NULL, FALSE, NULL);
-	SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
+	if (m_hTimer) {
+		SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
 
-	while (WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
-		if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			curr_time = GetTickCount();
-			Timer::global_tick(DWORD(curr_time - Timer::base_time));
-			Timer::base_time = curr_time;
-			if (curr_time - prev_time > fl::MILISECOND_PER_FRAME) {
-				if (GetClientRect(System::g_hWnd, &lprect)) {
-					InvalidateRect(System::g_hWnd, &lprect, TRUE);
-					UpdateWindow(System::g_hWnd);
-				}
-				stage.framing();
-				prev_time = curr_time;
-			} else Sleep(0);
-		} else {
-			if (WM_QUIT == msg.message) break;
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		while (WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
+			if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				curr_time = GetTickCount();
+				fl::time::Timer::global_tick(DWORD(curr_time - fl::time::Timer::base_time));
+				fl::time::Timer::base_time = curr_time;
+				if (curr_time - prev_time > fl::MILISECOND_PER_FRAME) {
+					if (GetClientRect(System::g_hWnd, &lprect)) {
+						InvalidateRect(System::g_hWnd, &lprect, TRUE);
+						UpdateWindow(System::g_hWnd);
+					}
+					stage.framing();
+					prev_time = curr_time;
+				} else Sleep(0);
+			} else {
+				if (WM_QUIT == msg.message) break;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
-	}
 
-	CloseHandle(m_hTimer);
+		CloseHandle(m_hTimer);
+	}
 	stage.destroy();
 	return (int)msg.wParam;
 }
@@ -158,7 +228,7 @@ BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int y
 //
 //
 LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-
+	using namespace fl::events;
 	switch (message) {
 	case WM_ERASEBKGND:
 	{
@@ -236,8 +306,8 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		static DWORD curr_time = 0;
 		static int cnt = 0;
 		if (++cnt > 7) {
-			prev_time = curr_time ? curr_time : Timer::base_time;
-			curr_time = Timer::base_time;
+			prev_time = curr_time ? curr_time : fl::time::Timer::base_time;
+			curr_time = fl::time::Timer::base_time;
 			cnt = 0;
 		}
 		WCHAR itow[20];

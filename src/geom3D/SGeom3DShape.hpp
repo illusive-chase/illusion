@@ -13,13 +13,53 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
-#include "SGeom3DShape.h"
-using namespace fl::geom;
-using namespace fl;
 
-static SObject3D init(int size, const Vector3D & pos, const Texture & top, const Texture & bottom, const Texture & front,
-	const Texture & behind, const Texture & left, const Texture & right) 
+#pragma once
+#include "SObject3D.h"
+
+// This file encapsulates some 3D geometry based on class SObject3DImpl.
+// In fact, using inheritance may not be appropriate.
+// These classes actually only provide constructors that manipulate SObject objects to build some 3D geometry.
+
+
+namespace fl {
+	namespace geom {
+
+		// The axis of the sphere is oriented along the y-axis by default.
+		SObject3D MakeSphere3D(const Vector3D& pos, const Texture& texture, int row = 15, int col = 15, int r = 60);
+
+		SObject3D MakeCube3D(const Vector3D& pos, const Texture& top, const Texture& bottom, const Texture& front,
+							 const Texture& behind, const Texture& left, const Texture& right, int size = 60);
+
+		// The texture's direction can be confusing.
+		// Please have a try or see the definition of function init.
+		SObject3D MakeCube3D(const Vector3D& pos, const Texture& top, const Texture& bottom, const Texture& around, int size = 60);
+
+		// The texture's direction can be confusing.
+		// Please have a try or see the definition of function init.
+		SObject3D MakeCube3D(const Vector3D& pos, const Texture& texture, int size = 60);
+
+
+
+
+		/*                 ^ height_vec
+		 *                 |
+		 *                 |
+		 *                 o------------------> width_vec
+		 *
+		 */
+		 // It builds a Parallelogram by two direction vectors, as shown above.
+		SObject3D MakeSQuadr3D(const Vector3D& pos, const Vector3D& width_vec, const Vector3D& height_vec, const Texture& texture);
+	}
+}
+
+
+
+static fl::geom::SObject3D init(int size, const fl::geom::Vector3D & pos, const fl::geom::Texture & top, const fl::geom::Texture & bottom, const fl::geom::Texture & front,
+	const fl::geom::Texture & behind, const fl::geom::Texture & left, const fl::geom::Texture & right)
 {
+	using namespace fl::geom;
+	using namespace fl;
 	scalar sz = scalar(size >> 1);
 	SObject3D ptr = MakeSObject3D(pos);
 	ptr->addPoint(Vector3D(sz, sz, sz));
@@ -45,8 +85,10 @@ static SObject3D init(int size, const Vector3D & pos, const Texture & top, const
 	return std::move(ptr);
 }
 
-SObject3D fl::geom::MakeSphere3D(const Vector3D & pos, const Texture & texture, int row, int col, int r)
+fl::geom::SObject3D fl::geom::MakeSphere3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & texture, int row, int col, int r)
 {
+	using namespace fl::geom;
+	using namespace fl;
 	SObject3D ptr = MakeSObject3D(pos);
 	const int width = texture.width - 1;
 	const int height = texture.height - 1;
@@ -96,8 +138,10 @@ SObject3D fl::geom::MakeSphere3D(const Vector3D & pos, const Texture & texture, 
 	return std::move(ptr);
 }
 
-SObject3D fl::geom::MakeSQuadr3D(const Vector3D & pos, const Vector3D & width_vec, const Vector3D & height_vec, const Texture & texture)
+fl::geom::SObject3D fl::geom::MakeSQuadr3D(const fl::geom::Vector3D & pos, const fl::geom::Vector3D & width_vec, const fl::geom::Vector3D & height_vec, const fl::geom::Texture & texture)
 {
+	using namespace fl::geom;
+	using namespace fl;
 	int w = texture.width - 1, h = texture.height - 1;
 	SObject3D ptr = MakeSObject3D(pos);
 	ptr->addPoint(width_vec + height_vec);
@@ -109,18 +153,24 @@ SObject3D fl::geom::MakeSQuadr3D(const Vector3D & pos, const Vector3D & width_ve
 	return std::move(ptr);
 }
 
-SObject3D fl::geom::MakeCube3D(const Vector3D & pos, const Texture & top, const Texture & bottom,
-	const Texture & front, const Texture & behind, const Texture & left, const Texture & right, int size)
+fl::geom::SObject3D fl::geom::MakeCube3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & top, const fl::geom::Texture & bottom,
+	const fl::geom::Texture & front, const fl::geom::Texture & behind, const fl::geom::Texture & left, const fl::geom::Texture & right, int size)
 {
+	using namespace fl::geom;
+	using namespace fl;
 	return init(size, pos, top, bottom, front, behind, left, right);
 }
 
-SObject3D fl::geom::MakeCube3D(const Vector3D & pos, const Texture & top, const Texture & bottom,
+fl::geom::SObject3D fl::geom::MakeCube3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & top, const fl::geom::Texture & bottom,
 	const Texture & around, int size)
 {
+	using namespace fl::geom;
+	using namespace fl;
 	return init(size, pos, top, bottom, around, around, around, around);
 }
 
-SObject3D fl::geom::MakeCube3D(const Vector3D & pos, const Texture & texture, int size) {
+fl::geom::SObject3D fl::geom::MakeCube3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & texture, int size) {
+	using namespace fl::geom;
+	using namespace fl;
 	return init(size, pos, texture, texture, texture, texture, texture, texture);
 }

@@ -19,7 +19,7 @@ copies or substantial portions of the Software.
 namespace fl {
 
 	// ATTENTION: It is different from the default macro RGB and is the only CORRECT color format in 3D rendering.
-	ILL_INLINE DWORD RGB3D(BYTE r, BYTE g, BYTE b) { return (r << 16) | (g << 8) | b; }
+	ILL_INLINE constexpr DWORD RGB3D(BYTE r, BYTE g, BYTE b) { return (r << 16) | (g << 8) | b; }
 
 	namespace display {
 
@@ -28,9 +28,26 @@ namespace fl {
 		// 2. These colors are mutable, so you can customize them.
 		class Color {
 		public:
-			static DWORD RED, BLUE, GREEN, YELLOW, PURPLE, VIOLET, BLACK, WHITE, ORANGE, SILVER, GREY, GOLD, BROWN, PINK, CYAN, FUCHSIA, LIME;
+			enum Constant {
+				RED = RGB3D(255, 0, 0),
+				BLUE = RGB3D(0, 0, 255),
+				GREEN = RGB3D(0, 128, 0),
+				YELLOW = RGB3D(255, 255, 0),
+				PURPLE = RGB3D(128, 0, 128),
+				VIOLET = RGB3D(128, 0, 255),
+				BLACK = RGB3D(0, 0, 0),
+				WHITE = RGB3D(255, 255, 255),
+				ORANGE = RGB3D(255, 128, 0),
+				SILVER = RGB3D(192, 192, 192),
+				GREY = RGB3D(128, 128, 128),
+				GOLD = RGB3D(255, 215, 0),
+				BROWN = RGB3D(128, 64, 64),
+				PINK = RGB3D(255, 128, 192),
+				CYAN = RGB3D(0, 255, 255),
+				FUCHSIA = RGB3D(255, 0, 255),
+				LIME = RGB3D(0, 255, 0)
+			};
 			virtual ~Color() = 0;
 		};
-
 	}
 }

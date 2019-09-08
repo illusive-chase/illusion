@@ -86,7 +86,7 @@ void System::Setup() {
 	
 
 
-#if 0
+#if 1
 	stage.addConsole();
 
 	ld = MakeImageLoader();
@@ -108,7 +108,7 @@ void System::Setup() {
 	addBall(1.0f, Vector3D(0, -10, -60));
 	InitWindow();
 #endif
-
+#if 0
 	stage.addConsole();
 
 	int yy = 2019, mm = 8, dd = 21;
@@ -118,6 +118,7 @@ void System::Setup() {
 	sp.format(L"YY-MM-DD", L"2019-8-21");
 	sp.write(yy, mm, dd);
 	std::wcout << yy << L" " << mm << L" " << dd << std::endl;
+#endif
 }
 
 

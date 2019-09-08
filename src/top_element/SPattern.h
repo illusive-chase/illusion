@@ -1,6 +1,6 @@
 #pragma once
 #include "Struct.h"
-#include "System.h"
+#include "../stdafx.h"
 #include <unordered_map>
 
 

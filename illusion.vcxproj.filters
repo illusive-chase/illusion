@@ -19,9 +19,6 @@
     <Filter Include="源文件\top_element">
       <UniqueIdentifier>{5e61dd2d-32a0-4a33-a350-54fb4c3a3093}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\display">
-      <UniqueIdentifier>{ae38cd82-aa9c-4dea-89da-4c810a761dac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="源文件\geom3D">
       <UniqueIdentifier>{4a3e0676-5392-4d30-b8ef-4a6bbe479d61}</UniqueIdentifier>
     </Filter>
@@ -37,12 +34,12 @@
     <Filter Include="头文件\physics3D">
       <UniqueIdentifier>{d14b22b8-3014-45a6-b3b8-531f72182158}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\display">
+      <UniqueIdentifier>{27042867-dabb-413e-964e-a12b22678ac4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\display\SBitmap.h">
-      <Filter>头文件\display</Filter>
-    </ClInclude>
-    <ClInclude Include="src\display\SColor.h">
       <Filter>头文件\display</Filter>
     </ClInclude>
     <ClInclude Include="src\display\SFont.h">
@@ -51,13 +48,7 @@
     <ClInclude Include="src\display\SGeomShape.h">
       <Filter>头文件\display</Filter>
     </ClInclude>
-    <ClInclude Include="src\display\Shape.h">
-      <Filter>头文件\display</Filter>
-    </ClInclude>
     <ClInclude Include="src\display\SMovieClip.h">
-      <Filter>头文件\display</Filter>
-    </ClInclude>
-    <ClInclude Include="src\display\Sprite.h">
       <Filter>头文件\display</Filter>
     </ClInclude>
     <ClInclude Include="src\display\SText.h">
@@ -67,9 +58,6 @@
       <Filter>头文件\geom3D</Filter>
     </ClInclude>
     <ClInclude Include="src\geom3D\SGeomMath.h">
-      <Filter>头文件\geom3D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\geom3D\Shader.h">
       <Filter>头文件\geom3D</Filter>
     </ClInclude>
     <ClInclude Include="src\geom3D\SkyBox.h">
@@ -165,58 +153,61 @@
     <ClInclude Include="src\top_element\SPattern.h">
       <Filter>头文件\top_element</Filter>
     </ClInclude>
+    <ClInclude Include="src\display\SColor.h">
+      <Filter>头文件\display</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\Shader.h">
+      <Filter>头文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\Shape.h">
+      <Filter>头文件\display</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\Sprite.h">
+      <Filter>头文件\display</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\Shape.hpp">
+      <Filter>源文件\display</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\Sprite.hpp">
+      <Filter>源文件\display</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\System.hpp">
+      <Filter>源文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\STimer.hpp">
+      <Filter>源文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\Stage.hpp">
+      <Filter>源文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\SLoader.hpp">
+      <Filter>源文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics3D\PObject3D.hpp">
+      <Filter>源文件\physics3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\SGeom3DShape.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\SObject3D.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\SMLAAA.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\SkyBox.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\Stage3D.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geom3D\SUI.hpp">
+      <Filter>源文件\geom3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\display\SColor.cpp">
-      <Filter>源文件\display</Filter>
-    </ClCompile>
-    <ClCompile Include="src\display\Shape.cpp">
-      <Filter>源文件\display</Filter>
-    </ClCompile>
-    <ClCompile Include="src\display\SMovieClip.cpp">
-      <Filter>源文件\display</Filter>
-    </ClCompile>
-    <ClCompile Include="src\display\Sprite.cpp">
-      <Filter>源文件\display</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\SGeom3DShape.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\SkyBox.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\SMLAAA.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\SObject3D.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\Stage3D.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\physics3D\PObject3D.cpp">
-      <Filter>源文件\physics3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\top_element\SLoader.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
-    <ClCompile Include="src\top_element\Stage.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
-    <ClCompile Include="src\top_element\STimer.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
-    <ClCompile Include="src\geom3D\SUI.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\top_element\System.cpp">
-      <Filter>源文件\top_element</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

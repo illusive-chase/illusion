@@ -202,8 +202,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <StructMemberAlignment>Default</StructMemberAlignment>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <DisableSpecificWarnings>26451;6297;6385;28159</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -244,26 +243,35 @@
     <ClInclude Include="src\display\SFont.h" />
     <ClInclude Include="src\display\SGeomShape.h" />
     <ClInclude Include="src\display\Shape.h" />
+    <ClInclude Include="src\display\Shape.hpp" />
     <ClInclude Include="src\display\SMovieClip.h" />
     <ClInclude Include="src\display\Sprite.h" />
+    <ClInclude Include="src\display\Sprite.hpp" />
     <ClInclude Include="src\display\SText.h" />
     <ClInclude Include="src\geom3D\SGeom3DShape.h" />
+    <ClInclude Include="src\geom3D\SGeom3DShape.hpp" />
     <ClInclude Include="src\geom3D\SGeomMath.h" />
     <ClInclude Include="src\geom3D\Shader.h" />
     <ClInclude Include="src\geom3D\SkyBox.h" />
+    <ClInclude Include="src\geom3D\SkyBox.hpp" />
     <ClInclude Include="src\geom3D\SLight.h" />
     <ClInclude Include="src\geom3D\SMLAAA.h" />
+    <ClInclude Include="src\geom3D\SMLAAA.hpp" />
     <ClInclude Include="src\geom3D\SObject3D.h" />
+    <ClInclude Include="src\geom3D\SObject3D.hpp" />
     <ClInclude Include="src\geom3D\Stage3D.h" />
+    <ClInclude Include="src\geom3D\Stage3D.hpp" />
     <ClInclude Include="src\geom3D\SText3D.h" />
     <ClInclude Include="src\geom3D\STexture.h" />
     <ClInclude Include="src\geom3D\SUI.h" />
+    <ClInclude Include="src\geom3D\SUI.hpp" />
     <ClInclude Include="src\geom3D\Surface.h" />
     <ClInclude Include="src\physics3D\PBroadCollision.h" />
     <ClInclude Include="src\physics3D\PForce.h" />
     <ClInclude Include="src\physics3D\Phase.h" />
     <ClInclude Include="src\physics3D\PNarrowCollision.h" />
     <ClInclude Include="src\physics3D\PObject3D.h" />
+    <ClInclude Include="src\physics3D\PObject3D.hpp" />
     <ClInclude Include="src\Resource.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\targetver.h" />
@@ -273,33 +281,21 @@
     <ClInclude Include="src\top_element\SEvent.h" />
     <ClInclude Include="src\top_element\SImport.h" />
     <ClInclude Include="src\top_element\SLoader.h" />
+    <ClInclude Include="src\top_element\SLoader.hpp" />
     <ClInclude Include="src\top_element\SLog.h" />
     <ClInclude Include="src\top_element\SPattern.h" />
     <ClInclude Include="src\top_element\SPointer.h" />
     <ClInclude Include="src\top_element\Stage.h" />
+    <ClInclude Include="src\top_element\Stage.hpp" />
     <ClInclude Include="src\top_element\STime.h" />
     <ClInclude Include="src\top_element\STimer.h" />
+    <ClInclude Include="src\top_element\STimer.hpp" />
     <ClInclude Include="src\top_element\Struct.h" />
     <ClInclude Include="src\top_element\System.h" />
+    <ClInclude Include="src\top_element\System.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\display\SColor.cpp" />
-    <ClCompile Include="src\display\Shape.cpp" />
-    <ClCompile Include="src\display\SMovieClip.cpp" />
-    <ClCompile Include="src\display\Sprite.cpp" />
-    <ClCompile Include="src\geom3D\SGeom3DShape.cpp" />
-    <ClCompile Include="src\geom3D\SkyBox.cpp" />
-    <ClCompile Include="src\geom3D\SMLAAA.cpp" />
-    <ClCompile Include="src\geom3D\SObject3D.cpp" />
-    <ClCompile Include="src\geom3D\Stage3D.cpp" />
-    <ClCompile Include="src\geom3D\SUI.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\physics3D\PObject3D.cpp" />
-    <ClCompile Include="src\stdafx.cpp" />
-    <ClCompile Include="src\top_element\SLoader.cpp" />
-    <ClCompile Include="src\top_element\Stage.cpp" />
-    <ClCompile Include="src\top_element\STimer.cpp" />
-    <ClCompile Include="src\top_element\System.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ass\illusion.ico" />

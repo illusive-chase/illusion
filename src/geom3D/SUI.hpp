@@ -13,10 +13,39 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
-#include "SUI.h"
+#pragma once
+#include "../top_element/SPointer.h"
+#include "Stage3D.h"
 #include "../top_element/Stage.h"
 #include "SObject3D.h"
 #include "../display/SText.h"
+
+
+namespace fl {
+
+	namespace ui {
+
+		class RoamerImpl {
+		public:
+			RoamerImpl(geom::Stage3D link, int move_speed = 7, int rotate_speed = 5);
+			void keyDown(events::KeyboardEvent e);
+			void mouseMove(events::MouseEvent e);
+			void update(events::SystemEvent e);
+		private:
+			geom::Stage3D link;
+			geom::Rad rad;
+			int centerX, centerY;
+			int x, y;
+			int speed;
+		};
+
+		using Roamer = sptr<RoamerImpl>;
+		ILL_INLINE Roamer MakeRoamer(geom::Stage3D link, int move_speed = 7, int rotate_speed = 5) {
+			return Roamer(new RoamerImpl(link, move_speed, rotate_speed));
+		}
+	}
+}
+
 
 extern fl::display::Stage stage;
 extern HWND g_hWnd;

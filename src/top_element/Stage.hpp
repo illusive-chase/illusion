@@ -13,7 +13,51 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
-#include "Stage.h"
+#pragma once
+
+#include "../display/Sprite.h"
+#include "STimer.h"
+
+namespace fl {
+	namespace display {
+
+		// Class Stage is actually a singleton but is not implemented as such(but this should be improved).
+		// It should never be inherited.
+		class Stage :public SpriteImpl {
+		public:
+			fl::events::Signal<fl::events::KeyboardEvent> keyboardEventListener;
+			fl::events::Signal<fl::events::MouseEvent> mouseEventListener;
+			fl::events::Signal<fl::events::SystemEvent> systemEventListener;
+			fl::events::Signal<fl::events::FrameEvent> frameEventListener;
+
+
+			bool console_show;
+			int mouseX, mouseY;
+
+			Stage() :SpriteImpl(0, 0, nullptr), mouseX(0), mouseY(0), console_show(false) {}
+			~Stage() {}
+			bool addConsole(const wstring& TITLE = L"Console");
+			bool showConsole();
+			bool hideConsole();
+
+			void destroy();
+			void framing();
+
+			RECT getWindowArea() const;
+			RECT getStageArea() const;
+			void setMouse(int x, int y);
+
+			// It returns macro ID... like macro IDOK
+			DWORD message(const wstring& test, const wstring& TITLE, UINT mode_MB, bool fixed);
+
+			void removeEventListener();
+			ILL_INLINE bool hitTestPoint(int x, int y) { return true; }
+			void paint(HDC hdc);
+		};
+
+
+	}
+}
 
 fl::display::Stage stage;
 HWND g_hWnd = NULL;

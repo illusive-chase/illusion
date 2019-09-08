@@ -105,7 +105,7 @@ ILL_INLINE __m128 operator*(const __m128 A, const __m128 B) {
 
 #ifdef ILL_DEBUG
 #include <assert.h>
-#define ILLAssert assert
+#define ILLAssert(x) assert(x)
 #else
 #define ILLAssert(x)
 #endif
