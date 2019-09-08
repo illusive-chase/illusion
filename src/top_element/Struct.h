@@ -105,7 +105,7 @@ namespace fl {
 
 
 	class TypeTrait {
-	private:
+	public:
 		template<typename A, typename B>
 		struct TypeEqual { static constexpr bool value = false; };
 
@@ -129,6 +129,8 @@ namespace fl {
 
 		template<typename Last>
 		struct TypeArrayLength<Last> { static constexpr int value = 1; };
+
+	private:
 
 		template<typename Find, typename ...Args>
 		struct TypeArrayBase;
@@ -157,6 +159,26 @@ namespace fl {
 			using type = typename TypeArrayValue<Index, Element...>::value;
 		};
 
+	};
+
+
+	template<int N, typename F, typename ...T>
+	struct VariableParamentsIterator {};
+
+	template<int N, typename F, typename First, typename ...T>
+	struct VariableParamentsIterator<N, F, First, T...> {
+		static void iter(F& func, First arg, T ...args) {
+			func(arg);
+			VariableParamentsIterator<N - 1, F, T...>::iter(func, args...);
+		}
+	};
+
+	template<int N, typename F, typename Last>
+	struct VariableParamentsIterator<N, F, Last> {
+		static void iter(F& func, Last arg) {
+			func(arg);
+			static_assert(N == 1, "Incorrect Length.");
+		}
 	};
 
 

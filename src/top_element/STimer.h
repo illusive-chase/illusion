@@ -51,10 +51,10 @@ namespace fl{
 				return count;
 			}
 
-			Timer(const Timer& cp) :interval(0) {}
-			Timer(Timer&& cp) :interval(0) {}
-			void operator =(const Timer& cp){}
-			void operator =(Timer&& cp){}
+			Timer(const Timer&) = delete;
+			Timer(Timer&&) = delete;
+			void operator =(const Timer&) = delete;
+			void operator =(Timer&&) = delete;
 		};
 	}
 }

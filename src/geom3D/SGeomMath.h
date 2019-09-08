@@ -107,60 +107,7 @@ namespace fl {
 #endif
 		}
 
-		// unfinished
-		// Actually, this is what I wrote a long time ago, so it¡¯s so terrible that I don¡¯t want to write this class anymore.
-		class fixed {
-		public:
-			const static lint FIXED_MAX = (1i64 << 55) - 1i64;
-			const static lint FIXED_MIN = (-1i64 << 55);
-
-			explicit fixed(int x) :value(x << 8) {}
-			explicit fixed(scalar x) :value(int(x) << 8) {}
-			fixed() :value(0) {}
-			operator int() { return int(value >> 8); }
-			operator scalar() { return value / scalar(65536); }
-
-			//fixed
-
-			ILL_INLINE fixed operator *(const fixed& t) { return fixed((t.value * value) >> 8); }
-			ILL_INLINE fixed operator +(const fixed& t) { return fixed(t.value + value); }
-			ILL_INLINE fixed operator /(const fixed& t) { return fixed((value << 8) / t.value); }
-			ILL_INLINE fixed operator -(const fixed& t) { return fixed(value - t.value); }
-			ILL_INLINE void operator ++() { value += 1 << 8; }
-			ILL_INLINE void operator --() { value -= 1 << 8; }
-			ILL_INLINE void operator +=(const fixed& t) { value += t.value; }
-			ILL_INLINE void operator -=(const fixed& t) { value -= t.value; }
-			ILL_INLINE void operator *=(const fixed& t) { value *= t.value; value >>= 8; }
-			ILL_INLINE void operator /=(const fixed& t) { value <<= 8; value /= t.value; }
-			ILL_INLINE bool operator >(const fixed& t)const { return value > t.value; }
-			ILL_INLINE bool operator >=(const fixed& t)const { return value >= t.value; }
-			ILL_INLINE bool operator <(const fixed& t)const { return value < t.value; }
-			ILL_INLINE bool operator <=(const fixed& t)const { return value <= t.value; }
-			ILL_INLINE bool operator ==(const fixed& t)const { return value == t.value; }
-			ILL_INLINE const fixed& operator =(const fixed& t) { value = t.value; return *this; }
-			ILL_INLINE fixed operator -() { return fixed(-value); }
-
-			//int
-
-			ILL_INLINE fixed operator *(const int& t) { return fixed(lint(t) * value); }
-			ILL_INLINE fixed operator +(const int& t) { return fixed((lint(t << 8)) + value); }
-			ILL_INLINE fixed operator /(const int& t) { return fixed(value / lint(t)); }
-			ILL_INLINE fixed operator -(const int& t) { return fixed(value - lint(t << 8)); }
-			ILL_INLINE void operator +=(const int& t) { value += t << 8; }
-			ILL_INLINE void operator -=(const int& t) { value -= t << 8; }
-			ILL_INLINE void operator *=(const int& t) { value *= t; }
-			ILL_INLINE void operator /=(const int& t) { value /= t; }
-			ILL_INLINE bool operator >(const int& t)const { return value > (t << 8); }
-			ILL_INLINE bool operator >=(const int& t)const { return value >= (t << 8); }
-			ILL_INLINE bool operator <(const int& t)const { return value < (t << 8); }
-			ILL_INLINE bool operator <=(const int& t)const { return value <= (t << 8); }
-			ILL_INLINE bool operator ==(const int& t)const { return value == (t << 8); }
-			ILL_INLINE const fixed& operator =(const int& t) { value = t << 8; return *this; }
-
-		private:
-			lint value;
-			explicit fixed(lint x) :value(x) {}
-		};
+		
 
 
 
@@ -441,12 +388,12 @@ namespace fl {
 			// The constructor is used to determine on the line connecting which two Shadee it is sliding.
 			// The parameter 'step' indicates the amount of change in y (namely dy) per slide (default is 1).
 			// The silding starts from 'sa'.
-			LerpY(const Shadee& sa, const Shadee& sb, const scalar& step);
+			ILL_INLINE LerpY(const Shadee& sa, const Shadee& sb, const scalar& step);
 
 			// The constructor is used to determine on the line connecting which two Shadee it is sliding.
 			// The dy is equal to 1 by default.
 			// The silding starts from 'sa'.
-			LerpY(const Shadee& sa, const Shadee& sb);
+			ILL_INLINE LerpY(const Shadee& sa, const Shadee& sb);
 
 			// The parameter 'sample_y' is related to the sampling at the time of rendering.
 			// See Stage3DImpl::drawTriangle and Stage3DImpl::drawTriangleMSAA in Stage3DImpl.cpp.
@@ -543,7 +490,7 @@ namespace fl {
 			// The constructor is used to determine on the line connecting which two Shadee(actually LerpY) it is sliding.
 			// The dx is equal to 1 by default.
 			// The silding starts from 'sa'.
-			LerpX(const LerpY& sa, const LerpY& sb);
+			ILL_INLINE LerpX(const LerpY& sa, const LerpY& sb);
 
 			ILL_INLINE void start(int ax, scalar sample_x) { move(ax - x + sample_x); }
 
@@ -758,3 +705,58 @@ namespace fl {
 
 	}
 }
+
+
+fl::geom::LerpX::LerpX(const LerpY & sa, const LerpY & sb)
+#ifndef ILL_SSE_IN_API
+	: x(sa.x), y(sa.y), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dx(1.0 / (sb.x - x)), dy((sb.y - y) * dx), dz((sb.z - z) * dx),
+	du((sb.u - u) * dx), dv((sb.v - v) * dx), dr((sb.r - r) * dx), dg((sb.g - g) * dx), db((sb.b - b) * dx)
+#endif
+{
+#ifdef ILL_SSE_IN_API
+	m_xyuv = sa.m_xyuv;
+	m_rgbz = sa.m_rgbz;
+	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
+	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	f4 mask = _mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x0); //_MM_SHUFFLE(0, 0, 0, 0)
+	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
+	m_drgbz = _mm_div_ps(m_drgbz, mask);
+#endif
+}
+
+fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb)
+#ifndef ILL_SSE_IN_API
+	:x(sa.x), y(sa.y), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dy(1.0 / (sb.y - y)),
+	dx((sb.x - x) / (sb.y - y)), dz((sb.z - z) * dy), du((sb.u - u) * dy), dv((sb.v - v) * dy),
+	dr((sb.r - r) * dy), dg((sb.g - g) * dy), db((sb.b - b) * dy)
+#endif
+{
+#ifdef ILL_SSE_IN_API
+	m_xyuv = sa.m_xyuv;
+	m_rgbz = sa.m_rgbz;
+	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
+	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	f4 mask = _mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x55); //_MM_SHUFFLE(1, 1, 1, 1)
+	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
+	m_drgbz = _mm_div_ps(m_drgbz, mask);
+#endif
+}
+
+fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb, const scalar& step)
+#ifndef ILL_SSE_IN_API
+	: x(sa.x), y(sa.y), z(sa.z), u(sa.u), v(sa.v), r(sa.r), g(sa.g), b(sa.b), dy(step / (sb.y - y)),
+	dx((sb.x - x) * (step / (sb.y - y))), dz((sb.z - z) * dy), du((sb.u - u) * dy), dv((sb.v - v) * dy),
+	dr((sb.r - r) * dy), dg((sb.g - g) * dy), db((sb.b - b) * dy)
+#endif
+{
+#ifdef ILL_SSE_IN_API
+	m_xyuv = sa.m_xyuv;
+	m_rgbz = sa.m_rgbz;
+	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
+	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	f4 mask = _mm_div_ps(_mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x55), _mm_load_ps1(&step)); //_MM_SHUFFLE(1, 1, 1, 1)
+	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
+	m_drgbz = _mm_div_ps(m_drgbz, mask);
+#endif
+}
+

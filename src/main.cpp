@@ -25,7 +25,6 @@ copies or substantial portions of the Software.
 ////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "illusion.h"
 
 
 #define import_all
@@ -58,9 +57,10 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 	wd->addObject((sp->addPObject(psp), sp));
 }
 
+#include "top_element\SPattern.h"
 
 // Initialize
-void fl::Setup() {
+void System::Setup() {
 	
 	/*ImageLoader ld = new ImageLoaderImpl();
 	stage.addRecycleListener(ld);
@@ -85,6 +85,8 @@ void fl::Setup() {
 	stage.addRecycleListener(new RoamerImpl(wd));*/
 	
 
+
+#if 0
 	stage.addConsole();
 
 	ld = MakeImageLoader();
@@ -100,9 +102,23 @@ void fl::Setup() {
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 	SObject3D sq = MakeSQuadr3D(Vector3D(), Vector3D(0, 0, 200), Vector3D(200, 0, 0), Color::GREEN);
 	wd->addObject((sq->addPObject(pqd), sq));
-	roamer = MakeRoamer(wd);
+	//roamer = MakeRoamer(wd);
 
 	addBall(10.0f, Vector3D(8, 100, -60));
 	addBall(1.0f, Vector3D(0, -10, -60));
 	InitWindow();
+#endif
+
+	stage.addConsole();
+
+	int yy = 2019, mm = 8, dd = 21;
+	SPattern<3> sp(L"YY", L"MM", L"DD");
+	sp.read(yy, mm, dd);
+	std::wcout << sp.to_string(L"YY/MM/DD") << std::endl;
+	sp.format(L"YY-MM-DD", L"2019-8-21");
+	sp.write(yy, mm, dd);
+	std::wcout << yy << L" " << mm << L" " << dd << std::endl;
 }
+
+
+ 

@@ -144,9 +144,6 @@
     <ClInclude Include="src\geom3D\SUI.h">
       <Filter>头文件\geom3D</Filter>
     </ClInclude>
-    <ClInclude Include="src\illusion.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -157,6 +154,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\top_element\SEvent.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\System.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\STime.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\SPattern.h">
       <Filter>头文件\top_element</Filter>
     </ClInclude>
   </ItemGroup>
@@ -176,9 +182,6 @@
     <ClCompile Include="src\geom3D\SGeom3DShape.cpp">
       <Filter>源文件\geom3D</Filter>
     </ClCompile>
-    <ClCompile Include="src\geom3D\SGeomMath.cpp">
-      <Filter>源文件\geom3D</Filter>
-    </ClCompile>
     <ClCompile Include="src\geom3D\SkyBox.cpp">
       <Filter>源文件\geom3D</Filter>
     </ClCompile>
@@ -194,9 +197,6 @@
     <ClCompile Include="src\physics3D\PObject3D.cpp">
       <Filter>源文件\physics3D</Filter>
     </ClCompile>
-    <ClCompile Include="src\top_element\SAlignedAllocator.cpp">
-      <Filter>源文件\top_element</Filter>
-    </ClCompile>
     <ClCompile Include="src\top_element\SLoader.cpp">
       <Filter>源文件\top_element</Filter>
     </ClCompile>
@@ -209,14 +209,14 @@
     <ClCompile Include="src\geom3D\SUI.cpp">
       <Filter>源文件\geom3D</Filter>
     </ClCompile>
-    <ClCompile Include="src\illusion.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\stdafx.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\top_element\System.cpp">
+      <Filter>源文件\top_element</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

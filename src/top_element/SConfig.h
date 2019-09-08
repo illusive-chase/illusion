@@ -21,7 +21,6 @@ namespace fl {
 	constexpr int MILISECOND_PER_FRAME = 30;                                   // miliseconds per frame
 	constexpr clock_t CLOCKS = CLOCKS_PER_SEC / 1000;                          // clocks per milisecond
 	const wstring TRANSLATE_FONT[] = { L"Î¢ÈíÑÅºÚ",L"ËÎÌå",L"ºÚÌå",L"·ÂËÎ" };    // basic fonts
-	constexpr int MAX_LOADSTRING = 100;                                        // a maximum length related with the windows form
 
 #ifdef ILL_USE_DOUBLE_PRECISION
 	constexpr double PI = 3.141592653589793238462643;

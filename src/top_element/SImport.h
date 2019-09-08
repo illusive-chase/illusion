@@ -18,6 +18,11 @@ copies or substantial portions of the Software.
 
 // This file help with packages managing.
 
+#include "System.h"
+
+
+// package:
+
 #if defined(import_all)
 #define import_fl
 #define import_events
@@ -60,4 +65,16 @@ using namespace fl::loader;
 #if defined(import_physics)
 #include "../physics3D/Phase.h"
 using namespace fl::physics;
+#endif
+
+
+// specific module:
+#ifdef import_struct
+#include "Struct.h"
+#endif
+#ifdef import_align
+#include "SAlignedAllocator.h"
+#endif
+#ifdef import_3dmath
+#include "../geom3D/SGeomMath.h"
 #endif

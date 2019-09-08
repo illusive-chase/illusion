@@ -31,46 +31,46 @@
     <ProjectGuid>{a4c98afc-cccb-4844-9240-99fa89554108}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>illusion</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -139,6 +139,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Strict</FloatingPointModel>
+      <DisableSpecificWarnings>26451;6297;</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -258,7 +259,6 @@
     <ClInclude Include="src\geom3D\STexture.h" />
     <ClInclude Include="src\geom3D\SUI.h" />
     <ClInclude Include="src\geom3D\Surface.h" />
-    <ClInclude Include="src\illusion.h" />
     <ClInclude Include="src\physics3D\PBroadCollision.h" />
     <ClInclude Include="src\physics3D\PForce.h" />
     <ClInclude Include="src\physics3D\Phase.h" />
@@ -274,10 +274,13 @@
     <ClInclude Include="src\top_element\SImport.h" />
     <ClInclude Include="src\top_element\SLoader.h" />
     <ClInclude Include="src\top_element\SLog.h" />
+    <ClInclude Include="src\top_element\SPattern.h" />
     <ClInclude Include="src\top_element\SPointer.h" />
     <ClInclude Include="src\top_element\Stage.h" />
+    <ClInclude Include="src\top_element\STime.h" />
     <ClInclude Include="src\top_element\STimer.h" />
     <ClInclude Include="src\top_element\Struct.h" />
+    <ClInclude Include="src\top_element\System.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\display\SColor.cpp" />
@@ -285,20 +288,18 @@
     <ClCompile Include="src\display\SMovieClip.cpp" />
     <ClCompile Include="src\display\Sprite.cpp" />
     <ClCompile Include="src\geom3D\SGeom3DShape.cpp" />
-    <ClCompile Include="src\geom3D\SGeomMath.cpp" />
     <ClCompile Include="src\geom3D\SkyBox.cpp" />
     <ClCompile Include="src\geom3D\SMLAAA.cpp" />
     <ClCompile Include="src\geom3D\SObject3D.cpp" />
     <ClCompile Include="src\geom3D\Stage3D.cpp" />
     <ClCompile Include="src\geom3D\SUI.cpp" />
-    <ClCompile Include="src\illusion.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\physics3D\PObject3D.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
-    <ClCompile Include="src\top_element\SAlignedAllocator.cpp" />
     <ClCompile Include="src\top_element\SLoader.cpp" />
     <ClCompile Include="src\top_element\Stage.cpp" />
     <ClCompile Include="src\top_element\STimer.cpp" />
+    <ClCompile Include="src\top_element\System.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ass\illusion.ico" />

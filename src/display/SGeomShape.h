@@ -108,11 +108,20 @@ namespace fl {
 			// Another constructor uses polar coordinates.
 			SLineImpl(int x0, int y0, scalar rad, int length, int pen_style_PS = PS_SOLID,
 				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
-				:ShapeImpl(parent)
+				:ShapeImpl(parent), x0(x0), y0(y0)
 			{
-				int x1 = x0 + int(round(length * cos(rad)));
-				int y1 = y0 + int(round(length * sin(rad)));
-				SLineImpl(x0, y0, x1, y1, pen_style_PS, pen_width, pen_color, parent);
+				x1 = x0 + int(round(length * cos(rad)));
+				y1 = y0 + int(round(length * sin(rad)));
+				x = min(x0, x1);
+				y = min(y0, y1);
+				this->x1 -= x, this->x0 -= x;
+				this->y1 -= y, this->y0 -= y;
+				width = abs(x1 - x0);
+				height = abs(y1 - y0);
+				ps = pen_style_PS;
+				pwid = pen_width;
+				pcolor = pen_color;
+				enabled = false;
 			}
 
 			// Lines will never be hit.

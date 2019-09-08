@@ -35,16 +35,41 @@ subject to the following restrictions:
 #include <list>
 
 namespace fl {
-	void* AlignedAlloc(std::size_t size, int alignment);
-	void AlignedFree(void* ptr);
+
+	ILL_INLINE void* AlignedAlloc(std::size_t size, int alignment) {
+#if defined(ILL_HAS_ALIGNED_ALLOCATOR)
+		return _aligned_malloc(size, (size_t)alignment);
+#else
+		void *ret;
+		char *real;
+		real = (char *)AlignedAlloc(size + sizeof(void *) + (alignment - 1));
+		if (real) {
+			ret = AlignPointer(real + sizeof(void *), alignment);
+			*((void **)(ret)-1) = (void *)(real);
+		} else {
+			ret = (void *)(real);
+		}
+		return (ret);
+#endif
+	}
+
+	ILL_INLINE void AlignedFree(void* ptr) {
+#if defined(ILL_HAS_ALIGNED_ALLOCATOR)
+		if (ptr) _aligned_free(ptr);
+#else
+		void *real;
+		if (ptr) {
+			real = *((void **)(ptr)-1);
+			AlignedFree(real);
+		}
+#endif
+	}
 
 	template<typename T,unsigned Alignment>
 	class AlignedAllocator {
-
-		using self_type = AlignedAllocator<T, Alignment>;
-
 	public:
 
+		using self_type = AlignedAllocator<T, Alignment>;
 		using value_type = T;
 		using pointer = T * ;
 		using const_pointer = const T * ;
