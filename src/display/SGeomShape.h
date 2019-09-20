@@ -157,7 +157,7 @@ namespace fl {
 			int pwid; // pen's thickness
 			COLORREF pcolor; // pen's color
 
-			void framing() override {}
+			virtual void framing() override {}
 
 			virtual ~SRectImpl() {}
 			
@@ -176,13 +176,13 @@ namespace fl {
 				pcolor = pen_color;
 			}
 
-			bool hitTestPoint(int gx, int gy) override {
+			virtual bool hitTestPoint(int gx, int gy) override {
 				if (!filled || !enabled) return false;
 				transGlobalPosToLocal(gx, gy);
 				return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
 			}
 
-			void paint(HDC hdc) override {
+			virtual void paint(HDC hdc) override {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);

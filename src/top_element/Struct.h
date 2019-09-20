@@ -155,12 +155,10 @@ namespace fl {
 			template<typename Find> static constexpr unsigned getIndex() {
 				return TypeArrayBase<Find, Element...>::getIndex();
 			}
-			template<unsigned Index>
-			using type = typename TypeArrayValue<Index, Element...>::value;
+			template<unsigned Index> using type = typename TypeArrayValue<Index, Element...>::value;
 		};
 
 	};
-
 
 	template<int N, typename F, typename ...T>
 	struct VariableParamentsIterator {};
@@ -181,5 +179,45 @@ namespace fl {
 		}
 	};
 
+	class ToolBase {
+	public:
+		virtual ~ToolBase() {};
+		virtual bool activate() = 0;
+		virtual bool deactivate() = 0;
+	};
+
+
+	template<typename ...T>
+	class ToolBox {
+	public:
+		using Array = TypeTrait::TypeArray<T...>;
+		static constexpr unsigned size = Array::length;
+
+	private:
+		ToolBase* tools[size];
+		unsigned active;
+		template<unsigned N> struct initializer {
+			using S = Array::type<N - 1>;
+			static void init(ToolBase** tb) { *(--tb) = new S; initializer<N - 1>::init(tb); }
+		};
+		template<> struct initializer<1U> {
+			using S = Array::type<0U>;
+			static void init(ToolBase** tb) { *(--tb) = new S; }
+		};
+
+	public:
+		ToolBox() :active(0), tools() {}
+		void init() { initializer<size>::init(tools + size); tools[0]->activate(); }
+
+		template<typename S, typename E = typename std::enable_if<bool(Array::getIndex<S>() < size)> ::type>
+		bool switch_to() {
+			if (active != Array::getIndex<S>() && tools[active]->deactivate()) {
+				tools[active = Array::getIndex<S>()]->activate();
+				return true;
+			}
+			return false;
+		}
+
+	};
 
 }

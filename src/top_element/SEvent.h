@@ -16,6 +16,11 @@ copies or substantial portions of the Software.
 #pragma once
 #include "../stdafx.h"
 
+
+#define WM_LDRAG (WM_USER+1)
+#define WM_RDRAG (WM_USER+2)
+#define WM_FRAME (WM_USER+3)
+
 // Here implemented is a Qt-like signal-slot.
 
 namespace fl {
@@ -66,15 +71,21 @@ namespace fl {
 				slotBase = new slot_impl<NoneType>(method);
 			}
 
-			Slot(const Slot<Para>& cp) { 
+			Slot(const Slot<Para>&) = delete;
+
+			Slot(Slot<Para>&& cp) noexcept { 
 				slotBase = cp.slotBase;
+				cp.slotBase = nullptr;
 				caller = cp.caller;
+				cp.caller = nullptr;
 				type = cp.type;
 			}
 
-			void Execute(Para& para) { slotBase->Execute(para); }
+			~Slot() {
+				if (slotBase) delete slotBase;
+			}
 
-			void release() { delete slotBase; }
+			void Execute(Para& para) { slotBase->Execute(para); }
 		};
 
 		template<typename Para>
@@ -93,15 +104,13 @@ namespace fl {
 			void remove(void* caller) {
 				for (auto it = slots.begin(); it != slots.end();) {
 					if (it->caller == caller) {
-						delete it;
 						it = slots.erase(it);
 					} else ++it;
 				}
 			}
-			void clear() { 
-				for (auto it = slots.begin(); it != slots.end(); ++it) it->release();
-				slots.clear();
-			}
+
+			void clear() { slots.clear(); }
+
 			void operator()(Para para) { 
 				for (auto it = slots.begin(); it != slots.end(); ++it) {
 					if (para.type == it->type) it->Execute(para);
@@ -130,6 +139,13 @@ namespace fl {
 			DWORD type;
 			KeyboardEvent(DWORD type, int keyCode) :type(type), keyCode(keyCode) {}
 		};
+
+#define WM_LDRAG_MK_BEGIN 2
+#define WM_LDRAG_MK_END 1
+#define WM_LDRAG_MK_MOVE 3
+#define WM_RDRAG_MK_BEGIN 2
+#define WM_RDRAG_MK_END 1
+#define WM_RDRAG_MK_MOVE 3
 
 		class MouseEvent {
 		public:

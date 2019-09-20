@@ -60,10 +60,9 @@ namespace fl {
 }
 
 fl::display::Stage stage;
-HWND g_hWnd = NULL;
 
 DWORD fl::display::Stage::message(const wstring& test, const wstring& TITLE, UINT mode_MB, bool fixed) {
-	if (fixed) return MessageBox(g_hWnd, test.c_str(), TITLE.c_str(), mode_MB);
+	if (fixed) return MessageBox(fl::System::g_hWnd, test.c_str(), TITLE.c_str(), mode_MB);
 	MessageBox(NULL, test.c_str(), TITLE.c_str(), mode_MB);
 	return -1;
 }
@@ -113,13 +112,13 @@ void fl::display::Stage::framing() {
 
 RECT fl::display::Stage::getWindowArea() const {
 	RECT r;
-	GetWindowRect(g_hWnd, &r);
+	GetWindowRect(fl::System::g_hWnd, &r);
 	return r;
 }
 
 RECT fl::display::Stage::getStageArea() const {
 	RECT r;
-	GetClientRect(g_hWnd, &r);
+	GetClientRect(fl::System::g_hWnd, &r);
 	return r;
 }
 

@@ -56,6 +56,7 @@ using namespace fl::geom;
 #endif
 #if defined(import_ui)
 #include "../geom3D/SUI.h"
+#include "../top_element/SCommand.h"
 using namespace fl::ui;
 #endif
 #if defined(import_loader)

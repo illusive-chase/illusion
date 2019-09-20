@@ -48,7 +48,6 @@ namespace fl {
 
 
 extern fl::display::Stage stage;
-extern HWND g_hWnd;
 
 
 
@@ -97,7 +96,7 @@ void fl::ui::RoamerImpl::keyDown(events::KeyboardEvent e) {
 	break;
 	case VK_ESCAPE:
 	{
-		PostMessage(g_hWnd, WM_DESTROY, 0, 0);
+		PostMessage(fl::System::g_hWnd, WM_DESTROY, 0, 0);
 	}
 	break;
 	}

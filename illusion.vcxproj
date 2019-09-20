@@ -195,7 +195,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -277,6 +277,7 @@
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\top_element\SAlignedAllocator.h" />
     <ClInclude Include="src\top_element\Scalar.h" />
+    <ClInclude Include="src\top_element\SCommand.h" />
     <ClInclude Include="src\top_element\SConfig.h" />
     <ClInclude Include="src\top_element\SEvent.h" />
     <ClInclude Include="src\top_element\SImport.h" />

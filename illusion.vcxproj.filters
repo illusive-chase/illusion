@@ -204,6 +204,9 @@
     <ClInclude Include="src\geom3D\SUI.hpp">
       <Filter>源文件\geom3D</Filter>
     </ClInclude>
+    <ClInclude Include="src\top_element\SCommand.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

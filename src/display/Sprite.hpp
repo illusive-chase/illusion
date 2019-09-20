@@ -41,6 +41,8 @@ namespace fl {
 			// Actually, it also delete the child.
 			bool removeChildAt(int index);
 
+			bool removeChild(Shape shape);
+
 			void swapChild(int index1, int index2);
 
 			// remove all children
@@ -68,6 +70,14 @@ bool fl::display::SpriteImpl::removeChildAt(int index) {
 	else if (index > (int)children.size()) index = (int)children.size();
 	children.erase(children.end() - index);
 	return true;
+}
+
+bool fl::display::SpriteImpl::removeChild(Shape shape)
+{
+	for (auto it = children.begin(); it != children.end(); it++) {
+		if (*it == shape) return children.erase(it), true;
+	}
+	return false;
 }
 
 void fl::display::SpriteImpl::swapChild(int index1, int index2) {

@@ -127,6 +127,13 @@ namespace fl {
 			return *this;
 		}
 		ILL_INLINE sptr<T>& operator=(sptr<T>&& rhs) noexcept { 
+			if (ptr && (--(*cnt) == 0)) {
+				delete cnt;
+				delete ptr;
+#ifdef ILL_NOISY
+				printf("destructor: %s\n", typeid(T).name());
+#endif
+			}
 			ptr = rhs.ptr, cnt = rhs.cnt, rhs.ptr = nullptr, rhs.cnt = nullptr; 
 			return *this;
 		}

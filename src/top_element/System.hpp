@@ -20,8 +20,6 @@ copies or substantial portions of the Software.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#define WM_FRAME (WM_USER+1)
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
 					  _In_ LPWSTR    lpCmdLine,
@@ -30,6 +28,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 namespace fl {
 
 	class System {
+	public:
+		class WindowStyle {
+		public:
+			bool has_caption;
+			bool is_tool;
+			bool has_menu;
+			bool has_maxbox;
+			bool has_minbox;
+			bool can_resize;
+			BYTE alpha;
+			WindowStyle(bool has_caption = true, bool is_tool = false, bool has_menu = true,
+						bool has_maxbox = true, bool has_minbox = true, bool can_resize = true,
+						BYTE alpha = 0xff)
+				:has_caption(has_caption), is_tool(is_tool), has_menu(has_menu),
+				has_maxbox(has_maxbox), has_minbox(has_minbox), can_resize(can_resize),
+				alpha(alpha) {}
+
+			operator long() {
+				long ret = 0L;
+				if (has_caption) {
+					ret |= WS_CAPTION;
+					if (has_menu) {
+						ret |= WS_SYSMENU;
+						if (has_maxbox) ret |= WS_MAXIMIZEBOX;
+						if (has_minbox) ret |= WS_MINIMIZEBOX;
+					}
+				} else ret |= WS_POPUP;
+				if (can_resize) ret |= WS_THICKFRAME;
+				return ret;
+			}
+
+		};
+
 	private:
 		friend int APIENTRY::wWinMain(_In_ HINSTANCE hInstance,
 									  _In_opt_ HINSTANCE hPrevInstance,
@@ -40,21 +71,24 @@ namespace fl {
 		static HDC g_hdc;
 		static HDC g_hmemdc;
 		static HBITMAP g_hbitmap;
-		static HWND g_hWnd;
+		
 		static int init_nCmdShow;
 		static HINSTANCE hInst;                                // 当前实例
 		static WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 		static WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 
 		static ATOM                MyRegisterClass(HINSTANCE hInstance);
-		static BOOL                InitInstance(HINSTANCE, int, int, int, int, int);
+		static BOOL                InitInstance(HINSTANCE, int, int, int, int, int, WindowStyle);
 		static INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 		System() = delete;
 		~System() = delete;
 
 	public:
-		static bool InitWindow(const wstring& title = L"Program", int xpos = 20, int ypos = 20, int width = 1024, int height = 768);
+
+		static HWND g_hWnd;
+
+		static bool InitWindow(const wstring& title = L"Program", int xpos = 20, int ypos = 20, int width = 1024, int height = 768, WindowStyle ws = WindowStyle());
 		static void Setup();
 		static wstring CurrentExe();
 
@@ -203,14 +237,16 @@ ATOM fl::System::MyRegisterClass(HINSTANCE hInstance) {
 //        在此函数中，我们在全局变量中保存实例句柄并
 //        创建和显示主程序窗口。
 //
-BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int ypos, int width, int height) {
+BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int ypos, int width, int height, System::WindowStyle ws) {
 	hInst = hInstance; // 将实例句柄存储在全局变量中
-	g_hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	g_hWnd = CreateWindowW(szWindowClass, szTitle, ws,
 		xpos, ypos, width, height, nullptr, nullptr, hInstance, nullptr);
-	if (!g_hWnd) {
-		return FALSE;
+	if (!g_hWnd) return FALSE;
+	if (ws.is_tool) SetWindowLong(g_hWnd, GWL_EXSTYLE, GetWindowLong(g_hWnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+	if (~ws.alpha) {
+		SetWindowLong(g_hWnd, GWL_EXSTYLE, GetWindowLong(g_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+		SetLayeredWindowAttributes(g_hWnd, 0, ws.alpha, LWA_ALPHA);
 	}
-
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
 
@@ -229,6 +265,10 @@ BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int y
 //
 LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	using namespace fl::events;
+	static int pre_leftdown = 0;
+	static int pre_rightdown = 0;
+	static int leftdown = 0;
+	static int rightdown = 0;
 	switch (message) {
 	case WM_ERASEBKGND:
 	{
@@ -255,20 +295,35 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		stage.keyboardEventListener(KeyboardEvent(message, (int)wParam));
 	}
 	break;
+	case WM_LBUTTONDOWN:leftdown = 1; goto WM_MOUSE;
+	case WM_LBUTTONUP:leftdown = 0; goto WM_MOUSE;
+	case WM_RBUTTONDOWN:rightdown = 1; goto WM_MOUSE;
+	case WM_RBUTTONUP:rightdown = 0; goto WM_MOUSE;
 	case WM_MOUSEMOVE:
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONUP:
+	WM_MOUSE:
+	{
+		POINT ms;
+		GetCursorPos(&ms);
+		ScreenToClient(g_hWnd, &ms);
+		stage.mouseX = ms.x;
+		stage.mouseY = ms.y;
+		stage.mouseEventListener(MouseEvent(message, ms.x, ms.y, (int)wParam));
+		stage.mouseEventListener(MouseEvent(WM_LDRAG, ms.x, ms.y, (leftdown << 1 | pre_leftdown)));
+		stage.mouseEventListener(MouseEvent(WM_RDRAG, ms.x, ms.y, (rightdown << 1 | pre_rightdown)));
+		pre_leftdown = leftdown;
+		pre_rightdown = rightdown;
+	}
+	break;
 	case WM_LBUTTONDBLCLK:
 	case WM_MBUTTONDOWN:
 	case WM_MBUTTONUP:
 	case WM_MBUTTONDBLCLK:
-	case WM_RBUTTONDOWN:
-	case WM_RBUTTONUP:
 	case WM_RBUTTONDBLCLK:
 	case WM_MOUSEWHEEL:
 	{
 		POINT ms;
 		GetCursorPos(&ms);
+		ScreenToClient(g_hWnd, &ms);
 		stage.mouseX = ms.x;
 		stage.mouseY = ms.y;
 		stage.mouseEventListener(MouseEvent(message, ms.x, ms.y, (int)wParam));
@@ -356,13 +411,14 @@ INT_PTR CALLBACK fl::System::About(HWND hDlg, UINT message, WPARAM wParam, LPARA
 	return (INT_PTR)FALSE;
 }
 
-bool fl::System::InitWindow(const wstring& title, int xpos, int ypos, int width, int height) {
+
+bool fl::System::InitWindow(const wstring& title, int xpos, int ypos, int width, int height, System::WindowStyle ws) {
 	wcscpy(szTitle, title.c_str());
-	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width + 17, height + 60)) {
-		return FALSE;
-	}
-	stage.width = width + 17, stage.height = height + 17;
-	return TRUE;
+	//if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width + 17, height + 60, ws)) return false;
+	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width, height, ws)) return false;
+	//stage.width = width + 17, stage.height = height + 17;
+	stage.width = width, stage.height = height;
+	return true;
 }
 
 wstring fl::System::CurrentExe() {
@@ -430,7 +486,7 @@ bool fl::System::IsAdmin(bool& isadmin) {
 		TOKEN_ELEVATION_TYPE* type = nullptr;
 		DWORD dwSize;
 		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) return bSet = false;
-		if (GetTokenInformation(hToken, TokenElevationType, type, sizeof(TOKEN_ELEVATION_TYPE), &dwSize)) {
+		if (GetTokenInformation(hToken, TokenElevationType, type, sizeof(TOKEN_ELEVATION_TYPE), &dwSize) && type) {
 			BYTE adminSID[SECURITY_MAX_SID_SIZE];
 			dwSize = sizeof(adminSID);
 			CreateWellKnownSid(WinBuiltinAdministratorsSid, NULL, &adminSID, &dwSize);
