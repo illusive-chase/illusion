@@ -37,6 +37,7 @@ namespace fl {
 			Stage() :SpriteImpl(0, 0, nullptr), mouseX(0), mouseY(0), console_show(false) {}
 			~Stage() {}
 			bool addConsole(const wstring& TITLE = L"Console");
+			bool freeConsole();
 			bool showConsole();
 			bool hideConsole();
 
@@ -91,14 +92,18 @@ bool fl::display::Stage::addConsole(const wstring& TITLE) {
 	return true;
 }
 
+bool fl::display::Stage::freeConsole() {
+	return FreeConsole();
+}
+
 bool fl::display::Stage::showConsole() {
 	if (console_show) return false;
-	return console_show = true, ShowWindow(GetConsoleWindow(), SW_SHOW);
+	return console_show = true, ShowWindow(GetConsoleWindow(), SW_RESTORE);
 }
 
 bool fl::display::Stage::hideConsole() {
 	if (!console_show) return false;
-	return console_show = false, ShowWindow(GetConsoleWindow(), SW_HIDE);
+	return console_show = false, ShowWindow(GetConsoleWindow(), SW_MINIMIZE) && ShowWindow(GetConsoleWindow(), SW_HIDE);
 }
 
 void fl::display::Stage::destroy() {

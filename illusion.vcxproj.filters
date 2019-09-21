@@ -37,6 +37,9 @@
     <Filter Include="源文件\display">
       <UniqueIdentifier>{27042867-dabb-413e-964e-a12b22678ac4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\index">
+      <UniqueIdentifier>{e6d1e3cc-2bc0-4304-8d1b-45b06e2a2e77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\display\SBitmap.h">
@@ -206,6 +209,9 @@
     </ClInclude>
     <ClInclude Include="src\top_element\SCommand.h">
       <Filter>头文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="index\recter.hpp">
+      <Filter>源文件\index</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

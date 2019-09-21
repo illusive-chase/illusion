@@ -173,6 +173,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	LARGE_INTEGER li = {};
 	li.QuadPart = -100000;
 	HANDLE m_hTimer = CreateWaitableTimer(NULL, FALSE, NULL);
+
+	SetFocus(System::g_hWnd);
+
 	if (m_hTimer) {
 		SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
 
@@ -277,7 +280,6 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	break;
 	case WM_CREATE:
 	{
-		//SetTimer(hWnd, 1234, CLOCKS_PER_SEC / FRAME_PER_SEC, NULL);
 		stage.systemEventListener(SystemEvent(message));
 	}
 	break;

@@ -238,6 +238,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="index\recter.hpp" />
     <ClInclude Include="src\display\SBitmap.h" />
     <ClInclude Include="src\display\SColor.h" />
     <ClInclude Include="src\display\SFont.h" />

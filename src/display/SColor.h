@@ -18,8 +18,14 @@ copies or substantial portions of the Software.
 
 namespace fl {
 
-	// ATTENTION: It is different from the default macro RGB and is the only CORRECT color format in 3D rendering.
+#ifdef RGB
+#undef RGB
+#endif
+
+	// ATTENTION: It is different from the default RGB and is the only CORRECT color format in 3D rendering.
 	ILL_INLINE constexpr DWORD RGB3D(BYTE r, BYTE g, BYTE b) { return (r << 16) | (g << 8) | b; }
+	ILL_INLINE constexpr DWORD RGB(BYTE r, BYTE g, BYTE b) { return (b << 16) | (g << 8) | r; }
+	ILL_INLINE constexpr DWORD RGB(DWORD rgb3d) { return BYTE(rgb3d >> 16) | (rgb3d & 0xff00) | (BYTE(rgb3d) << 16); }
 
 	namespace display {
 
