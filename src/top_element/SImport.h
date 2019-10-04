@@ -61,7 +61,7 @@ using namespace fl::ui;
 #endif
 #if defined(import_loader)
 #include "SLoader.h"
-using namespace fl::loader;
+using namespace fl::io;
 #endif
 #if defined(import_physics)
 #include "../physics3D/Phase.h"

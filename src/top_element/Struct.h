@@ -15,6 +15,7 @@ copies or substantial portions of the Software.
 */
 #pragma once
 #include <memory>
+#include <type_traits>
 
 namespace fl {
 
@@ -112,6 +113,8 @@ namespace fl {
 		template<typename B>
 		struct TypeEqual<B, B> { static constexpr bool value = true; };
 
+	private:
+
 		template<unsigned Index, typename ...Args>
 		struct TypeArrayValue;
 
@@ -120,17 +123,6 @@ namespace fl {
 
 		template<typename First, typename ...Rest>
 		struct TypeArrayValue<0, First, Rest...> { using value = First; };
-
-		template<typename ...Args>
-		struct TypeArrayLength;
-
-		template<typename First, typename ...Rest>
-		struct TypeArrayLength<First, Rest...> { static constexpr int value = TypeArrayLength<Rest...>::value + 1; };
-
-		template<typename Last>
-		struct TypeArrayLength<Last> { static constexpr int value = 1; };
-
-	private:
 
 		template<typename Find, typename ...Args>
 		struct TypeArrayBase;
@@ -142,6 +134,8 @@ namespace fl {
 			}
 		};
 
+		
+
 		template<typename Find, typename Last>
 		struct TypeArrayBase<Find, Last> {
 			static constexpr unsigned getIndex() { return 1 - TypeEqual<Last, Find>::value; }
@@ -151,7 +145,7 @@ namespace fl {
 
 		template<typename ...Element>
 		struct TypeArray {
-			static constexpr int length = TypeArrayLength<Element...>::value;
+			static constexpr int length = sizeof... (Element);
 			template<typename Find> static constexpr unsigned getIndex() {
 				return TypeArrayBase<Find, Element...>::getIndex();
 			}

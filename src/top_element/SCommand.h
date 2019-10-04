@@ -14,9 +14,8 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 */
 #pragma once
-#include "System.h"
+#include "FiniteAutomata.h"
 #include "Struct.h"
-#include <iostream>
 namespace fl {
 	namespace ui {
 
@@ -91,7 +90,7 @@ namespace fl {
 				bool ret = true;
 				compare_function f(this->buffer, this->len, ret);
 				VariableParamentsIterator
-					<TypeTrait::TypeArrayLength<T...>::value, compare_function, T&...>::iter(f, args...);
+					<sizeof...(T), compare_function, T& ...>::iter(f, args...);
 				return ret;
 			}
 

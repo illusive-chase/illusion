@@ -417,7 +417,7 @@ void fl::geom::Stage3DImpl::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Textur
 					shader.moveTo(lx, y, j);
 					ip.start(lx, sample_x[j]);
 					for (int k = lx; k < rx && k < width; ++k) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
@@ -440,7 +440,7 @@ void fl::geom::Stage3DImpl::drawTriangle(Shadee* a, Shadee* b, Shadee* c, Textur
 					shader.moveTo(lx, y, j);
 					ip.start(lx, sample_x[j]);
 					for (int k = lx; k < rx && k < width; ++k) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
@@ -507,7 +507,7 @@ void fl::geom::Stage3DImpl::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Te
 				ip.move(left_bound[k] + sample_x[k] - left.x);
 				if (k && shade_all) {
 					for (int j = left_bound[k]; j < max_left_bound; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
@@ -517,13 +517,13 @@ void fl::geom::Stage3DImpl::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Te
 						shader.move();
 					}
 					for (int j = min_right_bound; j < right_bound[k]; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
 				} else {
 					for (int j = left_bound[k]; j < right_bound[k]; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
@@ -574,7 +574,7 @@ void fl::geom::Stage3DImpl::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Te
 				ip.move(left_bound[k] + sample_x[k] - left.x);
 				if (k && shade_all) {
 					for (int j = left_bound[k]; j < max_left_bound; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
@@ -584,13 +584,13 @@ void fl::geom::Stage3DImpl::drawTriangleMSAA(Shadee* a, Shadee* b, Shadee* c, Te
 						shader.move();
 					}
 					for (int j = min_right_bound; j < right_bound[k]; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}
 				} else {
 					for (int j = left_bound[k]; j < right_bound[k]; ++j) {
-						shader.shade(ip, 0x00FEFEFFU);
+						shader.shade(ip);
 						ip.move();
 						shader.move();
 					}

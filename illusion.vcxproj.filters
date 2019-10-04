@@ -213,6 +213,12 @@
     <ClInclude Include="index\recter.hpp">
       <Filter>源文件\index</Filter>
     </ClInclude>
+    <ClInclude Include="src\top_element\FiniteAutomata.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
+    <ClInclude Include="src\top_element\Regex.h">
+      <Filter>头文件\top_element</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

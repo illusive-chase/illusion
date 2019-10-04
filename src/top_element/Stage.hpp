@@ -32,7 +32,10 @@ namespace fl {
 
 
 			bool console_show;
-			int mouseX, mouseY;
+			union {
+				struct { int mouseX, mouseY; };
+				POINT mouseP;
+			};
 
 			Stage() :SpriteImpl(0, 0, nullptr), mouseX(0), mouseY(0), console_show(false) {}
 			~Stage() {}
@@ -40,6 +43,7 @@ namespace fl {
 			bool freeConsole();
 			bool showConsole();
 			bool hideConsole();
+			bool setFrameDelay(bool value);
 
 			void destroy();
 			void framing();
@@ -106,6 +110,12 @@ bool fl::display::Stage::hideConsole() {
 	return console_show = false, ShowWindow(GetConsoleWindow(), SW_MINIMIZE) && ShowWindow(GetConsoleWindow(), SW_HIDE);
 }
 
+bool fl::display::Stage::setFrameDelay(bool value) {
+	static bool show_frame = true;
+	if (show_frame != value) return show_frame = value, true;
+	return false;
+}
+
 void fl::display::Stage::destroy() {
 	removeEventListener();
 }
@@ -130,5 +140,8 @@ RECT fl::display::Stage::getStageArea() const {
 void fl::display::Stage::setMouse(int x, int y) {
 	mouseX = x;
 	mouseY = y;
-	SetCursorPos(x, y);
+	ClientToScreen(System::g_hWnd, &mouseP);
+	SetCursorPos(mouseX, mouseY);
+	mouseX = x;
+	mouseY = y;
 }

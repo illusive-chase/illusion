@@ -19,6 +19,14 @@ copies or substantial portions of the Software.
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+using std::max;
+using std::min;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
@@ -109,6 +117,8 @@ namespace fl {
 		static void PrintLastError();
 
 		static bool IsAdmin(bool& isadmin);
+
+		static bool CreateJob();
 	};
 }
 
@@ -152,7 +162,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// 初始化全局字符串
 	//LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadStringW(hInstance, IDC_ILLUSION, System::szWindowClass, System::MAX_LOADSTRING);
+	//LoadStringW(hInstance, IDC_ILLUSION, System::szWindowClass, System::MAX_LOADSTRING);
+	wcscpy_s(System::szWindowClass, L"ILLUSION");
 	System::MyRegisterClass(hInstance);
 
 	std::setlocale(LC_ALL, "");
@@ -161,7 +172,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	System::Setup();
 	// 执行应用程序初始化:
 	
-	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
+	//HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
 
 	MSG msg = {};
 	tagRECT lprect;
@@ -211,7 +222,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //  目标: 注册窗口类。
 //
 ATOM fl::System::MyRegisterClass(HINSTANCE hInstance) {
-	WNDCLASSEXW wcex;
+	WNDCLASSEXW wcex = {};
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -220,12 +231,12 @@ ATOM fl::System::MyRegisterClass(HINSTANCE hInstance) {
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ILLUSION));
+	//wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ILLUSION));
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_ILLUSION);
+	//wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_ILLUSION);
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	//wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassExW(&wcex);
 }
@@ -242,14 +253,13 @@ ATOM fl::System::MyRegisterClass(HINSTANCE hInstance) {
 //
 BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int ypos, int width, int height, System::WindowStyle ws) {
 	hInst = hInstance; // 将实例句柄存储在全局变量中
-	g_hWnd = CreateWindowW(szWindowClass, szTitle, ws,
+	DWORD ex_ws = 0;
+	if (ws.is_tool) ex_ws |= WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+	if (~ws.alpha) ex_ws |= WS_EX_LAYERED;
+	g_hWnd = CreateWindowExW(ex_ws, szWindowClass, szTitle, ws,
 		xpos, ypos, width, height, nullptr, nullptr, hInstance, nullptr);
 	if (!g_hWnd) return FALSE;
-	if (ws.is_tool) SetWindowLong(g_hWnd, GWL_EXSTYLE, GetWindowLong(g_hWnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
-	if (~ws.alpha) {
-		SetWindowLong(g_hWnd, GWL_EXSTYLE, GetWindowLong(g_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-		SetLayeredWindowAttributes(g_hWnd, 0, ws.alpha, LWA_ALPHA);
-	}
+	if (~ws.alpha) SetLayeredWindowAttributes(g_hWnd, 0, ws.alpha, LWA_ALPHA);
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
 
@@ -304,14 +314,11 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	case WM_MOUSEMOVE:
 	WM_MOUSE:
 	{
-		POINT ms;
-		GetCursorPos(&ms);
-		ScreenToClient(g_hWnd, &ms);
-		stage.mouseX = ms.x;
-		stage.mouseY = ms.y;
-		stage.mouseEventListener(MouseEvent(message, ms.x, ms.y, (int)wParam));
-		stage.mouseEventListener(MouseEvent(WM_LDRAG, ms.x, ms.y, (leftdown << 1 | pre_leftdown)));
-		stage.mouseEventListener(MouseEvent(WM_RDRAG, ms.x, ms.y, (rightdown << 1 | pre_rightdown)));
+		GetCursorPos(&stage.mouseP);
+		ScreenToClient(g_hWnd, &stage.mouseP);
+		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
+		stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, (leftdown << 1 | pre_leftdown)));
+		stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, (rightdown << 1 | pre_rightdown)));
 		pre_leftdown = leftdown;
 		pre_rightdown = rightdown;
 	}
@@ -323,12 +330,9 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	case WM_RBUTTONDBLCLK:
 	case WM_MOUSEWHEEL:
 	{
-		POINT ms;
-		GetCursorPos(&ms);
-		ScreenToClient(g_hWnd, &ms);
-		stage.mouseX = ms.x;
-		stage.mouseY = ms.y;
-		stage.mouseEventListener(MouseEvent(message, ms.x, ms.y, (int)wParam));
+		GetCursorPos(&stage.mouseP);
+		ScreenToClient(g_hWnd, &stage.mouseP);
+		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
 	}
 	break;
 	case WM_COMMAND:
@@ -367,10 +371,12 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			curr_time = fl::time::Timer::base_time;
 			cnt = 0;
 		}
-		WCHAR itow[20];
-		_itow_s(int((curr_time - prev_time) >> 3), itow, 20, 10);
-		TextOut(memhdc, 50, 50, itow, lstrlenW(itow));
-
+		if (stage.setFrameDelay(false)) {
+			stage.setFrameDelay(true);
+			WCHAR itow[20];
+			_itow_s(int((curr_time - prev_time) >> 3), itow, 20, 10);
+			TextOut(memhdc, 50, 50, itow, lstrlenW(itow));
+		}
 		TransparentBlt(hdc, 0, 0, stage.width, stage.height, memhdc, 0, 0, stage.width, stage.height, 0x00ff00);
 		SelectObject(memhdc, hbmp_old);
 		DeleteObject(hbmp);
@@ -415,7 +421,7 @@ INT_PTR CALLBACK fl::System::About(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
 
 bool fl::System::InitWindow(const wstring& title, int xpos, int ypos, int width, int height, System::WindowStyle ws) {
-	wcscpy(szTitle, title.c_str());
+	wcscpy_s(szTitle, title.c_str());
 	//if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width + 17, height + 60, ws)) return false;
 	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width, height, ws)) return false;
 	//stage.width = width + 17, stage.height = height + 17;
@@ -505,4 +511,9 @@ bool fl::System::IsAdmin(bool& isadmin) {
 		CloseHandle(hToken);
 		return bSet;
 	}
+}
+
+
+bool fl::System::CreateJob() {
+
 }

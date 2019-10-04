@@ -86,7 +86,7 @@ namespace fl {
 				map_trait += step;
 			}
 
-			ILL_INLINE void shade(const LerpX& shadee, DWORD mask = 0x00FFFFFFU) {
+			ILL_INLINE void shade(const LerpX& shadee) {
 				if (map_trait->z_depth < shadee.z) {
 					int index = shadee.getU() + src_wid * shadee.getV();
 					*write = reinterpret_cast<const DWORD*>(src)[index];
@@ -99,6 +99,7 @@ namespace fl {
 					map_trait->z_depth = shadee.z;
 #endif
 				}
+
 			}
 
 

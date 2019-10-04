@@ -21,7 +21,7 @@ copies or substantial portions of the Software.
 /// @file main.cpp
 /// @author illusion
 /// @version 0.1
-/// @date 2019/7/2
+/// @date 2019/9/21
 ////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -32,16 +32,14 @@ copies or substantial portions of the Software.
 #undef import_all
 
 
-#include "../index/recter.hpp"
-
-#if 0
+#if 1
 extern Stage stage;
 
 
 Stage3D wd;
-ModelLoader ml;
+ModelIO ml;
 Roamer roamer;
-ImageLoader ld;
+ImageIO ld;
 Phase ph;
 PObject3D ptrace, ptrace2;
 
@@ -62,39 +60,33 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 }
 
 #include "top_element\SPattern.h"
+#include <cmath>
+
 
 // Initialize
 void System::Setup() {
-	
-	/*ImageLoader ld = new ImageLoaderImpl();
-	stage.addRecycleListener(ld);
-	ld->load(L"src\\sky.bmp");
+	/*
+	ld = MakeImageIO();
+	ld->load<>(L"ass\\sky.bmp");
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
 
-	stage.addConsole();
-	stage.addChild(wd = new Stage3DImpl(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 1, new SkyBoxImpl(tx, 2000)));
-	wd->addLight(new DirectionalLight3DImpl(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
-	wd->addLight(new Light3DImpl(Vector3D(0.4f, 0.4f, 0.4f)));
+	stage.addChild(wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000)));
+	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
+	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
-	wd->addObject(new SQuadr3D(Vector3D(0, -2000, 0), Vector3D(2000, 0, 0), Vector3D(0, 0, -2000), Color::GREEN));
 
-	stage.addRecycleListener(ml = new ModelLoaderImpl());
-	ml->loadMMD(L"C:\\Users\\Ò¶¿ª\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
-	wd->addObject(new SObject3DImpl(*(ml->models[0])));
-	
-	//Texture suf(Color::RED);
-	//PObject3D partice = new PObject3DImpl(10, Vector3D()); partice->addForce(PFGravity(0.098f)); stage.addRecycleListener(partice);
-	//SObject3D cube = new Cube3D(Vector3D(0, 0, 0), suf); cube->addPObject(partice); wd->addObjectWithPosition(cube);
-
-	stage.addRecycleListener(new RoamerImpl(wd));*/
-	
-
+	ml = MakeModelIO();
+	ml->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
+	wd->addObject(ml->models[0]);
+	roamer = MakeRoamer(wd);
+	InitWindow();*/
+	InitWindow();
 
 #if 0
 	stage.addConsole();
 
 	ld = MakeImageLoader();
-	ld->load(L"ass\\sky.bmp");
+	ld->load<>(L"ass\\sky.bmp");
 	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
 	ph = MakePhase(.98f, 0.1f);
 	PQuad pqd = MakePQuad(Vector3D(0, -20, -60), Vector3D(200, 0, 0), Vector3D(0, 0, 200), 0.8f);
@@ -112,17 +104,7 @@ void System::Setup() {
 	addBall(1.0f, Vector3D(0, -10, -60));
 	InitWindow();
 #endif
-#if 0
-	stage.addConsole();
 
-	int yy = 2019, mm = 8, dd = 21;
-	SPattern<3> sp(L"YY", L"MM", L"DD");
-	sp.read(yy, mm, dd);
-	std::wcout << sp.to_string(L"YY/MM/DD") << std::endl;
-	sp.format(L"YY-MM-DD", L"2019-8-21");
-	sp.write(yy, mm, dd);
-	std::wcout << yy << L" " << mm << L" " << dd << std::endl;
-#endif
 }
 
 

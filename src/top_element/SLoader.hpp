@@ -18,47 +18,51 @@ copies or substantial portions of the Software.
 #include "../geom3D/SObject3D.h"
 
 namespace fl {
-	namespace loader {
-		class ImageLoaderImpl {
+	namespace io {
+
+		enum ImageType { IMAGE_BMP, IMAGE_PNG };
+
+		class ImageIOImpl {
 		public:
 			std::vector<DWORD*> content;
 			std::vector<BITMAP> info;
-			ImageLoaderImpl() {}
-			~ImageLoaderImpl() { for (DWORD* p : content) delete p; }
-			int load(const wstring& path, int width, int height, int type = IMAGE_BITMAP);
-			inline int load(const wstring& path, int type = IMAGE_BITMAP) { return load(path, 0, 0, type); }
-			inline int width(int i) { return info[i].bmWidth; }
-			inline int height(int i) { return info[i].bmHeight; }
-			inline DWORD* src(int i) { return content[i]; }
+			ImageIOImpl() {}
+			~ImageIOImpl() { for (DWORD* p : content) delete p; }
+			template<ImageType = IMAGE_BMP> int load(const wstring & path, int width = 0, int height = 0);
+			template<ImageType = IMAGE_BMP> bool save(const wstring & path, DWORD * src, int width, int height);
+			ILL_INLINE int width(int i) { return info[i].bmWidth; }
+			ILL_INLINE int height(int i) { return info[i].bmHeight; }
+			ILL_INLINE DWORD* src(int i) { return content[i]; }
 		};
 
-		using ImageLoader = sptr<ImageLoaderImpl>;
-		ILL_INLINE ImageLoader MakeImageLoader() {
-			return ImageLoader(new ImageLoaderImpl());
-		}
+		using ImageIO = sptr<ImageIOImpl>;
+		ILL_INLINE ImageIO MakeImageIO() { return ImageIO(new ImageIOImpl()); }
 
-		// Class ModelLoaderImpl only have one interface now. It can only load MMD model now.
-		class ModelLoaderImpl {
+		// Class ModelIOImpl only have one interface now. It can only load MMD model now.
+		class ModelIOImpl {
 		private:
-			ImageLoader uv_loader;
+			ImageIO uv_loader;
 		public:
 			std::vector<geom::SObject3D> models;
-			ModelLoaderImpl() {}
-			~ModelLoaderImpl() {}
+			ModelIOImpl(): uv_loader(MakeImageIO()) {}
+			~ModelIOImpl() {}
 			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
 		};
 
-		using ModelLoader = sptr<ModelLoaderImpl>;
-		ILL_INLINE ModelLoader MakeModelLoader() {
-			return ModelLoader(new ModelLoaderImpl());
+		using ModelIO = sptr<ModelIOImpl>;
+		ILL_INLINE ModelIO MakeModelIO() {
+			return ModelIO(new ModelIOImpl());
 		}
 	}
 }
 
 #include <map>
+#include <fstream>
 
-int fl::loader::ImageLoaderImpl::load(const wstring& path, int width, int height, int type) {
-	HBITMAP hbmp = (HBITMAP)LoadImage(NULL, path.c_str(), type, width, height, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+template<>	
+int fl::io::ImageIOImpl::load<fl::io::IMAGE_BMP>(const wstring& path, int width, int height) {
+	HBITMAP hbmp = 
+		(HBITMAP)LoadImage(NULL, path.c_str(), IMAGE_BITMAP, width, height, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 	if (hbmp == NULL) return -1;
 	BITMAP bmp;
 	GetObject(hbmp, sizeof(BITMAP), &bmp);
@@ -71,8 +75,36 @@ int fl::loader::ImageLoaderImpl::load(const wstring& path, int width, int height
 	return (int)content.size() - 1;
 }
 
+template<>
+bool fl::io::ImageIOImpl::save<fl::io::IMAGE_PNG>(const wstring& path, DWORD* src, int width, int height) {
+	return false;
+}
 
-int fl::loader::ModelLoaderImpl::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
+template<>
+bool fl::io::ImageIOImpl::save<fl::io::IMAGE_BMP>(const wstring& path, DWORD* src, int width, int height) {
+	if (width <= 0 || height <= 0 || !src) return false;
+	std::ofstream fw(path, std::ios::binary | std::ios::out);
+	if (fw.fail()) return false;
+	BITMAPFILEHEADER fh = {};
+	fh.bfSize = 54U + ((width * height) << 2);
+	fh.bfType = 0x4d42;
+	fh.bfOffBits = 54U;
+	BITMAPINFOHEADER ih = {};
+	ih.biSize = sizeof(BITMAPINFOHEADER);
+	ih.biWidth = width;
+	ih.biHeight = height;
+	ih.biPlanes = 1U;
+	ih.biBitCount = 32U;
+	fw.write((const char*)&fh, sizeof(BITMAPFILEHEADER));
+	fw.write((const char*)&ih, sizeof(BITMAPINFOHEADER));
+	DWORD* p = src + (width * height);
+	while ((p -= width) >= src) fw.write((const char*)p, width << 2);
+	fw.close();
+	return true;
+}
+
+
+int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
 	using namespace fl::geom;
 	std::wifstream obj(dir + L"\\" + name);
 	if (!obj.is_open()) return -1;
@@ -80,29 +112,21 @@ int fl::loader::ModelLoaderImpl::loadMMD(const wstring& dir, const wstring& name
 	while (obj >> read && read != L"mtllib");
 	obj >> read;
 	std::wifstream mtl(dir + L"\\" + read);
-	if (!mtl.is_open()) return (obj.close(), -1);
+	if (!mtl.is_open()) return -1;
 
 	std::map<wstring, int> uv_index;
 	std::map<wstring, int> bitmap_name;
 	wstring bitmap;
-	try {
-		while (1) {
-			while (mtl >> read && read != L"newmtl");
-			mtl >> read;
-			while (mtl >> bitmap && bitmap != L"map_Kd") {
-				if (bitmap == L"newmtl") throw std::bad_alloc();
-			}
-			mtl >> bitmap;
-			if (mtl.eof()) break;
-			if (bitmap_name.count(bitmap)) uv_index[read] = bitmap_name[bitmap];
-			else if (mtl.fail() || (bitmap_name[bitmap] = uv_index[read] = uv_loader->load(dir + L"\\" + bitmap)) == -1) return (obj.close(), mtl.clear(), -1);
+	while (1) {
+		while (mtl >> read && read != L"newmtl");
+		mtl >> read;
+		while (mtl >> bitmap && bitmap != L"map_Kd") {
+			if (bitmap == L"newmtl") return -1;
 		}
-	}
-	catch (std::exception& e) {
-		std::cout << e.what() << std::endl;
-		obj.close();
-		mtl.close();
-		return -1;
+		mtl >> bitmap;
+		if (mtl.eof()) break;
+		if (bitmap_name.count(bitmap)) uv_index[read] = bitmap_name[bitmap];
+		else if (mtl.fail() || (bitmap_name[bitmap] = uv_index[read] = uv_loader->load<>(dir + L"\\" + bitmap)) == -1) return -1;
 	}
 	mtl.close();
 	SObject3D create = MakeSObject3D(Vector3D());
@@ -112,62 +136,55 @@ int fl::loader::ModelLoaderImpl::loadMMD(const wstring& dir, const wstring& name
 	uv_point.push_back(Vector3D());
 	mesh_point.push_back(Vector3D());
 	mesh_normal.push_back(Vector3D(1, 0, 0));
-	scalar a, b, c;
+	Vector3D v;
 	int i[3], j[3], k[3];
 	int pre_index = -1;
-	try {
-		while (std::getline(obj, read)) {
-			wstringstream wss;
-			wss.str(read);
-			wss >> read;
-			if (read == L"v") {
-				wss >> a >> b >> c;
-				mesh_point.push_back(Vector3D(a * scale, b * scale, c * scale));
-			} else if (read == L"vt") {
-				wss >> a >> b;
-				if (a < 0.001f) a = 0.001f;
-				if (b < 0.001f) b = 0.001f;
-				if (a > 0.999f) a = 0.999f;
-				if (b > 0.999f) b = 0.999f;
-				uv_point.push_back(Vector3D(a, b, scalar(0)));
-			} else if (read == L"vn") {
-				wss >> a >> b >> c;
-				mesh_normal.push_back(Vector3D(a, b, c));
-			} else if (read == L"usemtl") {
-				wss >> read;
-				if (!uv_index.count(read)) {
-					throw std::bad_alloc();
-				}
-				pre_index = uv_index[read];
-			} else if (read == L"f") {
-				for (int n = 0; n < 3; ++n) {
-					(wss >> i[n]).get();
-					(wss >> j[n]).get();
-					wss >> k[n];
-				}
-				if (!~pre_index) throw std::bad_alloc();
-				const int w = uv_loader->width(pre_index);
-				const int h = uv_loader->height(pre_index);
-				if (leftTopOrigin)
-					create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
-						UV(int(uv_point[j[0]].x * w), int(uv_point[j[0]].y * h)),
-						UV(int(uv_point[j[2]].x * w), int(uv_point[j[2]].y * h)),
-						UV(int(uv_point[j[1]].x * w), int(uv_point[j[1]].y * h)));
-				else
-					create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
-						UV(int(uv_point[j[0]].x * w), int((1.0 - uv_point[j[0]].y) * h)),
-						UV(int(uv_point[j[2]].x * w), int((1.0 - uv_point[j[2]].y) * h)),
-						UV(int(uv_point[j[1]].x * w), int((1.0 - uv_point[j[1]].y) * h)));
+	
+	while (obj >> read) {
+		if (read[0] == L'v') {
+			if (read.length() == 1U) {
+				obj >> v.x >> v.y >> v.z;
+				mesh_point.push_back(v * scale);
+			} else if (read[1] == L't') {
+				obj >> v.x >> v.y;
+				v.x = min(0.999f, max(v.x, 0.001f));
+				v.y = min(0.999f, max(v.y, 0.001f));
+				v.z = 0;
+				uv_point.push_back(v);
+			} else if (read[1] == L'n') {
+				obj >> v.x >> v.y >> v.z;
+				mesh_normal.push_back(v);
 			}
+		} else if (read == L"usemtl") {
+			obj >> read;
+			if (!uv_index.count(read)) return -1;
+			pre_index = uv_index[read];
+		} else if (read == L"f") {
+			for (int n = 0; n < 3; ++n) {
+				(obj >> i[n]).get();
+				(obj >> j[n]).get();
+				obj >> k[n];
+			}
+			if (!~pre_index) return -1;
+			const int w = uv_loader->width(pre_index);
+			const int h = uv_loader->height(pre_index);
+			if (leftTopOrigin)
+				create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
+								   UV(int(uv_point[j[0]].x * w), int(uv_point[j[0]].y * h)),
+								   UV(int(uv_point[j[2]].x * w), int(uv_point[j[2]].y * h)),
+								   UV(int(uv_point[j[1]].x * w), int(uv_point[j[1]].y * h)));
+			else
+				create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
+								   UV(int(uv_point[j[0]].x * w), int((1 - uv_point[j[0]].y) * h)),
+								   UV(int(uv_point[j[2]].x * w), int((1 - uv_point[j[2]].y) * h)),
+								   UV(int(uv_point[j[1]].x * w), int((1 - uv_point[j[1]].y) * h)));
 		}
-		if (mesh_normal.size() != mesh_point.size()) throw std::bad_alloc();
-		for (int n = 0, len = (int)mesh_normal.size(); n < len; ++n) create->addPoint(mesh_point[n], mesh_normal[n]);
+		while (obj && obj.get() != L'\n');
 	}
-	catch (std::exception& e) {
-		std::cout << e.what() << std::endl;
-		obj.close();
-		return -1;
-	}
+
+
+	if (mesh_normal.size() != mesh_point.size()) return -1;
+	for (int n = 0, len = (int)mesh_normal.size(); n < len; ++n) create->addPoint(mesh_point[n], mesh_normal[n]);
 	models.push_back(create);
 	obj.close();
 	return (int)models.size() - 1;
