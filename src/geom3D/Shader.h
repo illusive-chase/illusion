@@ -62,7 +62,7 @@ namespace fl {
 			MapTrait* map_trait;
 
 			Shader(DWORD* write_src, MapTrait* map_trait_src, int width, const Texture& t, const int offset = 0)
-				:src(reinterpret_cast<const BYTE*>(t.src)), src_wid(t.width), src_size(t.width * t.height),
+				:src(reinterpret_cast<const BYTE*>(t.bmp->src)), src_wid(t.bmp->width), src_size(t.bmp->width * t.bmp->height),
 				offset(offset), step(1 << offset), write_src(write_src),
 				map_trait_src(map_trait_src), width(width)
 			{

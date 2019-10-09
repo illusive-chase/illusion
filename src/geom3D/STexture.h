@@ -19,43 +19,38 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace geom {
 		class Texture {
-		private:
-			bool alloc;
-
 		public:
-			DWORD* src;
+			Bitmap bmp;
 			int width, height;
 			scalar Ka, Kd, Ks; // coefficient of ambient light, diffuse reflection and specular reflection 
 
-			Texture(DWORD* src, int width, int height, scalar Ka = 0.8f, scalar Kd = 0.8f, scalar Ks = 0.1f)
-				:alloc(false), src(src), Ka(Ka), Kd(Kd), Ks(Ks), width(width), height(height) {
+			Texture(Bitmap bmp, scalar Ka = 0.8f, scalar Kd = 0.8f, scalar Ks = 0.1f)
+				:bmp(bmp), Ka(Ka), Kd(Kd), Ks(Ks) {
+				width = bmp->width;
+				height = bmp->height;
 			}
 
 			// This constructor can use Color::XXX to form a Texture.
 			// It even enables Color::XXX to be implicitly converted to class Texture.
 			Texture(DWORD pure_color, scalar Ka = 0.8f, scalar Kd = 0.8f, scalar Ks = 0.1f) 
-				:alloc(true), src(new DWORD), Ka(Ka), Kd(Kd), Ks(Ks), width(1), height(1) 
+				:bmp(MakeBitmap(1, 1, new DWORD[1])), Ka(Ka), Kd(Kd), Ks(Ks)
 			{
-				*src = pure_color;
+				bmp->src[0] = pure_color;
+				width = bmp->width;
+				height = bmp->height;
 			}
 
-			Texture(const Texture& copy) :
-				alloc(copy.alloc), src(alloc ? (new DWORD) : copy.src),
-				Ka(copy.Ka), Kd(copy.Kd), Ks(copy.Ks), width(copy.width), height(copy.height)
-			{
-				if (alloc)* src = *(copy.src);
+			Texture(const Texture& copy) : bmp(copy.bmp), Ka(copy.Ka), Kd(copy.Kd), Ks(copy.Ks) {
+				width = bmp->width;
+				height = bmp->height;
 			}
 
-			Texture(Texture&& copy) noexcept :
-				alloc(copy.alloc), src(copy.src), Ka(copy.Ka), Kd(copy.Kd), Ks(copy.Ks), width(copy.width), height(copy.height)
-			{
-				copy.alloc = false;
-			}
+			Texture(Texture&& copy) noexcept :bmp(std::move(copy.bmp)), width(copy.width), height(copy.height), Ka(copy.Ka), Kd(copy.Kd), Ks(copy.Ks) {}
 
 			Texture& operator =(const Texture& copy) = delete;
 			Texture& operator =(Texture&& copy) = delete;
 
-			~Texture() { if (alloc) delete src; }
+			~Texture() {}
 		};
 	}
 }

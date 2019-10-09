@@ -28,7 +28,7 @@ namespace fl {
 			// will be overlaid on objects with larger indexes when drawing.
 			std::vector<Shape> children;
 
-			SpriteImpl(int x, int y, Shape parent = nullptr) : ShapeImpl(parent) { this->x = x, this->y = y; width = height = 0; }
+			SpriteImpl(int x, int y, ShapeImpl* parent = nullptr) : ShapeImpl(parent) { this->x = x, this->y = y; width = height = 0; }
 			virtual ~SpriteImpl() {}
 			unsigned childrenNum() { return (unsigned)children.size(); }
 
@@ -57,7 +57,7 @@ namespace fl {
 		};
 
 		using Sprite = sptr<SpriteImpl>;
-		ILL_INLINE Sprite MakeSprite(int x, int y, Shape parent = nullptr) {
+		ILL_INLINE Sprite MakeSprite(int x, int y, ShapeImpl* parent = nullptr) {
 			return Sprite(new SpriteImpl(x, y, parent));
 		}
 	}

@@ -35,7 +35,7 @@ namespace fl {
 
 			SEllipseImpl(int x, int y, int width, int height, bool filled, COLORREF color,
 				int pen_style_PS = PS_SOLID, int pen_width = 1,
-				COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) 
 				:ShapeImpl(parent) 
 			{
 				this->x = x;
@@ -73,7 +73,7 @@ namespace fl {
 		using SEllipse = sptr<SEllipseImpl>;
 		ILL_INLINE SEllipse MakeSEllipse(int x, int y, int width, int height, bool filled, COLORREF color,
 			int pen_style_PS = PS_SOLID, int pen_width = 1,
-			COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) {
 			return SEllipse(new SEllipseImpl(x, y, width, height, filled, color, pen_style_PS, pen_width, pen_color, parent));
 		}
 
@@ -90,7 +90,7 @@ namespace fl {
 			virtual ~SLineImpl() {}
 
 			SLineImpl(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
-				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) 
 				:ShapeImpl(parent), x0(x0), y0(y0), x1(x1), y1(y1) 
 			{
 				x = min(x0, x1);
@@ -107,7 +107,7 @@ namespace fl {
 
 			// Another constructor uses polar coordinates.
 			SLineImpl(int x0, int y0, scalar rad, int length, int pen_style_PS = PS_SOLID,
-				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) 
+				int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) 
 				:ShapeImpl(parent), x0(x0), y0(y0)
 			{
 				x1 = x0 + int(round(length * cos(rad)));
@@ -140,12 +140,12 @@ namespace fl {
 
 		using SLine = sptr<SLineImpl>;
 		ILL_INLINE SLine MakeSLine(int x0, int y0, int x1, int y1, int pen_style_PS = PS_SOLID,
-			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) {
 			return SLine(new SLineImpl(x0, y0, x1, y1, pen_style_PS, pen_width, pen_color, parent));
 		}
 
 		ILL_INLINE SLine MakeSLine(int x0, int y0, scalar rad, int length, int pen_style_PS = PS_SOLID,
-			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) {
 			return SLine(new SLineImpl(x0, y0, rad, length, pen_style_PS, pen_width, pen_color, parent));
 		}
 
@@ -163,7 +163,7 @@ namespace fl {
 			
 			SRectImpl(int x, int y, int width, int height, bool filled, COLORREF color, 
 				int pen_style_PS = PS_INSIDEFRAME, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), 
-				Shape parent = nullptr) :ShapeImpl(parent) 
+				ShapeImpl* parent = nullptr) :ShapeImpl(parent) 
 			{
 				this->x = x;
 				this->y = y;
@@ -197,7 +197,7 @@ namespace fl {
 
 		using SRect = sptr<SRectImpl>;
 		ILL_INLINE SRect MakeSRect(int x0, int y0, int width, int height, bool filled, COLORREF color, int pen_style_PS = PS_SOLID,
-			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), Shape parent = nullptr) {
+			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) {
 			return SRect(new SRectImpl(x0, y0, width, height, filled, color, pen_style_PS, pen_width, pen_color, parent));
 		}
 	}

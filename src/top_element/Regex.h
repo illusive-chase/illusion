@@ -66,7 +66,7 @@ namespace fl {
 
 
 		Regex(ct c) :stack(new ct[1]), cap(1U), len(1U) { *stack = c; }
-		Regex(ct from, ct to) :stack(new ct[int(ILL_ASSERT(to - from + 1 > 0)), (to - from) * 2 + 1]), cap((to - from) * 2 + 1), len(to - from + 1) {
+		Regex(ct from, ct to) :stack(new ct[(to - from) * 2 + 1]), cap((to - from) * 2 + 1), len(to - from + 1) {
 			for (unsigned i = 0; i < len; ++i) stack[i] = from + i;
 			for (unsigned i = len; i < cap; ++i) stack[i] = ct(ReserveCharSet::AND);
 			len = cap;

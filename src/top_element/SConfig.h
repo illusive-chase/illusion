@@ -18,7 +18,7 @@ copies or substantial portions of the Software.
 
 
 namespace fl {
-	constexpr int MILISECOND_PER_FRAME = 16;                                   // miliseconds per frame
+	constexpr int MILISECOND_PER_FRAME = 30;                                   // miliseconds per frame
 	constexpr clock_t CLOCKS = CLOCKS_PER_SEC / 1000;                          // clocks per milisecond
 	const wstring TRANSLATE_FONT[] = { L"Î¢ÈíÑÅºÚ",L"ËÎÌå",L"ºÚÌå",L"·ÂËÎ" };    // basic fonts
 

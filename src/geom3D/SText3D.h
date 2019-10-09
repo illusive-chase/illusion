@@ -39,14 +39,14 @@ namespace fl {
 			fl::events::Signal<fl::events::SimpleEvent<SText3D>> renderEventListener;
 
 			SText3DImpl(const Vector3D& pos, SObject3D obj, const wstring& caption,
-				const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::Shape parent = nullptr)
+				const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::ShapeImpl* parent = nullptr)
 				:STextImpl(0, 0, caption, sfont, parent), pos(pos), obj(obj) {
 			}
 
 		};
 
 		ILL_INLINE SText3D MakeSText3D(const Vector3D& pos, SObject3D obj, const wstring& caption,
-			const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::Shape parent = nullptr) {
+			const fl::display::SFont& sfont = fl::display::SFont(20), fl::display::ShapeImpl* parent = nullptr) {
 			return SText3D(new SText3DImpl(pos, obj, caption, sfont, parent));
 		}
 

@@ -20,9 +20,6 @@ namespace fl {
 	namespace geom {
 
 		class SkyBoxImpl :public SObject3DImpl {
-		private:
-			DWORD* top_src; // It saves the automatically generated top texture.
-
 		public:
 			const int size; // a half of side length
 
@@ -32,7 +29,7 @@ namespace fl {
 			// and automatically generates the top texture by vertex interpolation.
 			SkyBoxImpl(const Texture& tex, int size);
 
-			~SkyBoxImpl() { if (top_src) delete[] top_src; }
+			~SkyBoxImpl() {}
 		};
 
 		using SkyBox = sptr<SkyBoxImpl>;
@@ -48,20 +45,20 @@ fl::geom::SkyBoxImpl::SkyBoxImpl(const Texture& tex, int size) :SObject3DImpl(Ve
 	int w = (tex.width - 1) >> 2;
 	int h = tex.height - 1;
 
-	top_src = new DWORD[(w + 1) * (w + 1)];
+	DWORD* top_src = new DWORD[(w + 1) * (w + 1)];
 	scalar w_r = scalar(1) / w;
-	scalar drdx_l = scalar(int((tex.src[w] >> 16) & 0xFF) - int((tex.src[0] >> 16) & 0xFF)) * w_r;
-	scalar dgdx_l = scalar(int((tex.src[w] >> 8) & 0xFF) - int((tex.src[0] >> 8) & 0xFF)) * w_r;
-	scalar dbdx_l = scalar(int(tex.src[w] & 0xFF) - int(tex.src[0] & 0xFF)) * w_r;
-	scalar drdx_h = scalar(int((tex.src[w << 1] >> 16) & 0xFF) - int((tex.src[3 * w] >> 16) & 0xFF)) * w_r;
-	scalar dgdx_h = scalar(int((tex.src[w << 1] >> 8) & 0xFF) - int((tex.src[3 * w] >> 8) & 0xFF)) * w_r;
-	scalar dbdx_h = scalar(int(tex.src[w << 1] & 0xFF) - int(tex.src[3 * w] & 0xFF)) * w_r;
-	scalar r_l = scalar((tex.src[0] >> 16) & 0xFF);
-	scalar g_l = scalar((tex.src[0] >> 8) & 0xFF);
-	scalar b_l = scalar(tex.src[0] & 0xFF);
-	scalar r_h = scalar((tex.src[3 * w] >> 16) & 0xFF);
-	scalar g_h = scalar((tex.src[3 * w] >> 8) & 0xFF);
-	scalar b_h = scalar(tex.src[3 * w] & 0xFF);
+	scalar drdx_l = scalar(int((tex.bmp->src[w] >> 16) & 0xFF) - int((tex.bmp->src[0] >> 16) & 0xFF)) * w_r;
+	scalar dgdx_l = scalar(int((tex.bmp->src[w] >> 8) & 0xFF) - int((tex.bmp->src[0] >> 8) & 0xFF)) * w_r;
+	scalar dbdx_l = scalar(int(tex.bmp->src[w] & 0xFF) - int(tex.bmp->src[0] & 0xFF)) * w_r;
+	scalar drdx_h = scalar(int((tex.bmp->src[w << 1] >> 16) & 0xFF) - int((tex.bmp->src[3 * w] >> 16) & 0xFF)) * w_r;
+	scalar dgdx_h = scalar(int((tex.bmp->src[w << 1] >> 8) & 0xFF) - int((tex.bmp->src[3 * w] >> 8) & 0xFF)) * w_r;
+	scalar dbdx_h = scalar(int(tex.bmp->src[w << 1] & 0xFF) - int(tex.bmp->src[3 * w] & 0xFF)) * w_r;
+	scalar r_l = scalar((tex.bmp->src[0] >> 16) & 0xFF);
+	scalar g_l = scalar((tex.bmp->src[0] >> 8) & 0xFF);
+	scalar b_l = scalar(tex.bmp->src[0] & 0xFF);
+	scalar r_h = scalar((tex.bmp->src[3 * w] >> 16) & 0xFF);
+	scalar g_h = scalar((tex.bmp->src[3 * w] >> 8) & 0xFF);
+	scalar b_h = scalar(tex.bmp->src[3 * w] & 0xFF);
 	int offset = 0;
 	for (int x = 0; x <= w; ++x) {
 		scalar r = r_l, g = g_l, b = b_l;
@@ -82,7 +79,7 @@ fl::geom::SkyBoxImpl::SkyBoxImpl(const Texture& tex, int size) :SObject3DImpl(Ve
 		g_h += dgdx_h;
 		b_h += dbdx_h;
 	}
-	Texture top_tex(top_src, w + 1, w + 1, tex.Ka, tex.Kd, tex.Ks);
+	Texture top_tex(MakeBitmap(w + 1, w + 1, top_src), tex.Ka, tex.Kd, tex.Ks);
 
 
 	addPoint(Vector3D(size, size, size)); uv[0] = UV(0, 0);

@@ -206,7 +206,8 @@ namespace fl {
 		template<typename S, typename E = typename std::enable_if<bool(Array::getIndex<S>() < size)> ::type>
 		bool switch_to() {
 			if (active != Array::getIndex<S>() && tools[active]->deactivate()) {
-				tools[active = Array::getIndex<S>()]->activate();
+				if (tools[Array::getIndex<S>()]->activate()) active = Array::getIndex<S>();
+				else tools[active]->activate();
 				return true;
 			}
 			return false;

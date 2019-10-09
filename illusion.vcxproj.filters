@@ -219,6 +219,12 @@
     <ClInclude Include="src\top_element\Regex.h">
       <Filter>头文件\top_element</Filter>
     </ClInclude>
+    <ClInclude Include="index\show.hpp">
+      <Filter>源文件\index</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\SButton.h">
+      <Filter>头文件\display</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

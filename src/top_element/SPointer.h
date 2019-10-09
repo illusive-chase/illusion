@@ -140,8 +140,10 @@ namespace fl {
 		ILL_INLINE bool operator==(const sptr<T>& rhs) const { return ptr == rhs.ptr; }
 		ILL_INLINE bool operator!=(const sptr<T>& rhs) const { return ptr != rhs.ptr; }
 		ILL_INLINE T& operator*() { return *ptr; }
+		ILL_INLINE const T& operator*() const { return *ptr; }
 		ILL_INLINE unsigned count() const { return *cnt; }
 		ILL_INLINE T* operator->() { return ptr; }
+		ILL_INLINE const T* operator->() const { return ptr; }
 		ILL_INLINE operator bool() const { return ptr; }
 		ILL_INLINE T* raw() { return ptr; }
 		void operator delete(void* p) = delete;

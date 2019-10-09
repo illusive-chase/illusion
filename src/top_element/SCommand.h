@@ -19,21 +19,24 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace ui {
 
-		template<unsigned MAX_OP_SIZE = 128U>
+		template<typename CharType = wchar_t, unsigned MAX_OP_SIZE = 128U>
 		class SCommand {
 		private:
 
+			using stringstream = std::conditional<TypeTrait::TypeEqual<CharType, wchar_t>::value, std::wstringstream, std::stringstream>;
+			using str = std::conditional<TypeTrait::TypeEqual<CharType, wchar_t>::value, std::wstring, std::string>;
+
 			class compare_function {
 			public:
-				const wchar_t (&buffer)[MAX_OP_SIZE + 1];
+				const CharType(&buffer)[MAX_OP_SIZE + 1];
 				const unsigned& len;
 				bool& ret;
 				unsigned p;
-				compare_function(const wchar_t(&buffer)[MAX_OP_SIZE + 1], 
+				compare_function(const CharType(&buffer)[MAX_OP_SIZE + 1],
 								 const unsigned& len, bool& ret)
 					:buffer(buffer), len(len), ret(ret), p(0) {}
 
-				void operator()(const wchar_t* cmd) {
+				void operator()(const CharType* cmd) {
 					if (!ret) return;
 					for (; p <= len; ++p, ++cmd) {
 						if (!buffer[p] || !*cmd) {
@@ -50,7 +53,7 @@ namespace fl {
 					if (ret) {
 						unsigned bg = p;
 						while (buffer[p++]);
-						ret = bool(wstringstream(wstring(buffer + bg)) >> target);
+						ret = bool(stringstream(str(buffer + bg)) >> target);
 					}
 				}
 
@@ -59,30 +62,35 @@ namespace fl {
 		
 			wchar_t buffer[MAX_OP_SIZE + 1];
 			unsigned len;
+			std::istream& in;
+			std::ostream& out;
 
 		public:
 
+			SCommand(std::istream& in = std::wcin, std::ostream& out = std::wcout) :len(0), in(in), out(out) {}
+
+
 			bool read() {
-				std::wcout << L">> ";
+				out << L">> ";
 				len = 0;
 				for (;;) {
-					wchar_t tmp = std::wcin.get();
+					wchar_t tmp = in.get();
 					if (tmp == L' ' || tmp == L'\r') {
 						buffer[len++] = 0;
 						if (len == MAX_OP_SIZE) return buffer[len] = 0, false;
 						do {
-							tmp = std::wcin.get();
-							if (std::wcin.fail()) break;
+							tmp = in.get();
+							if (in.fail()) break;
 						} while (tmp == L' ' || tmp == L'\r');
 					}
-					if (std::wcin.fail() || tmp == L'\n') {
+					if (in.fail() || tmp == L'\n') {
 						buffer[len] = 0;
 						break;
 					}
 					buffer[len++] = tmp;
 					if (len == MAX_OP_SIZE) return buffer[len] = 0, false;
 				}
-				return !std::wcin.fail();
+				return !in.fail();
 			}
 
 			template<typename ...T>

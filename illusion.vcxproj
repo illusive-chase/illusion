@@ -223,7 +223,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
@@ -242,7 +242,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="index\recter.hpp" />
+    <ClInclude Include="index\show.hpp" />
     <ClInclude Include="src\display\SBitmap.h" />
+    <ClInclude Include="src\display\SButton.h" />
     <ClInclude Include="src\display\SColor.h" />
     <ClInclude Include="src\display\SFont.h" />
     <ClInclude Include="src\display\SGeomShape.h" />

@@ -258,6 +258,11 @@ namespace fl {
 			return n;
 		}
 
+		handle to_create() const {
+			if (free.empty()) return (handle)states.size();
+			return free.top();
+		}
+
 		void release(handle h) {
 			states[h] = State();
 			free.push(h);
@@ -265,12 +270,26 @@ namespace fl {
 
 		void link(handle a, handle b, char w) { states[a].to[w] = b; }
 
+		unsigned find(std::vector<int>& uss, int x){
+			int p = uss[x];
+			while (uss[p] != p && ~uss[p]) p = uss[p];
+			for (int temp = uss[x]; temp != p; temp = uss[x]) {
+				uss[x] = p;
+				x = temp;
+			}
+			return p;
+		}
+
+		void merge(std::vector<int>& uss, int i, int j) {
+			uss[find(uss, i)] = find(uss, j);
+		}
+
 	public:
 		DFA() :accept_constant(0U) {}
 
 		ILL_INLINE unsigned size() const override { return (unsigned)states.size(); }
 
-		void print(std::ostream& os) const override {
+		void print(std::ostream& os = std::cout) const override {
 			handle id = 0U;
 			for (const State& it : states) {
 				for (int c = 0; c < 128; ++c) {
@@ -316,11 +335,11 @@ namespace fl {
 						HelperFunction rs(std::move(hf.top()));
 						hf.pop();
 						HelperFunction& ls = hf.top();
-						ls.nullable = ls.nullable && rs.nullable;
 						for (handle h : ls.last) istate[h].follow.insert(rs.first.begin(), rs.first.end());
 						if (ls.nullable) ls.first.insert(rs.first.begin(), rs.first.end());
 						if (rs.nullable) ls.last.insert(rs.last.begin(), rs.last.end());
 						else ls.last = std::move(rs.last);
+						ls.nullable = ls.nullable && rs.nullable;
 					}
 					break;
 					case Regex::ReserveCharSet::ANY:
@@ -343,9 +362,9 @@ namespace fl {
 			std::queue<MapState> mstates;
 			std::unordered_set<char> char_map;
 			std::vector<char> char_set;
-			handle ret = 0U;
 			mstates.push(MapState(create()));
 			vis_mstates.insert(mstates.front());
+			
 			MakeUnion(mstates.front(), hf.top().first, (handle)istate.size());
 			for (ImportantState& it : istate) {
 				if (char_map.insert(it.c).second) char_set.push_back(it.c);
@@ -355,7 +374,8 @@ namespace fl {
 				MapState it = std::move(mstates.front());
 				mstates.pop();
 				for (char c : char_set) {
-					MapState nmstate(create());
+					handle last = create();
+					MapState nmstate(last);
 					for (handle h : it.set) {
 						if (h == (handle)istate.size()) continue;
 						ImportantState& rstate = istate[h];
@@ -363,11 +383,11 @@ namespace fl {
 					}
 					auto pair = vis_mstates.insert(std::move(nmstate));
 					if (pair.second) mstates.push(*pair.first);
-					else release((handle)states.size() - 1U);
+					else release(last);
 					link(it.h, pair.first->h, c);
 				}
 			}
-			return ret;
+			return accept_constant;
 		}
 
 		std::set<handle> parse(const char* str) const override {
@@ -379,6 +399,69 @@ namespace fl {
 			}
 			return ret;
 		}
+
+		void optimize() {
+			std::vector<unsigned> partition(states.size());
+			std::vector<std::vector<handle>> groups(2);
+			for (unsigned i = 0; i < states.size(); ++i) {
+				if (states[i].accept) partition[i]++, groups[1].push_back(i);
+				else groups[0].push_back(i);
+			}
+
+			for (bool newFlag = true; newFlag;) {
+				newFlag = false;
+				for (unsigned ii = 0; ii < groups.size(); ++ii) {
+					std::vector<handle>& group = groups[ii];
+					if (group.size() == 1) continue;
+					std::vector<std::vector<handle>> newGroups;
+					std::vector<int> uss(group.size());
+					for (unsigned i = 0; i < uss.size(); ++i) uss[i] = i;
+					for (unsigned i = 0; i < uss.size(); ++i) {
+						if (uss[i] != i) continue;
+						for (unsigned j = i + 1; j < uss.size(); ++j) {
+							bool same = true;
+							handle* ito = states[group[i]].to;
+							handle* jto = states[group[j]].to;
+							for (int k = 0; k < 128; ++k) {
+								if (partition[ito[k]] != partition[jto[k]]) {
+									same = false;
+									break;
+								}
+							}
+							if (same) merge(uss, (int)i, (int)j);
+						}
+					}
+
+					for (unsigned i = 0, group_id = find(uss, (int)i), 
+						 part_id = (unsigned)(groups.size() + newGroups.size());
+						 i < uss.size(); ++i) 
+					{
+						if (!~uss[i]) continue;
+						uss[i] = -1;
+						std::vector<handle> newGroup(1, group[i]);
+						if (i) partition[group[i]] = part_id;
+						for (unsigned j = i + 1; j < uss.size(); ++j) {
+							if (!~uss[j]) continue;
+							if (find(uss, (int)j) == group_id) {
+								newGroup.push_back(group[j]), uss[j] = -1;
+								if (i) partition[group[j]] = part_id;
+							}
+						}
+						newGroups.push_back(std::move(newGroup));
+					}
+
+					group = std::move(newGroups[0]);
+					if (newGroups.size() > 1) newFlag = true;
+					for (unsigned j = 1; j < newGroups.size(); ++j) groups.push_back(std::move(newGroups[j]));
+				}
+			}
+
+			for (auto& it : groups) {
+				for (auto& every : it) std::cout << every << ' ';
+				std::cout << std::endl;
+			}
+		}
+
 	};
 
 

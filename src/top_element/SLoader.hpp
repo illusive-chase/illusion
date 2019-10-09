@@ -24,15 +24,13 @@ namespace fl {
 
 		class ImageIOImpl {
 		public:
-			std::vector<DWORD*> content;
+			std::vector<Bitmap> content;
 			std::vector<BITMAP> info;
 			ImageIOImpl() {}
-			~ImageIOImpl() { for (DWORD* p : content) delete p; }
+			~ImageIOImpl() {}
 			template<ImageType = IMAGE_BMP> int load(const wstring & path, int width = 0, int height = 0);
 			template<ImageType = IMAGE_BMP> bool save(const wstring & path, DWORD * src, int width, int height);
-			ILL_INLINE int width(int i) { return info[i].bmWidth; }
-			ILL_INLINE int height(int i) { return info[i].bmHeight; }
-			ILL_INLINE DWORD* src(int i) { return content[i]; }
+			ILL_INLINE Bitmap get(int i) { return content[i]; }
 		};
 
 		using ImageIO = sptr<ImageIOImpl>;
@@ -40,13 +38,10 @@ namespace fl {
 
 		// Class ModelIOImpl only have one interface now. It can only load MMD model now.
 		class ModelIOImpl {
-		private:
-			ImageIO uv_loader;
 		public:
-			std::vector<geom::SObject3D> models;
-			ModelIOImpl(): uv_loader(MakeImageIO()) {}
+			ModelIOImpl() {}
 			~ModelIOImpl() {}
-			int loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
+			SObject3D loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
 		};
 
 		using ModelIO = sptr<ModelIOImpl>;
@@ -67,10 +62,10 @@ int fl::io::ImageIOImpl::load<fl::io::IMAGE_BMP>(const wstring& path, int width,
 	BITMAP bmp;
 	GetObject(hbmp, sizeof(BITMAP), &bmp);
 	info.push_back(bmp);
-	const int size = bmp.bmWidth * bmp.bmHeight;
+	int size = bmp.bmWidth * bmp.bmHeight;
 	DWORD* save = new DWORD[size];
 	GetBitmapBits(hbmp, size << 2, save);
-	content.push_back(save);
+	content.push_back(MakeBitmap(bmp.bmWidth, bmp.bmHeight, save));
 	DeleteObject(hbmp);
 	return (int)content.size() - 1;
 }
@@ -98,22 +93,23 @@ bool fl::io::ImageIOImpl::save<fl::io::IMAGE_BMP>(const wstring& path, DWORD* sr
 	fw.write((const char*)&fh, sizeof(BITMAPFILEHEADER));
 	fw.write((const char*)&ih, sizeof(BITMAPINFOHEADER));
 	DWORD* p = src + (width * height);
-	while ((p -= width) >= src) fw.write((const char*)p, width << 2);
+	while ((p -= width) >= src) fw.write((const char*)p, unsigned(width << 2));
 	fw.close();
 	return true;
 }
 
 
-int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
+SObject3D fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar scale, bool leftTopOrigin) {
 	using namespace fl::geom;
 	std::wifstream obj(dir + L"\\" + name);
-	if (!obj.is_open()) return -1;
+	if (!obj.is_open()) return nullptr;
 	wstring read;
 	while (obj >> read && read != L"mtllib");
 	obj >> read;
 	std::wifstream mtl(dir + L"\\" + read);
-	if (!mtl.is_open()) return -1;
+	if (!mtl.is_open()) return nullptr;
 
+	ImageIO uv_loader = MakeImageIO();
 	std::map<wstring, int> uv_index;
 	std::map<wstring, int> bitmap_name;
 	wstring bitmap;
@@ -121,12 +117,12 @@ int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar
 		while (mtl >> read && read != L"newmtl");
 		mtl >> read;
 		while (mtl >> bitmap && bitmap != L"map_Kd") {
-			if (bitmap == L"newmtl") return -1;
+			if (bitmap == L"newmtl") return nullptr;
 		}
 		mtl >> bitmap;
 		if (mtl.eof()) break;
 		if (bitmap_name.count(bitmap)) uv_index[read] = bitmap_name[bitmap];
-		else if (mtl.fail() || (bitmap_name[bitmap] = uv_index[read] = uv_loader->load<>(dir + L"\\" + bitmap)) == -1) return -1;
+		else if (mtl.fail() || (bitmap_name[bitmap] = uv_index[read] = uv_loader->load(dir + L"\\" + bitmap)) == -1) return nullptr;
 	}
 	mtl.close();
 	SObject3D create = MakeSObject3D(Vector3D());
@@ -138,7 +134,7 @@ int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar
 	mesh_normal.push_back(Vector3D(1, 0, 0));
 	Vector3D v;
 	int i[3], j[3], k[3];
-	int pre_index = -1;
+	Bitmap selected_bmp = nullptr;
 	
 	while (obj >> read) {
 		if (read[0] == L'v') {
@@ -157,24 +153,24 @@ int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar
 			}
 		} else if (read == L"usemtl") {
 			obj >> read;
-			if (!uv_index.count(read)) return -1;
-			pre_index = uv_index[read];
+			if (!uv_index.count(read)) return nullptr;
+			selected_bmp = uv_loader->get(uv_index[read]);
 		} else if (read == L"f") {
 			for (int n = 0; n < 3; ++n) {
 				(obj >> i[n]).get();
 				(obj >> j[n]).get();
 				obj >> k[n];
 			}
-			if (!~pre_index) return -1;
-			const int w = uv_loader->width(pre_index);
-			const int h = uv_loader->height(pre_index);
+			if (!selected_bmp) return nullptr;
+			int w = selected_bmp->width;
+			int h = selected_bmp->height;
 			if (leftTopOrigin)
-				create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
+				create->addSurface(i[0], i[2], i[1], Texture(selected_bmp),
 								   UV(int(uv_point[j[0]].x * w), int(uv_point[j[0]].y * h)),
 								   UV(int(uv_point[j[2]].x * w), int(uv_point[j[2]].y * h)),
 								   UV(int(uv_point[j[1]].x * w), int(uv_point[j[1]].y * h)));
 			else
-				create->addSurface(i[0], i[2], i[1], Texture(uv_loader->src(pre_index), w, h),
+				create->addSurface(i[0], i[2], i[1], Texture(selected_bmp),
 								   UV(int(uv_point[j[0]].x * w), int((1 - uv_point[j[0]].y) * h)),
 								   UV(int(uv_point[j[2]].x * w), int((1 - uv_point[j[2]].y) * h)),
 								   UV(int(uv_point[j[1]].x * w), int((1 - uv_point[j[1]].y) * h)));
@@ -183,9 +179,8 @@ int fl::io::ModelIOImpl::loadMMD(const wstring& dir, const wstring& name, scalar
 	}
 
 
-	if (mesh_normal.size() != mesh_point.size()) return -1;
+	if (mesh_normal.size() != mesh_point.size()) return nullptr;
 	for (int n = 0, len = (int)mesh_normal.size(); n < len; ++n) create->addPoint(mesh_point[n], mesh_normal[n]);
-	models.push_back(create);
 	obj.close();
-	return (int)models.size() - 1;
+	return create;
 }

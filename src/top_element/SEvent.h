@@ -99,6 +99,9 @@ namespace fl {
 			template<typename Caller>
 			void add(Caller* caller, DWORD type, void(Caller::*method)(Para)) { slots.push_back(Slot<Para>(caller, type, method)); }
 			
+			template<typename Caller>
+			void add(sptr<Caller>& caller, DWORD type, void(Caller::*method)(Para)) { slots.push_back(Slot<Para>(caller.raw(), type, method)); }
+
 			void add(DWORD type, void(*method)(Para)) { slots.push_back(Slot<Para>(type, method)); }
 			
 			void remove(void* caller) {

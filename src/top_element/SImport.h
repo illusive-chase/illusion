@@ -47,6 +47,7 @@ using namespace fl::events;
 #include "../display/SBitmap.h"
 #include "../display/SText.h"
 #include "../display/SColor.h"
+#include "../display/SButton.h"
 using namespace fl::display;
 #endif
 #if defined(import_geom)

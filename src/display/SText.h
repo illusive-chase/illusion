@@ -35,9 +35,9 @@ namespace fl {
 
 			// It is used to listen for painting events.
 			// In fact, the event is only responded when function STextImpl::paint is called.
-			fl::events::Signal<fl::events::SimpleEvent<STextImpl*>> paintEventListener;
+			fl::events::Signal<fl::events::SimpleEvent<STextImpl&>> paintEventListener;
 			
-			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape parent = Shape(nullptr))
+			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), ShapeImpl* parent = nullptr)
 				:ShapeImpl(parent), caption(caption), font(font)
 			{
 				this->x = x;
@@ -63,7 +63,7 @@ namespace fl {
 
 			// It updates the width and height, so the size number is correct even if you change the caption.
 			void paint(HDC hdc) override {
-				paintEventListener(this); // respond
+				paintEventListener(*this); // respond
 				if (visible) {
 					SetBkMode(hdc, TRANSPARENT);
 					SetTextColor(hdc, font.color);
@@ -80,7 +80,7 @@ namespace fl {
 			}
 		};
 
-		ILL_INLINE SText MakeSText(int x, int y, const wstring& caption, const SFont& font = SFont(20), Shape parent = Shape(nullptr)) {
+		ILL_INLINE SText MakeSText(int x, int y, const wstring& caption, const SFont& font = SFont(20), ShapeImpl* parent = nullptr) {
 			return SText(new STextImpl(x, y, caption, font, parent));
 		}
 	}

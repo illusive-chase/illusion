@@ -43,7 +43,7 @@ namespace fl {
 			bool freeConsole();
 			bool showConsole();
 			bool hideConsole();
-			bool setFrameDelay(bool value);
+			bool showFrameDelay(bool value, bool read_only = false);
 
 			void destroy();
 			void framing();
@@ -107,11 +107,12 @@ bool fl::display::Stage::showConsole() {
 
 bool fl::display::Stage::hideConsole() {
 	if (!console_show) return false;
-	return console_show = false, ShowWindow(GetConsoleWindow(), SW_MINIMIZE) && ShowWindow(GetConsoleWindow(), SW_HIDE);
+	return console_show = false, ShowWindow(GetConsoleWindow(), SW_HIDE) && ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
 }
 
-bool fl::display::Stage::setFrameDelay(bool value) {
+bool fl::display::Stage::showFrameDelay(bool value, bool read_only) {
 	static bool show_frame = true;
+	if (read_only) return show_frame;
 	if (show_frame != value) return show_frame = value, true;
 	return false;
 }

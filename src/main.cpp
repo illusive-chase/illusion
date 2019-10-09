@@ -21,25 +21,29 @@ copies or substantial portions of the Software.
 /// @file main.cpp
 /// @author illusion
 /// @version 0.1
-/// @date 2019/9/21
+/// @date 2019/10/9
 ////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "../index/show.hpp"
 
+
+
+
+
+
+#if 0
 
 #define import_all
 #include "top_element/SImport.h"
 #undef import_all
 
 
-#if 1
+
 extern Stage stage;
 
 
 Stage3D wd;
-ModelIO ml;
 Roamer roamer;
-ImageIO ld;
 Phase ph;
 PObject3D ptrace, ptrace2;
 
@@ -59,29 +63,36 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 	wd->addObject((sp->addPObject(psp), sp));
 }
 
-#include "top_element\SPattern.h"
-#include <cmath>
+#include "top_element\SCommand.h"
 
+using r = Regex<char>;
 
 // Initialize
 void System::Setup() {
-	/*
-	ld = MakeImageIO();
-	ld->load<>(L"ass\\sky.bmp");
-	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
+	stage.addConsole();
+	DFA dfa;
+	Regex<char> reg = r::MakeRegex("[a|b]*abb");
+	dfa.build(reg);
+	dfa.print();
+	dfa.optimize();
 
-	stage.addChild(wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000)));
+#if 0
+	ImageIO ld = MakeImageIO();
+	ld->load(L"ass\\sky.bmp");
+	Texture tx(ld->get(0), 3.3f, 0, 0);
+
+	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000));
+	stage.addChild(wd);
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 
-	ml = MakeModelIO();
-	ml->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true);
-	wd->addObject(ml->models[0]);
+	ModelIO ml = MakeModelIO();
+	wd->addObject(ml->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
 	roamer = MakeRoamer(wd);
-	InitWindow();*/
+	stage.addConsole();
 	InitWindow();
-
+#endif
 #if 0
 	stage.addConsole();
 

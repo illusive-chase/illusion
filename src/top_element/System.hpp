@@ -97,6 +97,9 @@ namespace fl {
 		static HWND g_hWnd;
 
 		static bool InitWindow(const wstring& title = L"Program", int xpos = 20, int ypos = 20, int width = 1024, int height = 768, WindowStyle ws = WindowStyle());
+		static bool HideWindow();
+		static bool ShowWindow();
+
 		static void Setup();
 		static wstring CurrentExe();
 
@@ -118,7 +121,6 @@ namespace fl {
 
 		static bool IsAdmin(bool& isadmin);
 
-		static bool CreateJob();
 	};
 }
 
@@ -260,7 +262,7 @@ BOOL fl::System::InitInstance(HINSTANCE hInstance, int nCmdShow, int xpos, int y
 		xpos, ypos, width, height, nullptr, nullptr, hInstance, nullptr);
 	if (!g_hWnd) return FALSE;
 	if (~ws.alpha) SetLayeredWindowAttributes(g_hWnd, 0, ws.alpha, LWA_ALPHA);
-	ShowWindow(g_hWnd, nCmdShow);
+	::ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
 
 	return TRUE;
@@ -371,8 +373,7 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			curr_time = fl::time::Timer::base_time;
 			cnt = 0;
 		}
-		if (stage.setFrameDelay(false)) {
-			stage.setFrameDelay(true);
+		if (stage.showFrameDelay(false, true)) {
 			WCHAR itow[20];
 			_itow_s(int((curr_time - prev_time) >> 3), itow, 20, 10);
 			TextOut(memhdc, 50, 50, itow, lstrlenW(itow));
@@ -423,10 +424,18 @@ INT_PTR CALLBACK fl::System::About(HWND hDlg, UINT message, WPARAM wParam, LPARA
 bool fl::System::InitWindow(const wstring& title, int xpos, int ypos, int width, int height, System::WindowStyle ws) {
 	wcscpy_s(szTitle, title.c_str());
 	//if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width + 17, height + 60, ws)) return false;
-	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width, height, ws)) return false;
+	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width, height + 40, ws)) return false;
 	//stage.width = width + 17, stage.height = height + 17;
 	stage.width = width, stage.height = height;
 	return true;
+}
+
+ILL_INLINE bool fl::System::HideWindow() {
+	return ::ShowWindow(g_hWnd, SW_HIDE) && ::ShowWindow(g_hWnd, SW_MINIMIZE);
+}
+
+ILL_INLINE bool fl::System::ShowWindow() {
+	return ::ShowWindow(g_hWnd, SW_RESTORE);
 }
 
 wstring fl::System::CurrentExe() {
@@ -493,7 +502,7 @@ bool fl::System::IsAdmin(bool& isadmin) {
 		HANDLE hToken = NULL;
 		TOKEN_ELEVATION_TYPE* type = nullptr;
 		DWORD dwSize;
-		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) return bSet = false;
+		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) return bool(bSet = false);
 		if (GetTokenInformation(hToken, TokenElevationType, type, sizeof(TOKEN_ELEVATION_TYPE), &dwSize) && type) {
 			BYTE adminSID[SECURITY_MAX_SID_SIZE];
 			dwSize = sizeof(adminSID);
@@ -511,9 +520,4 @@ bool fl::System::IsAdmin(bool& isadmin) {
 		CloseHandle(hToken);
 		return bSet;
 	}
-}
-
-
-bool fl::System::CreateJob() {
-
 }

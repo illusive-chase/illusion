@@ -28,11 +28,11 @@ namespace fl {
 		// graphics base class
 		class ShapeImpl {
 		public:
-			ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
+			const ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
 			bool visible, enabled; // visible: whether to be drawn; enabled: whether to response hit-test
 			int x, y; // screen coordinates
 			int width, height; // width and height of enclosing rectangle
-			ShapeImpl(Shape parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), parent(parent.raw()) {}
+			ShapeImpl(ShapeImpl* parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), parent(parent) {}
 
 			// It returns true if and only if the shape hit the screen coordinates (gx, gy).
 			// But when 'enabled' is false, it always returns false.
@@ -45,8 +45,8 @@ namespace fl {
 
 			virtual ~ShapeImpl() {}
 
-			void transLocalPosToGlobal(int& x, int& y);
-			void transGlobalPosToLocal(int& x, int& y);
+			void transLocalPosToGlobal(int& x, int& y) const;
+			void transGlobalPosToLocal(int& x, int& y) const;
 			void hide() { visible = false; }
 			void show() { visible = true; }
 
@@ -65,15 +65,15 @@ namespace fl {
 	}
 }
 
-void fl::display::ShapeImpl::transLocalPosToGlobal(int& x, int& y) {
-	for (ShapeImpl* fa = parent; fa; fa = fa->parent) {
+void fl::display::ShapeImpl::transLocalPosToGlobal(int& x, int& y) const {
+	for (const ShapeImpl* fa = parent; fa; fa = fa->parent) {
 		x += fa->x;
 		y += fa->y;
 	}
 }
 
-void fl::display::ShapeImpl::transGlobalPosToLocal(int& x, int& y) {
-	for (ShapeImpl* fa = parent; fa; fa = fa->parent) {
+void fl::display::ShapeImpl::transGlobalPosToLocal(int& x, int& y) const {
+	for (const ShapeImpl* fa = parent; fa; fa = fa->parent) {
 		x -= fa->x;
 		y -= fa->y;
 	}

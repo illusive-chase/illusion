@@ -20,23 +20,49 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace display {
 
+		class BitmapImpl {
+		public:
+			DWORD* src;
+			int width, height;
+			BitmapImpl(DWORD* src, int width, int height) :src(src), width(width), height(height) {}
+			~BitmapImpl() { if (src) delete[] src; }
+		};
+
+		using Bitmap = sptr<BitmapImpl>;
+		ILL_INLINE Bitmap MakeBitmap(int width, int height, DWORD* src) {
+			return Bitmap(new BitmapImpl(src, width, height));
+		}
+
 
 		// Each SBitmapImpl object keeps a HBITMAP handle, which refers to a bitmap.
 		class SBitmapImpl final :public ShapeImpl {
 		private:
 			HBITMAP hbmp;
+			BITMAPINFO info;
+			DWORD* keep;
 
 		public:
 			// ATTENTION: A bitmap created by function CreateBitmap will be selected slower than one created by 
 		    // function CreateCompatibleBitmap. So, there seems to be a potential improvement.
-			SBitmapImpl(int x, int y, DWORD* src, int width, int height, Shape parent = nullptr)
-				:ShapeImpl(parent) {
-				hbmp = CreateBitmap(width, height, 1, 32, src);
+			SBitmapImpl(int x, int y, Bitmap bmp, ShapeImpl* parent = nullptr)
+				:ShapeImpl(parent), keep(nullptr)
+			{
+				info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+				info.bmiHeader.biWidth = bmp->width;
+				info.bmiHeader.biHeight = bmp->height;
+				info.bmiHeader.biPlanes = 1;
+				info.bmiHeader.biBitCount = 32;
+				info.bmiHeader.biCompression = BI_RGB;
+				hbmp = CreateDIBSection(NULL, &info, DIB_RGB_COLORS, (void**)(&keep), NULL, 0);
+				if(bmp->src)
+					memcpy_s(keep, (bmp->width * bmp->height) << 2, bmp->src, (bmp->width * bmp->height) << 2);
 				this->x = x;
 				this->y = y;
-				this->width = width;
-				this->height = height;
+				width = bmp->width;
+				height = bmp->height;
 			}
+
+			DWORD* content() { return keep; }
 
 			// The hit-test area is rectangular.
 			bool hitTestPoint(int gx, int gy) override {
@@ -66,8 +92,8 @@ namespace fl {
 		};
 
 		using SBitmap = sptr<SBitmapImpl>;
-		ILL_INLINE SBitmap MakeSBitmap(int x, int y, DWORD* src, int width, int height, Shape parent = nullptr) {
-			return SBitmap(new SBitmapImpl(x, y, src, width, height, parent));
+		ILL_INLINE SBitmap MakeSBitmap(int x, int y, Bitmap bmp, ShapeImpl* parent = nullptr) {
+			return SBitmap(new SBitmapImpl(x, y, bmp, parent));
 		}
 	}
 }

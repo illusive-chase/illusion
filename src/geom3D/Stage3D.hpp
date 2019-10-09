@@ -175,7 +175,7 @@ namespace fl {
 		public:
 			// Parameter 'swapChainNum' is the length of the circular linked list.
 			Stage3DImpl(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
-						DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::Shape parent = nullptr);
+						DWORD renderMode = MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::ShapeImpl* parent = nullptr);
 
 			virtual ~Stage3DImpl();
 
@@ -217,7 +217,7 @@ namespace fl {
 
 		using Stage3D = sptr<Stage3DImpl>;
 		ILL_INLINE Stage3D MakeStage3D(int x, int y, int width, int height, scalar nearPlatform = 20, scalar farPlatform = 2000, scalar scale = 12,
-									   DWORD renderMode = Stage3DImpl::MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::Shape parent = nullptr) {
+									   DWORD renderMode = Stage3DImpl::MODE_NOSAMPLING, int swapChainNum = 1, SkyBox skybox = nullptr, display::ShapeImpl* parent = nullptr) {
 			return Stage3D(new Stage3DImpl(x, y, width, height, nearPlatform, farPlatform, scale, renderMode, swapChainNum,
 										   skybox, parent));
 		}
@@ -655,7 +655,7 @@ void fl::geom::Stage3DImpl::showPosition(fl::events::SimpleEvent<fl::geom::SText
 
 
 fl::geom::Stage3DImpl::Stage3DImpl(int x, int y, int width, int height, scalar nearPlatform, scalar farPlatform, 
-	scalar scale, DWORD renderMode, int swapChainNum, SkyBox skybox, display::Shape parent) :
+	scalar scale, DWORD renderMode, int swapChainNum, SkyBox skybox, display::ShapeImpl* parent) :
 	ShapeImpl(parent), camera(nearPlatform, farPlatform, scale), size(width * height), skybox(skybox), vertex2D(nullptr),
 	update_Shadee(false), size_Shadee(0), render_mode(renderMode), sample_mode(renderMode & 3),
 	sample_num(sample_mode ? 4 : 1), sample_offset(sample_mode ? 2 : 0),

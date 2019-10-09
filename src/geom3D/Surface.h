@@ -27,7 +27,7 @@ namespace fl {
 			Texture texture;
 			int uv[3];
 
-			Surface3D(int pa, int pb, int pc, const  Texture& texture, int uv0, int uv1, int uv2) :texture(texture) {
+			Surface3D(int pa, int pb, int pc, const Texture& texture, int uv0, int uv1, int uv2) :texture(texture) {
 				link_index[0] = pa;
 				link_index[1] = pb;
 				link_index[2] = pc;
