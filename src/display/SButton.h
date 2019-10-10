@@ -80,6 +80,9 @@ namespace fl {
 			void paint(HDC hdc) override {
 				if (first_paint) {
 					SIZE sz = { 0,0 };
+					SGDIObject keep(hdc, CreateFont(text.font.size, 0, 0, 0, text.font.weight, 0, 0, 0,
+													GB2312_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS, 
+													DEFAULT_QUALITY, FF_DONTCARE, TRANSLATE_FONT[text.font.style].c_str()));
 					GetTextExtentPoint(hdc, text.caption.str().c_str(), (int)text.caption.str().length(), &sz);
 					text.x = (width - sz.cx) / 2;
 					text.y = (height - sz.cy) / 2;

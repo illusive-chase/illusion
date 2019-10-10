@@ -55,8 +55,8 @@ public:
 	~Grid() { if (keep_src) delete keep_src; if (origin) delete origin; }
 
 	void fillPixel(int x, int y, DWORD color) {
-		if (x < 0 || y < 0 || x >= m || y >= n) return;
-		y = n - 1 - y;
+		if (x < 0 || y < 0 || x >= n || y >= m) return;
+		y = m - 1 - y;
 		x = x * (each_size + 1) + 1;
 		y = y * (each_size + 1) + 1;
 		DWORD* temp = src + (x + y * width);
@@ -127,7 +127,7 @@ public:
 
 	bool deactivate() override {
 		if (level) return false;
-		stage.mouseEventListener.remove(this);
+		stage.mouseEventListener.remove(this, WM_LDRAG);
 		return true;
 	}
 };
@@ -138,7 +138,7 @@ private:
 	int cx, cy;
 
 	ILL_INLINE float distance(int dx, int dy) {
-		return illSqrt(dx * dx + dy * dy);
+		return illSqrt(float(dx * dx + dy * dy));
 	}
 
 public:
@@ -164,7 +164,7 @@ public:
 
 	bool deactivate() override {
 		if (level) return false;
-		stage.mouseEventListener.remove(this);
+		stage.mouseEventListener.remove(this, WM_LDRAG);
 		return true;
 	}
 };
@@ -204,24 +204,25 @@ void onPaint(SimpleEvent<STextImpl&> stxt) {
 }
 
 void System::Setup() {
+	
 	tb.init();
 	stage.showFrameDelay(false);
-	grid = sptr<Grid>(new Grid(80, 10, 150, 150, 4));
+	grid = sptr<Grid>(new Grid(20, 10, 110, 120, 4));
 
-	SText pos_text = MakeSText(850, 735, L"mouse: ", SFont(24));
+	SText pos_text = MakeSText(24, 560, L"mouse: ", SFont(20));
 	pos_text->paintEventListener.add(0, onPaint);
-	tool_text = MakeSText(850, 690, L"当前工具：直线", SFont(24));
+	tool_text = MakeSText(520, 560, L"当前工具：直线", SFont(20));
 
-	SButton btn_line = MakeSButton(850, 400, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"直线", 28, onLine);
-	SButton btn_circle = MakeSButton(850, 500, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"圆周", 28, onCircle);
-	SButton btn_clear = MakeSButton(850, 600, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"清除", 28, onClear);
+	SButton btn_line = MakeSButton(650, 300, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"直线", 24, onLine);
+	SButton btn_circle = MakeSButton(650, 400, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"圆周", 24, onCircle);
+	SButton btn_clear = MakeSButton(650, 500, 100, 50, RGB(0xc0c0d0), RGB(0xd0d0f0), L"清除", 24, onClear);
 
 	stage.addChild(btn_circle);
 	stage.addChild(btn_line);
 	stage.addChild(btn_clear);
 	stage.addChild(pos_text);
 	stage.addChild(tool_text);
-	InitWindow(L"Program", 20, 20, 1024, 768, WindowStyle(1, 0, 1, 0, 1, 0));
+	InitWindow(L"演示程序", 20, 20, 800, 600, WindowStyle(1, 0, 1, 0, 1, 0));
 }
 
 void Algorithm::Bresenham(int x0, int y0, int x1, int y1) {
@@ -261,10 +262,7 @@ void Algorithm::Circle(int x0, int y0, float radius) {
 		grid->fillPixel(x0 - y, y0 + x, Color::RED);
 		grid->fillPixel(x0 - y, y0 - x, Color::RED);
 		if (d < 0) d += (x << 4) + 24;
-		else {
-			d += ((x - y) << 4) + 40;
-			y--;
-		}
+		else d += ((x - y--) << 4) + 40;
 		x++;
 	}
 	if (x == y) {

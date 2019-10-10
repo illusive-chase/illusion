@@ -61,9 +61,9 @@ namespace fl {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
-					DeleteObject(SelectObject(hdc, CreatePen(ps, pwid, pcolor)));
+					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
 					if (filled) {
-						DeleteObject(SelectObject(hdc, CreateSolidBrush(color)));
+						SGDIObject keep(hdc, CreateSolidBrush(color));
 						Ellipse(hdc, x0, y0, x0 + width, y0 + height);
 					} else Ellipse(hdc, x0, y0, x0 + width, y0 + height);
 				}
@@ -129,7 +129,7 @@ namespace fl {
 
 			void paint(HDC hdc) override {
 				if (visible) {
-					DeleteObject(SelectObject(hdc, CreatePen(ps, pwid, pcolor)));
+					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
 					int gx = x, gy = y;
 					transLocalPosToGlobal(gx, gy);
 					MoveToEx(hdc, x0 + gx, y0 + gy, NULL);
@@ -186,9 +186,9 @@ namespace fl {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
-					DeleteObject(SelectObject(hdc, CreatePen(ps, pwid, pcolor)));
+					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
 					if (filled) {
-						DeleteObject(SelectObject(hdc, CreateSolidBrush(color)));
+						SGDIObject keep(hdc, CreateSolidBrush(color));
 						Rectangle(hdc, x0, y0, x0 + width, y0 + height);
 					} else Rectangle(hdc, x0, y0, x0 + width, y0 + height);
 				}

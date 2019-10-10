@@ -366,7 +366,7 @@ void fl::geom::Stage3DImpl::render() {
 		tmp = _mm_div_ps(tmp, _mm_set1_ps(scalar(sample_num)));
 		const __m128i zero = _mm_setzero_si128();
 		__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(tmp), zero), zero);
-		*p1 = ~_mm_cvtsi128_si32(tmpi);
+		*p1 = _mm_cvtsi128_si32(tmpi);
 		p1++;
 #else
 		unsigned r = 0, g = 0, b = 0;
@@ -377,7 +377,7 @@ void fl::geom::Stage3DImpl::render() {
 			b += MIX(pick[0], p3->b / p3->z_depth);
 			p2++, p3++;
 		}
-		*p1 = ~RGB3D(r / sample_num, g / sample_num, b / sample_num);
+		*p1 = RGB3D(r / sample_num, g / sample_num, b / sample_num);
 		p1++;
 #endif
 	}
@@ -692,11 +692,8 @@ void fl::geom::Stage3DImpl::paint(HDC hdc) {
 		int x0 = x, y0 = y;
 		transLocalPosToGlobal(x0, y0);
 		render();
-		HDC mdc = CreateCompatibleDC(hdc);
-		HBITMAP hbp_old = (HBITMAP)SelectObject(mdc, swap_chain->hbmp);
-		BitBlt(hdc, x0, y0, width, height, mdc, 0, 0, NOTSRCCOPY);
-		SelectObject(mdc, hbp_old);
-		DeleteDC(mdc);
+		SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0,
+						  swap_chain->info.bmiHeader.biHeight, swap_chain->colors, &swap_chain->info, DIB_RGB_COLORS);
 		memset(swap_chain->colors, 0, size * sizeof(*(swap_chain->sample)));
 		for (SText3D it : txt) { it->paint(hdc); }
 		swap_chain = swap_chain->next;

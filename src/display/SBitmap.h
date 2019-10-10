@@ -79,13 +79,9 @@ namespace fl {
 			// It uses TransparentBlt, which allows the bitmap to be displayed transparently.
 			void paint(HDC hdc) override {
 				if (visible) {
-					HDC mdc = CreateCompatibleDC(hdc);
-					HBITMAP hbp_old = (HBITMAP)SelectObject(mdc, hbmp);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
-					TransparentBlt(hdc, x0, y0, width, height, mdc, 0, 0, width, height, 0x00ff00);
-					SelectObject(mdc, hbp_old);
-					DeleteDC(mdc);
+					SetDIBitsToDevice(hdc, x0, y0, width, height, 0, 0, 0, info.bmiHeader.biHeight, keep, &info, DIB_RGB_COLORS);
 				}
 			}
 

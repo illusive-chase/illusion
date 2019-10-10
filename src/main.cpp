@@ -24,14 +24,8 @@ copies or substantial portions of the Software.
 /// @date 2019/10/9
 ////////////////////////////////////////////
 
-#include "../index/show.hpp"
 
-
-
-
-
-
-#if 0
+#if 1
 
 #define import_all
 #include "top_element/SImport.h"
@@ -69,26 +63,19 @@ using r = Regex<char>;
 
 // Initialize
 void System::Setup() {
-	stage.addConsole();
-	DFA dfa;
-	Regex<char> reg = r::MakeRegex("[a|b]*abb");
-	dfa.build(reg);
-	dfa.print();
-	dfa.optimize();
 
-#if 0
+#if 1
 	ImageIO ld = MakeImageIO();
 	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->get(0), 3.3f, 0, 0);
 
-	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000));
+	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 2, MakeSkyBox(tx, 2000));
 	stage.addChild(wd);
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 
-	ModelIO ml = MakeModelIO();
-	wd->addObject(ml->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
+	wd->addObject(MakeModelIO()->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
 	roamer = MakeRoamer(wd);
 	stage.addConsole();
 	InitWindow();

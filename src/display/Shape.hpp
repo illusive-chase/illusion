@@ -27,6 +27,17 @@ namespace fl {
 
 		// graphics base class
 		class ShapeImpl {
+		protected:
+
+			class SGDIObject {
+			public:
+				HDC hdc;
+				HGDIOBJ obj;
+				HGDIOBJ obj_old;
+				SGDIObject(HDC hdc, HGDIOBJ obj) :hdc(hdc), obj(obj), obj_old(SelectObject(hdc, obj)) {}
+				~SGDIObject() { SelectObject(hdc, obj_old); DeleteObject(obj); }
+			};
+
 		public:
 			const ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
 			bool visible, enabled; // visible: whether to be drawn; enabled: whether to response hit-test

@@ -15,7 +15,8 @@ copies or substantial portions of the Software.
 */
 #pragma once
 #include "../stdafx.h"
-
+#include <unordered_map>
+#include <unordered_set>
 
 #define WM_LDRAG (WM_USER+1)
 #define WM_RDRAG (WM_USER+2)
@@ -33,7 +34,7 @@ namespace fl {
 
 			class slot_base {
 			public:
-				virtual void Execute(Para& para) = 0;
+				virtual void Execute(const Para& para) = 0;
 			};
 
 			template<typename Caller>
@@ -43,7 +44,7 @@ namespace fl {
 				void (Caller::*method)(Para);
 			public:
 				slot_impl(Caller* caller, void (Caller::*method)(Para)) :caller(caller), method(method) {}
-				void Execute(Para& para) { (caller->*method)(para); }
+				void Execute(const Para& para) { (caller->*method)(para); }
 			};
 
 			template<>
@@ -52,22 +53,21 @@ namespace fl {
 				void (*method)(Para);
 			public:
 				slot_impl(void(*method)(Para)) : method(method) {}
-				void Execute(Para& para) { method(para); }
+				void Execute(const Para& para) { method(para); }
 			};
 
 			slot_base* slotBase;
 
 		public:
 
-			void const *caller;
-			DWORD type;
+			void* caller;
 
 			template<typename Caller>
-			Slot(Caller* caller, DWORD type, void (Caller::*method)(Para)) :caller((void*)caller), type(type) {
+			Slot(Caller* caller, void (Caller::*method)(Para)) :caller((void*)caller) {
 				slotBase = new slot_impl<Caller>(caller, method);
 			}
 
-			Slot(DWORD type, void(*method)(Para)) : caller(nullptr), type(type) {
+			Slot(void(*method)(Para)) : caller(nullptr) {
 				slotBase = new slot_impl<NoneType>(method);
 			}
 
@@ -78,46 +78,49 @@ namespace fl {
 				cp.slotBase = nullptr;
 				caller = cp.caller;
 				cp.caller = nullptr;
-				type = cp.type;
 			}
 
 			~Slot() {
 				if (slotBase) delete slotBase;
 			}
 
-			void Execute(Para& para) { slotBase->Execute(para); }
+			void Execute(const Para& para) { slotBase->Execute(para); }
 		};
 
 		template<typename Para>
 		class Signal {
 		private:
-			std::list<Slot<Para>> slots;
+			std::unordered_map<DWORD, std::list<Slot<Para>>> slots;
+
 		public:
 
-			~Signal() { clear(); }
+			~Signal() {}
 
 			template<typename Caller>
-			void add(Caller* caller, DWORD type, void(Caller::*method)(Para)) { slots.push_back(Slot<Para>(caller, type, method)); }
+			void add(Caller* caller, DWORD type, void(Caller::*method)(Para)) {
+				slots[type].push_back(Slot<Para>(caller, method));
+			}
 			
 			template<typename Caller>
-			void add(sptr<Caller>& caller, DWORD type, void(Caller::*method)(Para)) { slots.push_back(Slot<Para>(caller.raw(), type, method)); }
+			void add(sptr<Caller>& caller, DWORD type, void(Caller::* method)(Para)) {
+				slots[type].push_back(Slot<Para>(caller.raw(), method));
+			}
 
-			void add(DWORD type, void(*method)(Para)) { slots.push_back(Slot<Para>(type, method)); }
+			void add(DWORD type, void(*method)(Para)) { slots[type].push_back(Slot<Para>(method)); }
 			
-			void remove(void* caller) {
-				for (auto it = slots.begin(); it != slots.end();) {
-					if (it->caller == caller) {
-						it = slots.erase(it);
-					} else ++it;
+			void remove(void* caller, DWORD type) {
+				std::list<Slot<Para>>& list = slots[type];
+				for (auto it = list.begin(); it != list.end();) {
+					if (it->caller == caller) it = list.erase(it);
+					else it++;
 				}
 			}
 
 			void clear() { slots.clear(); }
 
-			void operator()(Para para) { 
-				for (auto it = slots.begin(); it != slots.end(); ++it) {
-					if (para.type == it->type) it->Execute(para);
-				}
+			void operator()(const Para& para) {
+				if (!slots.count(para.type)) return;
+				for (auto& it : slots[para.type]) it.Execute(para);
 			}
 		};
 

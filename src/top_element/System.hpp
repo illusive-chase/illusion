@@ -177,7 +177,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
 
 	MSG msg = {};
-	tagRECT lprect;
 	DWORD curr_time = 0, prev_time = 0;
 
 	// 主消息循环:
@@ -192,19 +191,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (m_hTimer) {
 		SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
 
-		while (WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
-			if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		while (1) {
+			if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
 				curr_time = GetTickCount();
 				fl::time::Timer::global_tick(DWORD(curr_time - fl::time::Timer::base_time));
 				fl::time::Timer::base_time = curr_time;
 				if (curr_time - prev_time > fl::MILISECOND_PER_FRAME) {
-					if (GetClientRect(System::g_hWnd, &lprect)) {
-						InvalidateRect(System::g_hWnd, &lprect, TRUE);
-						UpdateWindow(System::g_hWnd);
-					}
+					InvalidateRect(System::g_hWnd, NULL, TRUE);
 					stage.framing();
 					prev_time = curr_time;
-				} else Sleep(0);
+				}
 			} else {
 				if (WM_QUIT == msg.message) break;
 				TranslateMessage(&msg);
@@ -313,14 +309,21 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	case WM_LBUTTONUP:leftdown = 0; goto WM_MOUSE;
 	case WM_RBUTTONDOWN:rightdown = 1; goto WM_MOUSE;
 	case WM_RBUTTONUP:rightdown = 0; goto WM_MOUSE;
-	case WM_MOUSEMOVE:
 	WM_MOUSE:
+	{
+		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
+		if (leftdown != pre_leftdown)
+			stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, (leftdown << 1 | pre_leftdown)));
+		if (rightdown != pre_rightdown)
+			stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, (rightdown << 1 | pre_rightdown)));
+		pre_leftdown = leftdown;
+		pre_rightdown = rightdown;
+	}
+	break;
+	case WM_MOUSEMOVE:
 	{
 		GetCursorPos(&stage.mouseP);
 		ScreenToClient(g_hWnd, &stage.mouseP);
-		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
-		stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, (leftdown << 1 | pre_leftdown)));
-		stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, (rightdown << 1 | pre_rightdown)));
 		pre_leftdown = leftdown;
 		pre_rightdown = rightdown;
 	}
@@ -337,6 +340,7 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
 	}
 	break;
+#if 0
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -354,8 +358,15 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		}
 	}
 	break;
+#endif
 	case WM_PAINT:
 	{
+		if (leftdown && pre_leftdown)
+			stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, 3));
+		if (rightdown && pre_rightdown)
+			stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, 3));
+		stage.mouseEventListener(MouseEvent(WM_MOUSEMOVE, stage.mouseX, stage.mouseY, (int)wParam));
+
 		stage.systemEventListener(SystemEvent(message));
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
