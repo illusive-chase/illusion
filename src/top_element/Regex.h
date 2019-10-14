@@ -189,7 +189,7 @@ namespace fl {
 
 	private:
 		static Regex<ct> generate(Regex<ct>&& a, Regex<ct>&& b, typename ReserveCharSet::value r) {
-			Regex<ct> ret(std::move(a));
+			Regex<ct> ret(a);
 			ret.len += b.len;
 			if (ret.cap <= ret.len) {
 				for (ret.cap = max(1U, ret.cap << 1); ret.cap <= ret.len; ret.cap <<= 1);
@@ -206,7 +206,7 @@ namespace fl {
 		}
 
 		static Regex<ct> generate(Regex<ct>&& a, typename ReserveCharSet::value r) {
-			Regex<ct> ret(std::move(a));
+			Regex<ct> ret(a);
 			if (ret.cap == ret.len) {
 				ct* p = new ct[ret.cap = max(1U, ret.cap << 1)];
 				if (ret.stack) {
@@ -220,10 +220,10 @@ namespace fl {
 		}
 	};
 
-	template<typename C> ILL_INLINE Regex<C> operator+(Regex<C>&& a, Regex<C>&& b) { return Regex<C>::generate(std::move(a), std::move(b), Regex<C>::ReserveCharSet::CAT); }
-	template<typename C> ILL_INLINE Regex<C> operator|(Regex<C>&& a, Regex<C>&& b) { return Regex<C>::generate(std::move(a), std::move(b), Regex<C>::ReserveCharSet::AND); }
-	template<typename C> ILL_INLINE Regex<C> operator*(Regex<C>&& a) { return Regex<C>::generate(std::move(a), Regex<C>::ReserveCharSet::ANY); }
-	template<typename C> ILL_INLINE Regex<C> operator+(Regex<C>&& a) { return Regex<C>::generate(std::move(a), Regex<C>::ReserveCharSet::SOME); }
-	template<typename C> ILL_INLINE Regex<C> operator!(Regex<C>&& a) { return Regex<C>::generate(std::move(a), Regex<C>::ReserveCharSet::BIN); }
+	template<typename C> ILL_INLINE Regex<C> operator+(Regex<C>&& a, Regex<C>&& b) { return Regex<C>::generate(a, b, Regex<C>::ReserveCharSet::CAT); }
+	template<typename C> ILL_INLINE Regex<C> operator|(Regex<C>&& a, Regex<C>&& b) { return Regex<C>::generate(a, b, Regex<C>::ReserveCharSet::AND); }
+	template<typename C> ILL_INLINE Regex<C> operator*(Regex<C>&& a) { return Regex<C>::generate(a, Regex<C>::ReserveCharSet::ANY); }
+	template<typename C> ILL_INLINE Regex<C> operator+(Regex<C>&& a) { return Regex<C>::generate(a, Regex<C>::ReserveCharSet::SOME); }
+	template<typename C> ILL_INLINE Regex<C> operator!(Regex<C>&& a) { return Regex<C>::generate(a, Regex<C>::ReserveCharSet::BIN); }
 
 }

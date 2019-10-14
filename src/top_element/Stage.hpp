@@ -121,7 +121,7 @@ void fl::display::Stage::destroy() {
 	removeEventListener();
 }
 
-void fl::display::Stage::framing() { 
+void fl::display::Stage::framing() {
 	frameEventListener(fl::events::FrameEvent(WM_FRAME));
 	for (Shape& child : children) child->framing();
 }

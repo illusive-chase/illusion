@@ -50,7 +50,7 @@ namespace fl {
 		};
 
 		// unfinished
-		class Matrix3D {
+		/*class Matrix3D {
 		public:
 			scalar value[4][4];
 			Matrix3D() {
@@ -63,7 +63,7 @@ namespace fl {
 					value[0][i] = *p;
 				}
 			}
-		};
+		};*/
 
 		// It maps UV coordinates to a 32-bit integer.
 		ILL_INLINE DWORD UV(DWORD u, DWORD v) {
@@ -134,15 +134,30 @@ namespace fl {
 
 			Vector3D(int x, int y, int z) :x(scalar(x)), y(scalar(y)), z(scalar(z)), w(0) {}
 
-			Vector3D(scalar x, scalar y, scalar z) :x(x), y(y), z(z), w(0) {}
+			Vector3D(scalar x, scalar y, scalar z, scalar w = 0) :x(x), y(y), z(z), w(w) {}
 
-			ILL_INLINE Vector3D operator -() const { return Vector3D(-x, -y, -z); }
+			Vector3D(const scalar(&arr)[4]) :x(arr[0]), y(arr[1]), z(arr[2]), w(arr[3]) {}
+
+#ifdef COUNT_VECTOR_CONSTRUCT
+			Vector3D(const Vector3D& rhs) :m_vec128(rhs.m_vec128) { ++copy_cnt(); }
+
+			Vector3D(Vector3D&& rhs) noexcept :x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) { ++move_cnt(); }
+
+			Vector3D& operator =(const Vector3D& rhs) { ++copy_cnt(); m_vec128 = rhs.m_vec128; return *this; }
+
+			Vector3D& operator =(Vector3D&& rhs) noexcept { ++move_cnt(); x = rhs.x, y = rhs.y, z = rhs.z, w = rhs.w; return *this; }
+
+			static uint& move_cnt() { static uint cnt = 0; return cnt; }
+			static uint& copy_cnt() { static uint cnt = 0; return cnt; }
+#endif
+
+			ILL_INLINE Vector3D operator -() const { return Vector3D(-x, -y, -z, -w); }
 
 			ILL_INLINE Vector3D& operator +=(const Vector3D& tar) {
 #ifdef ILL_SSE_IN_API
 				m_vec128 = _mm_add_ps(m_vec128, tar.m_vec128);
 #else
-				x += tar.x; y += tar.y; z += tar.z;
+				x += tar.x; y += tar.y; z += tar.z; w += tar.w;
 #endif
 				return *this;
 			}
@@ -151,7 +166,7 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				return Vector3D(_mm_add_ps(m_vec128, tar.m_vec128));
 #else
-				return Vector3D(x + tar.x, y + tar.y, z + tar.z);
+				return Vector3D(x + tar.x, y + tar.y, z + tar.z, w + tar.w);
 #endif
 			}
 
@@ -159,7 +174,7 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				m_vec128 = _mm_sub_ps(m_vec128, tar.m_vec128);
 #else
-				x -= tar.x; y -= tar.y; z -= tar.z; 
+				x -= tar.x; y -= tar.y; z -= tar.z;  w -= tar.w;
 #endif
 				return *this;
 			}
@@ -168,17 +183,17 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				return Vector3D(_mm_sub_ps(m_vec128, tar.m_vec128));
 #else
-				return Vector3D(x - tar.x, y - tar.y, z - tar.z);
+				return Vector3D(x - tar.x, y - tar.y, z - tar.z, w - tar.w);
 #endif
 			}
 
 			ILL_INLINE Vector3D& operator *=(const scalar& k) {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
-				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
+				vs = ill_pshufd_ps(vs, 0x0);  //	(S S S S)  0x80 = _MM_SHUFFLE(0, 0, 0, 0)
 				m_vec128 = _mm_mul_ps(m_vec128, vs);
 #else
-				x *= k; y *= k; z *= k;
+				x *= k; y *= k; z *= k; w *= k;
 #endif
 				return *this;
 			}
@@ -194,7 +209,7 @@ namespace fl {
 				vd = _mm_add_ss(vd, z);
 				return _mm_cvtss_f32(vd);
 #else
-				return x * tar.x + y * tar.y + z * tar.z;
+				return x * tar.x + y * tar.y + z * tar.z + w * tar.w;
 #endif
 			}
 
@@ -202,17 +217,17 @@ namespace fl {
 #ifdef ILL_SSE_IN_API
 				return Vector3D(_mm_div_ps(m_vec128, tar.m_vec128));
 #else
-				return Vector3D(x / tar.x, y / tar.y, z / tar.z);
+				return Vector3D(x / tar.x, y / tar.y, z / tar.z, w ? (w / tar.w) : w);
 #endif
 			}
 
 			ILL_INLINE Vector3D operator *(const scalar& k) const {
 #ifdef ILL_SSE_IN_API
 				__m128 vs = _mm_load_ss(&k);  //	(S 0 0 0)
-				vs = ill_pshufd_ps(vs, 0x80);  //	(S S S 0.0)  0x80 = _MM_SHUFFLE(2, 0, 0, 0)
+				vs = ill_pshufd_ps(vs, 0x0);  //	(S S S S)  0x0 = _MM_SHUFFLE(0, 0, 0, 0)
 				return Vector3D(_mm_mul_ps(m_vec128, vs));
 #else
-				return Vector3D(x * k, y * k, z * k);
+				return Vector3D(x * k, y * k, z * k, w * k);
 #endif
 			}
 
@@ -241,11 +256,11 @@ namespace fl {
 
 				y = _mm_mul_ss(y, z);  // y0 * (1.5 - vd * 0.5 * y0 * y0)
 
-				y = ill_splat_ps(y, 0x80);
+				y = ill_splat_ps(y, 0x0);
 				m_vec128 = _mm_mul_ps(m_vec128, y);
 #else
 				scalar k = mod();
-				x /= k;	y /= k;	z /= k;
+				x /= k;	y /= k;	z /= k; w /= k;
 #endif
 				return *this;
 			}
@@ -301,13 +316,13 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { scalar x, y, u, v, r, g, b, z; };
-				struct { f4 m_xyuv, m_rgbz; };
+				struct { scalar x, y, u, v, b, g, r, z; };
+				struct { f4 m_xyuv, m_bgrz; };
 				struct { scalar floats[8]; };
 			};
 #else
 			union {
-				struct { scalar x, y, u, v, r, g, b, z; };
+				struct { scalar x, y, u, v, b, g, r, z; };
 				struct { scalar floats[8]; };
 			};
 #endif
@@ -324,7 +339,7 @@ namespace fl {
 					__m128 m_t = _mm_load1_ps(&t);
 					__m128 m_rt = _mm_load1_ps(&rt);
 					m_xyuv = _mm_add_ps(_mm_mul_ps(va->m_xyuv, m_rt), _mm_mul_ps(vb->m_xyuv, m_t));
-					m_rgbz = _mm_add_ps(_mm_mul_ps(va->m_rgbz, m_rt), _mm_mul_ps(vb->m_rgbz, m_t));
+					m_bgrz = _mm_add_ps(_mm_mul_ps(va->m_bgrz, m_rt), _mm_mul_ps(vb->m_bgrz, m_t));
 				}
 #else
 				{
@@ -345,13 +360,9 @@ namespace fl {
 			ILL_INLINE void set(scalar x, scalar y, const Vector3D& color, scalar z) {
 				this->x = x;
 				this->y = y;
-#ifdef ILL_SSE
-				m_rgbz = color.m_vec128;
-#else
 				r = color.x;
 				g = color.y;
 				b = color.z;
-#endif
 				this->z = z;
 			}
 
@@ -374,13 +385,13 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
-				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
+				struct { scalar x, y, u, v, b, g, r, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { f4 m_xyuv, m_bgrz, m_dxyuv, m_drgbz; };
 				struct { scalar floats[16]; };
 			};
 #else
 			union {
-				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar x, y, u, v, b, g, r, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { scalar floats[16]; };
 			};
 #endif
@@ -401,7 +412,7 @@ namespace fl {
 			// Do a slide.
 			ILL_INLINE void move() {
 #ifdef ILL_SSE_IN_API
-				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
+				m_bgrz = _mm_add_ps(m_bgrz, m_drgbz);
 				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
 #else
 				x += dx;
@@ -425,7 +436,7 @@ namespace fl {
 			ILL_INLINE void move(const scalar& step) {
 #ifdef ILL_SSE_IN_API
 				f4 m_step = _mm_load_ps1(&step);
-				m_rgbz = _mm_add_ps(m_rgbz, _mm_mul_ps(m_drgbz, m_step));
+				m_bgrz = _mm_add_ps(m_bgrz, _mm_mul_ps(m_drgbz, m_step));
 				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
 #else
 				x += dx * step;
@@ -449,7 +460,7 @@ namespace fl {
 			ILL_INLINE void reset(const Shadee& sa) {
 #ifdef ILL_SSE
 				m_xyuv = sa.m_xyuv;
-				m_rgbz = sa.m_rgbz;
+				m_bgrz = sa.m_bgrz;
 #else
 				x = sa.x;
 				y = sa.y;
@@ -476,13 +487,13 @@ namespace fl {
 
 #ifdef ILL_SSE
 			union {
-				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
-				struct { f4 m_xyuv, m_rgbz, m_dxyuv, m_drgbz; };
+				struct { scalar x, y, u, v, b, g, r, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { f4 m_xyuv, m_bgrz, m_dxyuv, m_drgbz; };
 				struct { scalar floats[16]; };
 			};
 #else
 			union {
-				struct { scalar x, y, u, v, r, g, b, z, dx, dy, du, dv, dr, dg, db, dz; };
+				struct { scalar x, y, u, v, b, g, r, z, dx, dy, du, dv, dr, dg, db, dz; };
 				struct { scalar floats[16]; };
 			};
 #endif
@@ -496,7 +507,7 @@ namespace fl {
 			// Do a slide.
 			ILL_INLINE void move() {
 #ifdef ILL_SSE_IN_API
-				m_rgbz = _mm_add_ps(m_rgbz, m_drgbz);
+				m_bgrz = _mm_add_ps(m_bgrz, m_drgbz);
 				m_xyuv = _mm_add_ps(m_xyuv, m_dxyuv);
 #else
 				// Actually, if ILL_SSE_IN_API is not defined, dx may be not equal to 1.
@@ -519,7 +530,7 @@ namespace fl {
 			ILL_INLINE void move(const scalar& step) {
 #ifdef ILL_SSE_IN_API
 				f4 m_step = _mm_load_ps1(&step);
-				m_rgbz = _mm_add_ps(m_rgbz, _mm_mul_ps(m_drgbz, m_step));
+				m_bgrz = _mm_add_ps(m_bgrz, _mm_mul_ps(m_drgbz, m_step));
 				m_xyuv = _mm_add_ps(m_xyuv, _mm_mul_ps(m_dxyuv, m_step));
 #else
 				// Actually, if ILL_SSE_IN_API is not defined, dx may be not equal to 1.
@@ -579,7 +590,7 @@ namespace fl {
 				m_t = _mm_load_ps1(&t);
 				m_rt = _mm_load_ps1(&rt);
 				src.m_xyuv = _mm_add_ps(_mm_mul_ps(sa.m_xyuv, m_t), _mm_mul_ps(sb.m_xyuv, m_rt));
-				src.m_rgbz = _mm_add_ps(_mm_mul_ps(sa.m_rgbz, m_t), _mm_mul_ps(sb.m_rgbz, m_rt));
+				src.m_bgrz = _mm_add_ps(_mm_mul_ps(sa.m_bgrz, m_t), _mm_mul_ps(sb.m_bgrz, m_rt));
 #else
 				scalar t = (vb * vz - z * vz_mod) / ((vb - va) * vz);
 				scalar rt = scalar(1) - t;
@@ -714,9 +725,9 @@ fl::geom::LerpX::LerpX(const LerpY & sa, const LerpY & sb)
 {
 #ifdef ILL_SSE_IN_API
 	m_xyuv = sa.m_xyuv;
-	m_rgbz = sa.m_rgbz;
+	m_bgrz = sa.m_bgrz;
 	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
-	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	m_drgbz = _mm_sub_ps(sb.m_bgrz, sa.m_bgrz);
 	f4 mask = _mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x0); //_MM_SHUFFLE(0, 0, 0, 0)
 	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
 	m_drgbz = _mm_div_ps(m_drgbz, mask);
@@ -732,9 +743,9 @@ fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb)
 {
 #ifdef ILL_SSE_IN_API
 	m_xyuv = sa.m_xyuv;
-	m_rgbz = sa.m_rgbz;
+	m_bgrz = sa.m_bgrz;
 	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
-	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	m_drgbz = _mm_sub_ps(sb.m_bgrz, sa.m_bgrz);
 	f4 mask = _mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x55); //_MM_SHUFFLE(1, 1, 1, 1)
 	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
 	m_drgbz = _mm_div_ps(m_drgbz, mask);
@@ -750,9 +761,9 @@ fl::geom::LerpY::LerpY(const Shadee & sa, const Shadee & sb, const scalar& step)
 {
 #ifdef ILL_SSE_IN_API
 	m_xyuv = sa.m_xyuv;
-	m_rgbz = sa.m_rgbz;
+	m_bgrz = sa.m_bgrz;
 	m_dxyuv = _mm_sub_ps(sb.m_xyuv, sa.m_xyuv);
-	m_drgbz = _mm_sub_ps(sb.m_rgbz, sa.m_rgbz);
+	m_drgbz = _mm_sub_ps(sb.m_bgrz, sa.m_bgrz);
 	f4 mask = _mm_div_ps(_mm_shuffle_ps(m_dxyuv, m_dxyuv, 0x55), _mm_load_ps1(&step)); //_MM_SHUFFLE(1, 1, 1, 1)
 	m_dxyuv = _mm_div_ps(m_dxyuv, mask);
 	m_drgbz = _mm_div_ps(m_drgbz, mask);

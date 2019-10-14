@@ -42,8 +42,7 @@ namespace fl {
 			DWORD* keep;
 
 		public:
-			// ATTENTION: A bitmap created by function CreateBitmap will be selected slower than one created by 
-		    // function CreateCompatibleBitmap. So, there seems to be a potential improvement.
+
 			SBitmapImpl(int x, int y, Bitmap bmp, ShapeImpl* parent = nullptr)
 				:ShapeImpl(parent), keep(nullptr)
 			{

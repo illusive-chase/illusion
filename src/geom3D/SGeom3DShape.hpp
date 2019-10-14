@@ -82,7 +82,7 @@ static fl::geom::SObject3D init(int size, const fl::geom::Vector3D & pos, const 
 	ptr->addSurface(3, 2, 6, left, UV(size % left.width, 0), UV(size % left.width, size % left.height), UV(0, size % left.height));
 	ptr->addSurface(1, 6, 2, bottom, UV(size % bottom.width, 0), UV(0, size % bottom.height), UV(0, 0));
 	ptr->addSurface(1, 5, 6, bottom, UV(size % bottom.width, 0), UV(size % bottom.width, size % bottom.height), UV(0, size % bottom.height));
-	return std::move(ptr);
+	return ptr;
 }
 
 fl::geom::SObject3D fl::geom::MakeSphere3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & texture, int row, int col, int r)
@@ -135,7 +135,7 @@ fl::geom::SObject3D fl::geom::MakeSphere3D(const fl::geom::Vector3D & pos, const
 #undef ID
 #undef UVID
 
-	return std::move(ptr);
+	return ptr;
 }
 
 fl::geom::SObject3D fl::geom::MakeSQuadr3D(const fl::geom::Vector3D & pos, const fl::geom::Vector3D & width_vec, const fl::geom::Vector3D & height_vec, const fl::geom::Texture & texture)
@@ -150,7 +150,7 @@ fl::geom::SObject3D fl::geom::MakeSQuadr3D(const fl::geom::Vector3D & pos, const
 	ptr->addPoint(height_vec - width_vec);
 	ptr->addSurface(0, 1, 2, texture, UV(w, 0), UV(w, h), UV(0, h));
 	ptr->addSurface(0, 2, 3, texture, UV(w, 0), UV(0, h), UV(0, 0));
-	return std::move(ptr);
+	return ptr;
 }
 
 fl::geom::SObject3D fl::geom::MakeCube3D(const fl::geom::Vector3D & pos, const fl::geom::Texture & top, const fl::geom::Texture & bottom,

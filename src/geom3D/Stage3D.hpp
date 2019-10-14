@@ -356,7 +356,8 @@ void fl::geom::Stage3DImpl::render() {
 			BYTE* pick = reinterpret_cast<BYTE*>(p2);
 			tmp = _mm_add_ps(tmp, 
 				_mm_mul_ps(
-					_mm_div_ps(_mm_set_ps(0, p3->r, p3->g, p3->b), _mm_set1_ps(p3->z_depth)),
+					//_mm_div_ps(_mm_set_ps(0, p3->r, p3->g, p3->b), _mm_set1_ps(p3->z_depth)),
+					_mm_div_ps(p3->m_bgrz, _mm_set1_ps(p3->z_depth)),
 					_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0]))
 				)
 			);
@@ -692,7 +693,7 @@ void fl::geom::Stage3DImpl::paint(HDC hdc) {
 		int x0 = x, y0 = y;
 		transLocalPosToGlobal(x0, y0);
 		render();
-		SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0,
+		SetDIBitsToDevice(hdc, x0, y0, width, height, 0, 0, 0,
 						  swap_chain->info.bmiHeader.biHeight, swap_chain->colors, &swap_chain->info, DIB_RGB_COLORS);
 		memset(swap_chain->colors, 0, size * sizeof(*(swap_chain->sample)));
 		for (SText3D it : txt) { it->paint(hdc); }

@@ -33,7 +33,6 @@ subject to the following restrictions:
 
 #pragma once
 
-#include "System.h"
 #include "SConfig.h"
 
 #if defined(DEBUG) || defined(_DEBUG)

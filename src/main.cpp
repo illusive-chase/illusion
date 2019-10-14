@@ -59,8 +59,13 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 
 #include "top_element\SCommand.h"
 
-using r = Regex<char>;
-
+#ifdef COUNT_VECTOR_CONSTRUCT
+void ttrace(FrameEvent e) {
+	printf("copy: %u\nmove: %u\n\n", Vector3D::copy_cnt(), Vector3D::move_cnt());
+	Vector3D::copy_cnt() = 0;
+	Vector3D::move_cnt() = 0;
+}
+#endif
 // Initialize
 void System::Setup() {
 
@@ -78,6 +83,9 @@ void System::Setup() {
 	wd->addObject(MakeModelIO()->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
 	roamer = MakeRoamer(wd);
 	stage.addConsole();
+#ifdef COUNT_VECTOR_CONSTRUCT
+	stage.frameEventListener.add(WM_FRAME, ttrace);
+#endif
 	InitWindow();
 #endif
 #if 0

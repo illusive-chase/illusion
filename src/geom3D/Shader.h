@@ -30,8 +30,8 @@ namespace fl {
 		ILL_ATTRIBUTE_ALIGNED16(struct) MapTrait {
 #ifdef ILL_SSE
 			union {
-				struct { scalar r, g, b, z_depth; }; // In fact, 'z_depth' is the reciprocal of the actual z depth.
-				struct { f4 m_rgbz; };
+				struct { scalar b, g, r, z_depth; }; // In fact, 'z_depth' is the reciprocal of the actual z depth.
+				struct { f4 m_bgrz; };
 			};
 #else
 			scalar z_depth, r, g, b;
@@ -91,7 +91,7 @@ namespace fl {
 					int index = shadee.getU() + src_wid * shadee.getV();
 					*write = reinterpret_cast<const DWORD*>(src)[index];
 #ifdef ILL_SSE
-					map_trait->m_rgbz = shadee.m_rgbz;
+					map_trait->m_bgrz = shadee.m_bgrz;
 #else
 					map_trait->r = shadee.r;
 					map_trait->g = shadee.g;

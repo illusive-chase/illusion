@@ -17,16 +17,6 @@ copies or substantial portions of the Software.
 #include "..\stdafx.h"
 #include "..\resource.h"
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
-using std::max;
-using std::min;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
