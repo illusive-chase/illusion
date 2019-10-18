@@ -53,8 +53,10 @@ namespace fl {
 			bool hitTestPoint(int gx, int gy) override {
 				if (!filled || !enabled) return false;
 				transGlobalPosToLocal(gx, gy);
-				scalar a = (gx - x) / scalar(width) - scalar(0.5), b = (gy - y) / scalar(height) - scalar(0.5);
-				return (a * a + b * b) < scalar(1);
+				int a2 = gx - x - width / 2, b2 = gy - y - height / 2;
+				a2 *= a2, b2 *= b2;
+				int h2 = height * height, w2 = width * width;
+				return (a2 * h2 + b2 * w2) <= h2 * w2;
 			}
 
 			void paint(HDC hdc) override {
@@ -200,5 +202,66 @@ namespace fl {
 			int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl* parent = nullptr) {
 			return SRect(new SRectImpl(x0, y0, width, height, filled, color, pen_style_PS, pen_width, pen_color, parent));
 		}
+
+
+		class SRoundRectImpl : public ShapeImpl {
+		public:
+			COLORREF color; // fill color
+			DWORD ps; // pen's style
+			int pwid; // pen's thickness
+			COLORREF pcolor; // pen's color
+			int radius; // height/2
+
+			SRoundRectImpl(int x, int y, int width, int radius, COLORREF color,
+					   int pen_style_PS = PS_INSIDEFRAME, int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0),
+					   ShapeImpl * parent = nullptr) :ShapeImpl(parent), radius(radius)
+			{
+				this->x = x;
+				this->y = y;
+				this->height = radius * 2;
+				this->width = max(height, width);
+				this->color = color;
+				ps = pen_style_PS;
+				pwid = pen_width;
+				pcolor = pen_color;
+			}
+
+			virtual void framing() override {}
+			virtual bool hitTestPoint(int gx, int gy) override {
+				if (!enabled) return false;
+				transGlobalPosToLocal(gx, gy);
+				gx -= x, gy -= y;
+				return (gx >= radius && gx <= (width - radius) && gy >= 0 && gy <= height)
+					|| ((gx - radius) * (gx - radius) + (gy - radius) * (gy - radius)) < radius * radius
+					|| ((gx - width + radius) * (gx - width + radius) + (gy - radius) * (gy - radius)) < radius * radius;
+			}
+
+			virtual void paint(HDC hdc) override {
+				if (visible) {
+					int x0 = x, y0 = y;
+					transLocalPosToGlobal(x0, y0);
+					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
+					SGDIObject keep2(hdc, CreateSolidBrush(color));
+					Ellipse(hdc, x0, y0, x0 + height, y0 + height);
+					Ellipse(hdc, x0 + width - height, y0, x0 + width, y0 + height);
+					{
+						SGDIObject keep(hdc, CreatePen(PS_NULL, 1, 0));
+						Rectangle(hdc, x0 + radius, y0, x0 + width - radius, y0 + height);
+					}
+					MoveToEx(hdc, x0 + radius, y0, NULL);
+					LineTo(hdc, x0 + width - radius, y0);
+					MoveToEx(hdc, x0 + radius, y0 + height, NULL);
+					LineTo(hdc, x0 + width - radius, y0 + height);
+				}
+			}
+
+		};
+
+		using SRoundRect = sptr<SRoundRectImpl>;
+		ILL_INLINE SRoundRect MakeSRoundRect(int x0, int y0, int width, int radius, COLORREF color, int pen_style_PS = PS_SOLID,
+								   int pen_width = 1, COLORREF pen_color = RGB(0, 0, 0), ShapeImpl * parent = nullptr) {
+			return SRoundRect(new SRoundRectImpl(x0, y0, width, radius, color, pen_style_PS, pen_width, pen_color, parent));
+		}
+
 	}
 }

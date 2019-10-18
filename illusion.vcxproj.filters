@@ -225,6 +225,9 @@
     <ClInclude Include="src\display\SButton.h">
       <Filter>头文件\display</Filter>
     </ClInclude>
+    <ClInclude Include="index\transform.hpp">
+      <Filter>源文件\index</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

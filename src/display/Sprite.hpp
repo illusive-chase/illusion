@@ -28,7 +28,11 @@ namespace fl {
 			// will be overlaid on objects with larger indexes when drawing.
 			std::vector<Shape> children;
 
-			SpriteImpl(int x, int y, ShapeImpl* parent = nullptr) : ShapeImpl(parent) { this->x = x, this->y = y; width = height = 0; }
+			SpriteImpl(ShapeImpl* parent = nullptr) : ShapeImpl(parent) { x = 0, y = 0; width = height = 0; }
+			SpriteImpl(int x, int y, int width, int height, ShapeImpl* parent = nullptr) : ShapeImpl(parent) {
+				this->x = x, this->y = y;
+				this->width = width, this->height = height;
+			}
 			virtual ~SpriteImpl() {}
 			unsigned childrenNum() { return (unsigned)children.size(); }
 
@@ -38,7 +42,6 @@ namespace fl {
 			// That is, the newly added objects will be stacked on top.
 			void addChild(Shape shape) { addChildAt(shape, 0); } 
 
-			// Actually, it also delete the child.
 			bool removeChildAt(int index);
 
 			bool removeChild(Shape shape);
@@ -57,8 +60,9 @@ namespace fl {
 		};
 
 		using Sprite = sptr<SpriteImpl>;
-		ILL_INLINE Sprite MakeSprite(int x, int y, ShapeImpl* parent = nullptr) {
-			return Sprite(new SpriteImpl(x, y, parent));
+		ILL_INLINE Sprite MakeSprite(ShapeImpl* parent = nullptr) { return Sprite(new SpriteImpl(parent)); }
+		ILL_INLINE Sprite MakeSprite(int x, int y, int width, int height, ShapeImpl* parent = nullptr) { 
+			return Sprite(new SpriteImpl(x, y, width, height, parent));
 		}
 	}
 }
@@ -105,6 +109,11 @@ bool fl::display::SpriteImpl::hitTestPoint(int x, int y) {
 
 void fl::display::SpriteImpl::paint(HDC hdc) {
 	if (visible) {
-		for (Shape shape : children) shape->paint(hdc);
+		if (width && height) {
+			HDC memhdc = CreateCompatibleDC(hdc);
+			for (Shape shape : children) shape->paint(memhdc);
+			BitBlt(hdc, x, y, width, height, memhdc, x, y, SRCCOPY);
+			DeleteDC(memhdc);
+		} else for (Shape shape : children) shape->paint(hdc);
 	}
 }

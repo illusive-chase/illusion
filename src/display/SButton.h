@@ -29,13 +29,14 @@ namespace fl {
 			DWORD move_color;
 
 		public:
-			const wstring caption;
 			MouseEventCallback callback_down, callback_up, callback_move;
+			Signal<MouseEvent> callback;
 
 		private:
 			void down(MouseEvent e) {
 				if (hitTestPoint(e.x, e.y)) {
 					if (callback_down) callback_down(e);
+					callback(e);
 					rect.color = raw_color;
 				}
 			}
@@ -43,6 +44,7 @@ namespace fl {
 			void up(MouseEvent e) {
 				if (hitTestPoint(e.x, e.y)) {
 					if(callback_up) callback_up(e);
+					callback(e);
 					rect.color = move_color;
 				}
 			}
@@ -50,6 +52,7 @@ namespace fl {
 			void move(MouseEvent e) {
 				if (hitTestPoint(e.x, e.y)) {
 					if (callback_move) callback_move(e);
+					callback(e);
 					rect.color = move_color;
 				} else rect.color = raw_color;
 			}
@@ -62,7 +65,7 @@ namespace fl {
 						MouseEventCallback callback_move = nullptr,
 						ShapeImpl* parent = nullptr)
 				:ShapeImpl(parent), rect(0, 0, width, height, true, color, PS_NULL, 0, 0, this),
-				text(0, 0, caption, SFont(txt_size), this), caption(caption), 
+				text(0, 0, caption, SFont(txt_size), this),
 				first_paint(true), raw_color(color), move_color(light_color),
 				callback_down(callback_down), callback_up(callback_up), callback_move(callback_move)
 			{
@@ -75,8 +78,13 @@ namespace fl {
 				stage.mouseEventListener.add(this, WM_MOUSEMOVE, &SButtonImpl::move);
 			}
 
+			~SButtonImpl() {
+				stage.mouseEventListener.remove(this, WM_LBUTTONDOWN);
+				stage.mouseEventListener.remove(this, WM_LBUTTONUP);
+				stage.mouseEventListener.remove(this, WM_MOUSEMOVE);
+			}
 
-			bool hitTestPoint(int gx, int gy) override { return rect.hitTestPoint(gx, gy); }
+			bool hitTestPoint(int gx, int gy) override { return enabled && rect.hitTestPoint(gx, gy); }
 			void paint(HDC hdc) override {
 				if (first_paint) {
 					SIZE sz = { 0,0 };
@@ -88,11 +96,14 @@ namespace fl {
 					text.y = (height - sz.cy) / 2;
 					first_paint = false;
 				}
-				rect.paint(hdc);
-				text.paint(hdc);
+				if (visible) {
+					rect.paint(hdc);
+					text.paint(hdc);
+				}
 			}
-			void framing() override {}
 
+			wstringstream& caption() { return first_paint = true, text.caption; }
+			const wstringstream& caption() const { return text.caption; }
 		};
 
 		using SButton = sptr<SButtonImpl>;
@@ -104,6 +115,89 @@ namespace fl {
 							ShapeImpl* parent = nullptr) {
 			return SButton(new SButtonImpl(
 				x, y, width, height, color, light_color, caption, txt_size, callback_down, callback_up, callback_move, parent));
+		}
+
+
+		class SliderImpl :public ShapeImpl {
+		public:
+			using SlideEvent = SimpleEvent<scalar>;
+			enum SlideEventEnum { EVENT_SLIDED, EVENT_SLIDING };
+			scalar degree;
+
+		private:
+			int level, radius;
+			DWORD dark_color;
+			DWORD light_color;
+			SRoundRectImpl selected, background;
+			SEllipseImpl circle;
+			
+			void slide(MouseEvent e) {
+				switch (e.mk)
+				{
+				case WM_LDRAG_MK_BEGIN:
+					level = circle.hitTestPoint(e.x, e.y) ? 1 : 0;
+					break;
+				case WM_LDRAG_MK_END:
+				{
+					if (level) slideEventListener(SlideEvent(degree, EVENT_SLIDED));
+					level = 0;
+				}
+				break;
+				case WM_LDRAG_MK_MOVE:
+				{
+					if (level) {
+						transGlobalPosToLocal(e.x, e.y);
+						e.x -= x + radius;
+						if (e.x < 0) e.x = 0;
+						else if (e.x > width - 2 * radius) e.x = width - 2 * radius;
+						circle.x = e.x;
+						selected.width = circle.x + radius + selected.radius;
+						slideEventListener(SlideEvent(degree = (scalar(e.x) / (width - radius * 2)), EVENT_SLIDING));
+					}
+				}
+				break;
+				}
+			}
+
+			void move(MouseEvent e) { circle.color = (!level && circle.hitTestPoint(e.x, e.y)) ? light_color : dark_color; }
+
+		public:
+			Signal<SlideEvent> slideEventListener;
+
+			SliderImpl(int x, int y, int width, int height, DWORD color, DWORD light_color, ShapeImpl* parent)
+				: ShapeImpl(parent), degree(0), level(0), radius(height / 2), dark_color(color), light_color(light_color),
+				selected(height / 4, height / 4, 0, height / 4, light_color, PS_SOLID, 3, color, this),
+				background(height / 3, height / 3, width - (height * 2 / 3), height / 6, color, PS_NULL, 1, 0, this),
+				circle(0, 0, 2 * radius, 2 * radius, true, color, PS_SOLID, 3, color, this)
+			{
+				this->x = x;
+				this->y = y;
+				this->width = width;
+				this->height = height;
+				stage.mouseEventListener.add(this, WM_LDRAG, &SliderImpl::slide);
+				stage.mouseEventListener.add(this, WM_MOUSEMOVE, &SliderImpl::move);
+			}
+
+			~SliderImpl() {
+				stage.mouseEventListener.remove(this, WM_LDRAG);
+				stage.mouseEventListener.remove(this, WM_MOUSEMOVE);
+			}
+
+			bool hitTestPoint(int gx, int gy) override { 
+				return enabled &&
+					(selected.hitTestPoint(gx, gy) && background.hitTestPoint(gx, gy) && circle.hitTestPoint(gx, gy));
+			}
+			void paint(HDC hdc) override {
+				if (!visible) return;
+				background.paint(hdc);
+				selected.paint(hdc);
+				circle.paint(hdc);
+			}
+		};
+
+		using Slider = sptr<SliderImpl>;
+		Slider MakeSlider(int x, int y, int width, int height, DWORD color, DWORD light_color, ShapeImpl* parent = nullptr) {
+			return Slider(new SliderImpl(x, y, width, height, color, light_color, parent));
 		}
 
 	}

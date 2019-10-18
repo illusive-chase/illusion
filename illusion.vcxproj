@@ -245,6 +245,7 @@
   <ItemGroup>
     <ClInclude Include="index\recter.hpp" />
     <ClInclude Include="index\show.hpp" />
+    <ClInclude Include="index\transform.hpp" />
     <ClInclude Include="src\display\SBitmap.h" />
     <ClInclude Include="src\display\SButton.h" />
     <ClInclude Include="src\display\SColor.h" />

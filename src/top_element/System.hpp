@@ -312,8 +312,15 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	break;
 	case WM_MOUSEMOVE:
 	{
+		RECT rect = {};
 		GetCursorPos(&stage.mouseP);
+		GetClientRect(g_hWnd, &rect);
 		ScreenToClient(g_hWnd, &stage.mouseP);
+		if (stage.mouseX <= rect.left || stage.mouseX >= rect.right || stage.mouseY <= rect.top || stage.mouseY >= rect.bottom) {
+			leftdown = rightdown = false;
+			if (pre_leftdown) stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, WM_LDRAG_MK_END));
+			if (pre_rightdown) stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, WM_RDRAG_MK_END));
+		}
 		pre_leftdown = leftdown;
 		pre_rightdown = rightdown;
 	}
@@ -327,6 +334,9 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	{
 		GetCursorPos(&stage.mouseP);
 		ScreenToClient(g_hWnd, &stage.mouseP);
+		if (message == WM_LBUTTONDBLCLK) stage.mouseEventListener(MouseEvent(WM_LBUTTONDOWN, stage.mouseX, stage.mouseY, (int)wParam));
+		else if (message == WM_RBUTTONDBLCLK) stage.mouseEventListener(MouseEvent(WM_RBUTTONDOWN, stage.mouseX, stage.mouseY, (int)wParam));
+		else if (message == WM_MBUTTONDBLCLK) stage.mouseEventListener(MouseEvent(WM_MBUTTONDOWN, stage.mouseX, stage.mouseY, (int)wParam));
 		stage.mouseEventListener(MouseEvent(message, stage.mouseX, stage.mouseY, (int)wParam));
 	}
 	break;

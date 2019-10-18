@@ -28,8 +28,8 @@ public:
 
 	void init(int m, int n, int a) {
 		this->m = m, this->n = n, this->a = a;
-		stage.addChild(grid = MakeSprite(0, 0));
-		stage.addChild(nodes = MakeSprite(0, 0));
+		stage.addChild(grid = MakeSprite());
+		stage.addChild(nodes = MakeSprite());
 		for (int y = 1; y < m; ++y) grid->addChild(MakeSLine(0, y * a, n * a, y * a, 0, 1, RGB(0xc0c0c0)));
 		for (int x = 1; x < n; ++x) grid->addChild(MakeSLine(x * a, 0, x * a, m * a, 0, 1, RGB(0xc0c0c0)));
 	}
@@ -64,7 +64,7 @@ public:
 
 	static void show_text(sptr<NodeImpl>& node, const wstring& txt) {
 		if (txt.empty()) node->st = nullptr;
-		else node->st = MakeSText(grid.a, grid.a, txt, SFont(20), node);
+		else node->st = MakeSText(grid.a, grid.a, txt, SFont(20), node.raw());
 	}
 };
 
@@ -152,8 +152,9 @@ public:
 	bool deactivate() override {
 		if (level == 1) return false;
 		if (sl) cancel_select();
-		stage.mouseEventListener.remove(this);
-		stage.keyboardEventListener.remove(this);
+		stage.mouseEventListener.remove(this, WM_LDRAG);
+		stage.mouseEventListener.remove(this, WM_RBUTTONUP);
+		stage.keyboardEventListener.remove(this, WM_KEYUP);
 		return true;
 	}
 
@@ -210,7 +211,7 @@ public:
 
 	bool deactivate() override {
 		if (level) return false;
-		stage.mouseEventListener.remove(this);
+		stage.mouseEventListener.remove(this, WM_LDRAG);
 		return true;
 	}
 };

@@ -27,7 +27,7 @@ namespace fl {
 
 		// graphics base class
 		class ShapeImpl {
-		protected:
+		public:
 
 			class SGDIObject {
 			public:
@@ -38,7 +38,7 @@ namespace fl {
 				~SGDIObject() { SelectObject(hdc, obj_old); DeleteObject(obj); }
 			};
 
-		public:
+		
 			const ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
 			bool visible, enabled; // visible: whether to be drawn; enabled: whether to response hit-test
 			int x, y; // screen coordinates
@@ -47,12 +47,12 @@ namespace fl {
 
 			// It returns true if and only if the shape hit the screen coordinates (gx, gy).
 			// But when 'enabled' is false, it always returns false.
-			virtual bool hitTestPoint(int gx, int gy) = 0;
+			virtual bool hitTestPoint(int gx, int gy) { return false; }
 
 			// It is called in the same name function of 'parent' to perform drawing.
 			// In fact, what always happens is that it is called directly or indirectly
 			// in the same name function of class Stage.
-			virtual void paint(HDC hdc) = 0;
+			virtual void paint(HDC hdc) {}
 
 			virtual ~ShapeImpl() {}
 
@@ -68,7 +68,7 @@ namespace fl {
 			// You can also override this method in your custom derived class.
 			// ATTENTION: The term LOGICAL FRAME is completely different from the term PAINT FRAME.
 			// See the same name function in Stage.h.
-			virtual void framing() = 0;
+			virtual void framing() {}
 		};
 
 

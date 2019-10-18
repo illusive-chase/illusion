@@ -37,8 +37,8 @@ namespace fl {
 				POINT mouseP;
 			};
 
-			Stage() :SpriteImpl(0, 0, nullptr), mouseX(0), mouseY(0), console_show(false) {}
-			~Stage() {}
+			Stage() :SpriteImpl(), mouseX(0), mouseY(0), console_show(false) {}
+			~Stage() { children.clear(); }
 			bool addConsole(const wstring& TITLE = L"Console");
 			bool freeConsole();
 			bool showConsole();

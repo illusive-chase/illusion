@@ -35,8 +35,8 @@ namespace fl {
 
 
 		// Each SBitmapImpl object keeps a HBITMAP handle, which refers to a bitmap.
-		class SBitmapImpl final :public ShapeImpl {
-		private:
+		class SBitmapImpl :public ShapeImpl {
+		protected:
 			HBITMAP hbmp;
 			BITMAPINFO info;
 			DWORD* keep;
@@ -64,19 +64,19 @@ namespace fl {
 			DWORD* content() { return keep; }
 
 			// The hit-test area is rectangular.
-			bool hitTestPoint(int gx, int gy) override {
+			virtual bool hitTestPoint(int gx, int gy) override {
 				if (!enabled) return false;
 				transGlobalPosToLocal(gx, gy);
 				return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
 			}
 
 			// The function is empty as the bitmap is static.
-			void framing() override {}
+			virtual void framing() override {}
 
 			~SBitmapImpl() { DeleteObject(hbmp); }
 
 			// It uses TransparentBlt, which allows the bitmap to be displayed transparently.
-			void paint(HDC hdc) override {
+			virtual void paint(HDC hdc) override {
 				if (visible) {
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);

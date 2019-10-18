@@ -27,7 +27,7 @@ namespace fl {
 	constexpr double EPS = DBL_EPSILON;
 	constexpr double INF = DBL_MAX;
 #else
-	constexpr float PI = 3.141592653589793238462643f;
+	constexpr float PI = 3.141592653f;
 	constexpr float EPS = FLT_EPSILON;
 	constexpr float INF = FLT_MAX;
 #endif
