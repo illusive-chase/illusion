@@ -110,6 +110,7 @@ bool fl::display::SpriteImpl::hitTestPoint(int x, int y) {
 void fl::display::SpriteImpl::paint(HDC hdc) {
 	if (visible) {
 		if (width && height) {
+			SAlphaHelper sal(this, hdc);
 			HDC memhdc = CreateCompatibleDC(hdc);
 			for (Shape shape : children) shape->paint(memhdc);
 			BitBlt(hdc, x, y, width, height, memhdc, x, y, SRCCOPY);

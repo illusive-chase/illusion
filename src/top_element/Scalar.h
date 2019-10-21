@@ -39,6 +39,8 @@ subject to the following restrictions:
 #define ILL_DEBUG
 #endif
 
+#define ILL_UNCOPYABLE(Class) Class(const Class& rhs) = delete;Class& operator=(const Class& rhs) = delete
+
 #include "SLog.h"
 
 #ifdef _WIN32

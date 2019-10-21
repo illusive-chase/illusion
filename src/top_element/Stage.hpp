@@ -82,7 +82,8 @@ void fl::display::Stage::removeEventListener() {
 void fl::display::Stage::paint(HDC hdc) {
 	Rectangle(hdc, -1, -1, width + 1, height + 1);
 	if (visible) {
-		for (Shape shape : children) shape->paint(hdc);
+		SAlphaHelper sal(this, hdc);
+		for (Shape& shape : children) shape->paint(hdc);
 	}
 }
 

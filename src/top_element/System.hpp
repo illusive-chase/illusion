@@ -376,7 +376,7 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		HDC memhdc = CreateCompatibleDC(hdc);
 		HBITMAP hbmp = CreateCompatibleBitmap(hdc, stage.width, stage.height);
 		HBITMAP hbmp_old = (HBITMAP)SelectObject(memhdc, hbmp);
-		SetBkMode(hdc, TRANSPARENT);
+		SetBkMode(memhdc, TRANSPARENT);
 		stage.paint(memhdc);
 
 		static DWORD prev_time = 0;
@@ -390,9 +390,10 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		if (stage.showFrameDelay(false, true)) {
 			WCHAR itow[20];
 			_itow_s(int((curr_time - prev_time) >> 3), itow, 20, 10);
+			SetTextColor(memhdc, 0x0);
 			TextOut(memhdc, 50, 50, itow, lstrlenW(itow));
 		}
-		TransparentBlt(hdc, 0, 0, stage.width, stage.height, memhdc, 0, 0, stage.width, stage.height, 0x00ff00);
+		BitBlt(hdc, 0, 0, stage.width, stage.height, memhdc, 0, 0, SRCCOPY);
 		SelectObject(memhdc, hbmp_old);
 		DeleteObject(hbmp);
 		DeleteDC(memhdc);

@@ -36,14 +36,18 @@ namespace fl {
 				HGDIOBJ obj_old;
 				SGDIObject(HDC hdc, HGDIOBJ obj) :hdc(hdc), obj(obj), obj_old(SelectObject(hdc, obj)) {}
 				~SGDIObject() { SelectObject(hdc, obj_old); DeleteObject(obj); }
+				ILL_UNCOPYABLE(SGDIObject);
 			};
+
+			class SAlphaHelper;
 
 		
 			const ShapeImpl* parent; // the container(see its interface in SpriteImpl.h) containing the instance of this class
 			bool visible, enabled; // visible: whether to be drawn; enabled: whether to response hit-test
 			int x, y; // screen coordinates
 			int width, height; // width and height of enclosing rectangle
-			ShapeImpl(ShapeImpl* parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), parent(parent) {}
+			BYTE alpha;
+			ShapeImpl(ShapeImpl* parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), alpha(0xFF), parent(parent) {}
 
 			// It returns true if and only if the shape hit the screen coordinates (gx, gy).
 			// But when 'enabled' is false, it always returns false.
@@ -69,6 +73,37 @@ namespace fl {
 			// ATTENTION: The term LOGICAL FRAME is completely different from the term PAINT FRAME.
 			// See the same name function in Stage.h.
 			virtual void framing() {}
+		};
+
+
+		class ShapeImpl::SAlphaHelper {
+		public:
+			HDC old_hdc;
+			HDC& mem_hdc;
+			const ShapeImpl* sobj;
+			HBITMAP hbmp;
+			int x0, y0;
+
+			ILL_UNCOPYABLE(SAlphaHelper);
+
+			SAlphaHelper(const ShapeImpl* sobj, HDC& hdc) :old_hdc(0), mem_hdc(hdc), sobj(sobj), hbmp(0), x0(sobj->x), y0(sobj->y) {
+				if (sobj->alpha != 0xFF) {
+					sobj->transLocalPosToGlobal(x0, y0);
+					old_hdc = hdc, mem_hdc = CreateCompatibleDC(hdc);
+					hbmp = CreateCompatibleBitmap(old_hdc, x0 + sobj->width, y0 + sobj->height);
+					SelectObject(mem_hdc, hbmp);
+				}
+			}
+			~SAlphaHelper() {
+				if (sobj->alpha != 0xFF) {
+					BLENDFUNCTION bld = {};
+					bld.SourceConstantAlpha = sobj->alpha;
+					AlphaBlend(old_hdc, x0, y0, sobj->width - 1, sobj->height - 1, mem_hdc, x0, y0, sobj->width - 1, sobj->height - 1, bld);
+					DeleteDC(mem_hdc);
+					DeleteObject(hbmp);
+					mem_hdc = old_hdc;
+				}
+			}
 		};
 
 

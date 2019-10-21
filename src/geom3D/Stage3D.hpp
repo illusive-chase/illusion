@@ -690,6 +690,7 @@ bool fl::geom::Stage3DImpl::hitTestPoint(int gx, int gy) {
 
 void fl::geom::Stage3DImpl::paint(HDC hdc) {
 	if (visible) {
+		SAlphaHelper sal(this, hdc);
 		int x0 = x, y0 = y;
 		transLocalPosToGlobal(x0, y0);
 		render();

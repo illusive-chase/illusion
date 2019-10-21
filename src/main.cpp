@@ -24,9 +24,7 @@ copies or substantial portions of the Software.
 /// @date 2019/10/9
 ////////////////////////////////////////////
 
-
 #include "../index/transform.hpp"
-
 #if 0
 
 #define import_all
@@ -71,9 +69,9 @@ void ttrace(FrameEvent e) {
 // Initialize
 void System::Setup() {
 
-#if 1
+#if 0
 	ImageIO ld = MakeImageIO();
-	ld->load(L"ass\\sky.bmp");
+	ld->load(L"ass\\test.bmp");
 	Texture tx(ld->get(0), 3.3f, 0, 0);
 
 	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 2, MakeSkyBox(tx, 2000));
@@ -82,7 +80,7 @@ void System::Setup() {
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 
-	wd->addObject(MakeModelIO()->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
+	//wd->addObject(MakeModelIO()->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
 	roamer = MakeRoamer(wd);
 	stage.addConsole();
 #ifdef COUNT_VECTOR_CONSTRUCT

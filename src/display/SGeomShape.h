@@ -61,6 +61,7 @@ namespace fl {
 
 			void paint(HDC hdc) override {
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
 					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
@@ -131,6 +132,7 @@ namespace fl {
 
 			void paint(HDC hdc) override {
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
 					int gx = x, gy = y;
 					transLocalPosToGlobal(gx, gy);
@@ -181,11 +183,12 @@ namespace fl {
 			virtual bool hitTestPoint(int gx, int gy) override {
 				if (!filled || !enabled) return false;
 				transGlobalPosToLocal(gx, gy);
-				return gx >= x && gx <= x + width && gy >= y && gy <= y + height;
+				return gx >= x && gx <= x + (int)width && gy >= y && gy <= y + (int)height;
 			}
 
 			virtual void paint(HDC hdc) override {
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
 					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));
@@ -238,6 +241,7 @@ namespace fl {
 
 			virtual void paint(HDC hdc) override {
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
 					SGDIObject keep(hdc, CreatePen(ps, pwid, pcolor));

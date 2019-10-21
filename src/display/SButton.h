@@ -24,7 +24,6 @@ namespace fl {
 		private:
 			SRectImpl rect;
 			STextImpl text;
-			bool first_paint;
 			DWORD raw_color;
 			DWORD move_color;
 
@@ -65,14 +64,17 @@ namespace fl {
 						MouseEventCallback callback_move = nullptr,
 						ShapeImpl* parent = nullptr)
 				:ShapeImpl(parent), rect(0, 0, width, height, true, color, PS_NULL, 0, 0, this),
-				text(0, 0, caption, SFont(txt_size), this),
-				first_paint(true), raw_color(color), move_color(light_color),
+				text(0, 0, caption, SFont(txt_size), 0, this),
+				raw_color(color), move_color(light_color),
 				callback_down(callback_down), callback_up(callback_up), callback_move(callback_move)
 			{
 				this->x = x;
 				this->y = y;
 				this->width = width;
 				this->height = height;
+				text.setheight = height;
+				text.setwidth = width;
+				text.align = STextImpl::CENTER_ALIGN;
 				stage.mouseEventListener.add(this, WM_LBUTTONDOWN, &SButtonImpl::down);
 				stage.mouseEventListener.add(this, WM_LBUTTONUP, &SButtonImpl::up);
 				stage.mouseEventListener.add(this, WM_MOUSEMOVE, &SButtonImpl::move);
@@ -86,23 +88,14 @@ namespace fl {
 
 			bool hitTestPoint(int gx, int gy) override { return enabled && rect.hitTestPoint(gx, gy); }
 			void paint(HDC hdc) override {
-				if (first_paint) {
-					SIZE sz = { 0,0 };
-					SGDIObject keep(hdc, CreateFont(text.font.size, 0, 0, 0, text.font.weight, 0, 0, 0,
-													GB2312_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS, 
-													DEFAULT_QUALITY, FF_DONTCARE, TRANSLATE_FONT[text.font.style].c_str()));
-					GetTextExtentPoint(hdc, text.caption.str().c_str(), (int)text.caption.str().length(), &sz);
-					text.x = (width - sz.cx) / 2;
-					text.y = (height - sz.cy) / 2;
-					first_paint = false;
-				}
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					rect.paint(hdc);
 					text.paint(hdc);
 				}
 			}
 
-			wstringstream& caption() { return first_paint = true, text.caption; }
+			wstringstream& caption() { return text.caption; }
 			const wstringstream& caption() const { return text.caption; }
 		};
 
@@ -189,6 +182,7 @@ namespace fl {
 			}
 			void paint(HDC hdc) override {
 				if (!visible) return;
+				SAlphaHelper sal(this, hdc);
 				background.paint(hdc);
 				selected.paint(hdc);
 				circle.paint(hdc);

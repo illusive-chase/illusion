@@ -51,6 +51,7 @@ public:
 
 	virtual void paint(HDC hdc) override {
 		if (visible) {
+			SAlphaHelper sal(this, hdc);
 			int x0 = x, y0 = y;
 			transLocalPosToGlobal(x0, y0);
 			DeleteObject(SelectObject(hdc, CreatePen(ps, pwid, pcolor)));

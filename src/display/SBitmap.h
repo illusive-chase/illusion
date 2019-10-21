@@ -53,8 +53,11 @@ namespace fl {
 				info.bmiHeader.biBitCount = 32;
 				info.bmiHeader.biCompression = BI_RGB;
 				hbmp = CreateDIBSection(NULL, &info, DIB_RGB_COLORS, (void**)(&keep), NULL, 0);
-				if(bmp->src)
-					memcpy_s(keep, (bmp->width * bmp->height) << 2, bmp->src, (bmp->width * bmp->height) << 2);
+				if (bmp->src) {
+					DWORD* pdest = keep, * psrc = bmp->src + (bmp->height - 1) * bmp->width;
+					for (int i = 0; i < bmp->height; ++i, pdest += bmp->width, psrc -= bmp->width)
+						memcpy_s(pdest, bmp->width << 2, psrc, bmp->width << 2);
+				}
 				this->x = x;
 				this->y = y;
 				width = bmp->width;
@@ -78,6 +81,7 @@ namespace fl {
 			// It uses TransparentBlt, which allows the bitmap to be displayed transparently.
 			virtual void paint(HDC hdc) override {
 				if (visible) {
+					SAlphaHelper sal(this, hdc);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
 					SetDIBitsToDevice(hdc, x0, y0, width, height, 0, 0, 0, info.bmiHeader.biHeight, keep, &info, DIB_RGB_COLORS);

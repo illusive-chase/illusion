@@ -30,19 +30,28 @@ namespace fl {
 			HFONT hfont;
 			
 		public:
+			int setwidth;
+			int setheight;
 			SFont font;
-			wstringstream caption; // mutable
+			wstringstream caption;
+			bool wordbreak;
+			bool autobreak;
+			enum AlignEnum {
+				LEFT_ALIGN = DT_LEFT,
+				CENTER_ALIGN = DT_CENTER,
+				RIGHT_ALIGN = DT_RIGHT
+			} align;
 
 			// It is used to listen for painting events.
 			// In fact, the event is only responded when function STextImpl::paint is called.
 			fl::events::Signal<fl::events::SimpleEvent<STextImpl&>> paintEventListener;
 			
-			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), ShapeImpl* parent = nullptr)
-				:ShapeImpl(parent), caption(caption), font(font)
+			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), int setwidth = 0, ShapeImpl * parent = nullptr)
+				:ShapeImpl(parent), setwidth(setwidth), setheight(0), caption(caption), font(font), wordbreak(true), autobreak(true), align(LEFT_ALIGN)
 			{
 				this->x = x;
 				this->y = y;
-				width = 0;
+				width = setwidth;
 				height = 0;
 				hfont = CreateFont(font.size, 0, 0, 0,
 					font.weight, font.italic, font.underline, font.midline,
@@ -65,23 +74,33 @@ namespace fl {
 			void paint(HDC hdc) override {
 				paintEventListener(*this); // respond
 				if (visible) {
-					SetBkMode(hdc, TRANSPARENT);
-					SetTextColor(hdc, font.color);
-					HFONT hfont_old = (HFONT)SelectObject(hdc, hfont);
-					SIZE sz = { 0,0 };
-					GetTextExtentPoint(hdc, caption.str().c_str(), (int)caption.str().length(), &sz);
-					width = sz.cx;
-					height = sz.cy;
+					SAlphaHelper sal(this, hdc);
 					int x0 = x, y0 = y;
 					transLocalPosToGlobal(x0, y0);
-					TextOut(hdc, x0, y0, caption.str().c_str(), (int)caption.str().length());
+					unsigned flag = align;
+					if (autobreak) {
+						flag |= DT_EDITCONTROL;
+						if (wordbreak) flag |= DT_WORDBREAK;
+					}
+					if (setheight > 0) flag |= DT_VCENTER | DT_SINGLELINE;
+					SetTextColor(hdc, font.color);
+					HFONT hfont_old = (HFONT)SelectObject(hdc, hfont);
+					RECT r = { x0, y0,x0 + width,y0 + height };
+					DrawTextW(hdc, caption.str().c_str(), -1, &r, DT_CALCRECT | flag);
+					if (setwidth <= 0) width = r.right - r.left;
+					else r.right = r.left + setwidth;
+					if (setheight <= 0) height = r.bottom - r.top;
+					else r.bottom = r.top + setheight;
+					DrawTextW(hdc, caption.str().c_str(), -1, &r, flag);
+					width = r.right - r.left;
+					height = r.bottom - r.top;
 					SelectObject(hdc, hfont_old);
 				}
 			}
 		};
 
-		ILL_INLINE SText MakeSText(int x, int y, const wstring& caption, const SFont& font = SFont(20), ShapeImpl* parent = nullptr) {
-			return SText(new STextImpl(x, y, caption, font, parent));
+		ILL_INLINE SText MakeSText(int x, int y, const wstring& caption, const SFont& font = SFont(20), int setwidth = 0, ShapeImpl * parent = nullptr) {
+			return SText(new STextImpl(x, y, caption, font, setwidth, parent));
 		}
 	}
 }

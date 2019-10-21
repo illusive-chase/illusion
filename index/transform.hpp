@@ -259,9 +259,10 @@ class Client : public SBitmapImpl {
 		
 
 		ValueSetterImpl(int x, int y, const wstring& name, T min_v, T max_v, bool can_be_neg, T& settee)
-			:ShapeImpl(nullptr), min_v(min_v), max_v(max_v), name(name), name_txt(MakeSText(35, 0, L"", SFont(24), this)),
+			:ShapeImpl(nullptr), min_v(min_v), max_v(max_v), name(name), name_txt(MakeSText(35, 0, L"", SFont(24), 0, this)),
 			slider(MakeSlider(115, 3, 100, 18, RGB(35, 72, 137), RGB(125, 170, 250), this)), settee(settee), btn(nullptr)
 		{
+			name_txt->autobreak = false;
 			this->x = x;
 			this->y = y;
 			slider->slideEventListener.add(this, SliderImpl::EVENT_SLIDING, &ValueSetterImpl::set);
@@ -272,7 +273,12 @@ class Client : public SBitmapImpl {
 			}
 		}
 
-		void paint(HDC hdc) override { name_txt->paint(hdc); slider->paint(hdc); if (btn) btn->paint(hdc); }
+		void paint(HDC hdc) override { 
+			SAlphaHelper sal(this, hdc); 
+			name_txt->paint(hdc); 
+			slider->paint(hdc); 
+			if (btn) btn->paint(hdc);
+		}
 	};
 
 public:
