@@ -23,10 +23,11 @@ copies or substantial portions of the Software.
 
 namespace fl {
 	namespace geom {
-		class Light3DImpl {
+		ILL_ATTRIBUTE_ALIGNED16(class) Light3DImpl {
 		public:
 			Vector3D intensity;
 			int type;
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 			Light3DImpl(const Vector3D& intensity) : intensity(intensity), type(0) {}
 			virtual ~Light3DImpl() {}
 		};

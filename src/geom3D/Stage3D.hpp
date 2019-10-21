@@ -73,9 +73,9 @@ namespace fl {
 		};
 
 
-		class Stage3DImpl final :public display::ShapeImpl {
+		ILL_ATTRIBUTE_ALIGNED16(class) Stage3DImpl final :public display::ShapeImpl {
 		public:
-
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 			// The lowest two bits of RenderMode is used to represent the multi-sampling mode.
 			// The third lowest bit is used to represent whether MLAA is used.
 			// That is, any of MODE_NOSAMPLING, MODE_SSAA, MODE_MSAA can be used along with MODE_MLAA,

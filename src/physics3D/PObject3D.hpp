@@ -21,7 +21,7 @@ copies or substantial portions of the Software.
 namespace fl {
 	namespace physics {
 
-		class PObject3DImpl {
+		ILL_ATTRIBUTE_ALIGNED16(class) PObject3DImpl {
 
 		public:
 			const scalar mass; // 0 is used to presented infinity.
@@ -31,6 +31,7 @@ namespace fl {
 			geom::Vector3D acc;
 			geom::AxisAlignedBoundingBox aabb;
 
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 
 			PObject3DImpl(scalar mass, const geom::Vector3D& pos, const geom::AxisAlignedBoundingBox& aabb,
 						  scalar recovery = scalar(0))

@@ -312,14 +312,17 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	break;
 	case WM_MOUSEMOVE:
 	{
-		RECT rect = {};
+		
 		GetCursorPos(&stage.mouseP);
-		GetClientRect(g_hWnd, &rect);
 		ScreenToClient(g_hWnd, &stage.mouseP);
-		if (stage.mouseX <= rect.left || stage.mouseX >= rect.right || stage.mouseY <= rect.top || stage.mouseY >= rect.bottom) {
-			leftdown = rightdown = false;
-			if (pre_leftdown) stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, WM_LDRAG_MK_END));
-			if (pre_rightdown) stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, WM_RDRAG_MK_END));
+		if (pre_leftdown || pre_rightdown) {
+			RECT rect = {};
+			GetClientRect(g_hWnd, &rect);
+			if (stage.mouseX <= rect.left || stage.mouseX >= rect.right || stage.mouseY <= rect.top || stage.mouseY >= rect.bottom) {
+				leftdown = rightdown = false;
+				if (pre_leftdown) stage.mouseEventListener(MouseEvent(WM_LDRAG, stage.mouseX, stage.mouseY, WM_LDRAG_MK_END));
+				if (pre_rightdown) stage.mouseEventListener(MouseEvent(WM_RDRAG, stage.mouseX, stage.mouseY, WM_RDRAG_MK_END));
+			}
 		}
 		pre_leftdown = leftdown;
 		pre_rightdown = rightdown;
@@ -513,7 +516,7 @@ bool fl::System::IsAdmin(bool& isadmin) {
 		HANDLE hToken = NULL;
 		TOKEN_ELEVATION_TYPE* type = nullptr;
 		DWORD dwSize;
-		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) return bool(bSet = false);
+		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) return bSet = false, false;
 		if (GetTokenInformation(hToken, TokenElevationType, type, sizeof(TOKEN_ELEVATION_TYPE), &dwSize) && type) {
 			BYTE adminSID[SECURITY_MAX_SID_SIZE];
 			dwSize = sizeof(adminSID);

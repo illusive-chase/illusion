@@ -28,10 +28,11 @@ namespace fl {
 		// Each SText3DImpl object keeps a HFONT handle, which refers to a font.
 		// Class SText3DImpl inherits class STextImpl, 
 		// which may need to be improved because SText3DImpl never uses STextImpl::paintEventListener.
-		class SText3DImpl :public fl::display::STextImpl {
+		ILL_ATTRIBUTE_ALIGNED16(class) SText3DImpl :public fl::display::STextImpl {
 		public:
 			Vector3D pos; // the relative position to the coordinate space of the linked object
-			SObject3D obj; // the linked object 
+			SObject3D obj; // the linked object
+			ILL_DECLARE_ALIGNED_ALLOCATOR
 
 			// It is used to listen for painting events.
 			// In fact, the event is only responded when function Stage3DImpl::render is called.

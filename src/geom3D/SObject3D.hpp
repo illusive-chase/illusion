@@ -26,8 +26,11 @@ namespace fl {
 		// ATTENTION:
 		// The design of 3D transform operation still needs to be improved, 
 		// as it seems to have poor performance.
-		class SObject3DImpl {
+		ILL_ATTRIBUTE_ALIGNED16(class) SObject3DImpl {
 		public:
+
+			ILL_DECLARE_ALIGNED_ALLOCATOR
+
 			Vector3D pos;
 
 			// They can be used to represent the transformation matrix.

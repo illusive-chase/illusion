@@ -267,7 +267,7 @@ class Client : public SBitmapImpl {
 			slider->slideEventListener.add(this, SliderImpl::EVENT_SLIDING, &ValueSetterImpl::set);
 			set(0.0);
 			if (can_be_neg) {
-				btn = MakeSButton(0, -6, 30, 30, 0xf0f0f0, RGB(145, 190, 255), L"±", 24, nullptr, nullptr, nullptr, this);
+				btn = MakeSButton(0, -4, 30, 30, 0xf0f0f0, RGB(145, 190, 255), L"±", 24, nullptr, nullptr, nullptr, this);
 				btn->callback.add(this, WM_LBUTTONDOWN, &ValueSetterImpl::negativate);
 			}
 		}
@@ -315,7 +315,7 @@ public:
 		painter(new PainterImpl(width, height, keep)),
 		axis(180, painter),
 		cuboid(80, 60, 100, painter),
-		sbtn(MakeSButton(x + width + 10, 50, 235, 40, 0xf0f0f0, RGB(145, 190, 255), L"透视投影  透视点坐标：", 22)),
+		sbtn(MakeSButton(x + width + 10, 50, 235, 40, 0xf0f0f0, RGB(145, 190, 255), L"透视投影  透视点坐标：", 24)),
 		perspective(true)
 	{
 		sbtn->callback.add(this, WM_LBUTTONDOWN, &Client::btn_switch);
@@ -367,7 +367,7 @@ public:
 
 void System::Setup() {
 	stage.addChild(MakeSRect(0, 0, 800, 600, 1, 0xf0f0f0, PS_NULL));
-	sptr<Client> client = sptr<Client>(new Client(30, 30, 500, 500));
+	sptr<Client> client = sptr<Client>(new Client(30, 30, 500, 540));
 	stage.addChild(client);
 	stage.addChild(client->axis_name[0]);
 	stage.addChild(client->axis_name[1]);
