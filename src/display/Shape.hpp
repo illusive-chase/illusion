@@ -92,13 +92,14 @@ namespace fl {
 					old_hdc = hdc, mem_hdc = CreateCompatibleDC(hdc);
 					hbmp = CreateCompatibleBitmap(old_hdc, x0 + sobj->width, y0 + sobj->height);
 					SelectObject(mem_hdc, hbmp);
+					BitBlt(mem_hdc, x0, y0, sobj->width, sobj->height, old_hdc, x0, y0, SRCCOPY);
 				}
 			}
 			~SAlphaHelper() {
 				if (sobj->alpha != 0xFF) {
 					BLENDFUNCTION bld = {};
 					bld.SourceConstantAlpha = sobj->alpha;
-					AlphaBlend(old_hdc, x0, y0, sobj->width - 1, sobj->height - 1, mem_hdc, x0, y0, sobj->width - 1, sobj->height - 1, bld);
+					AlphaBlend(old_hdc, x0, y0, sobj->width, sobj->height, mem_hdc, x0, y0, sobj->width, sobj->height, bld);
 					DeleteDC(mem_hdc);
 					DeleteObject(hbmp);
 					mem_hdc = old_hdc;

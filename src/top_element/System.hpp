@@ -271,6 +271,10 @@ LRESULT CALLBACK fl::System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	static int leftdown = 0;
 	static int rightdown = 0;
 	switch (message) {
+	case WM_SETCURSOR:
+	{
+		SetCursor(stage.setCursor());
+	}
 	case WM_ERASEBKGND:
 	{
 		return 1;

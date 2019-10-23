@@ -51,6 +51,7 @@ namespace fl {
 			RECT getWindowArea() const;
 			RECT getStageArea() const;
 			void setMouse(int x, int y);
+			HCURSOR& setCursor(LPCWSTR IDC = 0);
 
 			// It returns macro ID... like macro IDOK
 			DWORD message(const wstring& test, const wstring& TITLE, UINT mode_MB, bool fixed);
@@ -146,4 +147,10 @@ void fl::display::Stage::setMouse(int x, int y) {
 	SetCursorPos(mouseX, mouseY);
 	mouseX = x;
 	mouseY = y;
+}
+
+HCURSOR& fl::display::Stage::setCursor(LPCWSTR IDC) {
+	static HCURSOR idc = LoadCursor(NULL, IDC_ARROW);
+	if (IDC) SetCursor(idc = LoadCursor(NULL, IDC));
+	return idc;
 }

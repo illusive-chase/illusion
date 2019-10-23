@@ -47,7 +47,7 @@ namespace fl {
 			fl::events::Signal<fl::events::SimpleEvent<STextImpl&>> paintEventListener;
 			
 			STextImpl(int x, int y, const wstring& caption, const SFont& font = SFont(20), int setwidth = 0, ShapeImpl * parent = nullptr)
-				:ShapeImpl(parent), setwidth(setwidth), setheight(0), caption(caption), font(font), wordbreak(true), autobreak(true), align(LEFT_ALIGN)
+				:ShapeImpl(parent), setwidth(setwidth), setheight(0), caption(caption), font(font), wordbreak(true), autobreak(false), align(LEFT_ALIGN)
 			{
 				this->x = x;
 				this->y = y;

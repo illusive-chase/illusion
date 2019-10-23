@@ -26,6 +26,55 @@ namespace fl {
 			int width, height;
 			BitmapImpl(DWORD* src, int width, int height) :src(src), width(width), height(height) {}
 			~BitmapImpl() { if (src) delete[] src; }
+
+			void gray_process(DWORD* dest) {
+				for (int i = width * height - 1; i >= 0; --i) {
+					float gray = 0.3f * ((src[i] & 0xff0000) >> 16) + 0.59f * ((src[i] & 0xff00) >> 8) + 0.11f * (src[i] & 0xff);
+					dest[i] = (int)gray;
+				}
+			}
+
+			void binarization(DWORD* dest) {
+				gray_process(dest);
+				DWORD T = 0; //Otsu算法阈值
+				float varValue = 0; //类间方差中间值保存
+				float Histogram[256] = { 0 }; //灰度直方图，下标是灰度值，保存内容是灰度值对应的像素点总数
+
+				//计算灰度直方图分布，Histogram数组下标是灰度值，保存内容是灰度值对应像素点数
+				for (int i = width * height - 1; i >= 0; --i) Histogram[dest[i]]++;
+				for (DWORD i = 0; i < 255; i++) {
+					float w0 = 0; //前景像素点数所占比例
+					float w1 = 0; //背景像素点数所占比例
+					float u0 = 0; //前景平均灰度
+					float u1 = 0; //背景平均灰度
+					//背景各分量值计算
+					for (DWORD j = 0; j <= i; j++) { //背景部分各值计算
+						w1 += Histogram[j];  //背景部分像素点总数
+						u1 += j * Histogram[j]; //背景部分像素总灰度和
+					}
+					if (w1 == 0) continue; //背景部分像素点数为0时退出
+					u1 = u1 / w1; //背景像素平均灰度
+					w1 = w1 / (width * height); // 背景部分像素点数所占比例
+
+					//前景各分量值计算
+					for (DWORD k = i + 1; k < 255; k++) {
+						w0 += Histogram[k];  //前景部分像素点总数
+						u0 += k * Histogram[k]; //前景部分像素总灰度和
+					}
+					if (w0 == 0) break;  //前景部分像素点数为0时退出
+					u0 = u0 / w0; //前景像素平均灰度
+					w0 = w0 / (width * height); // 前景部分像素点数所占比例
+
+					//类间方差计算
+					float varValueI = w0 * w1 * (u1 - u0) * (u1 - u0); //当前类间方差计算
+					if (varValue < varValueI) {
+						varValue = varValueI;
+						T = i;
+					}
+				}
+
+				for (int i = width * height - 1; i >= 0; --i) dest[i] = (dest[i] > T) ? 0xffffff : 0x0;
+			}
 		};
 
 		using Bitmap = sptr<BitmapImpl>;

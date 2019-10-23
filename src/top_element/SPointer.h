@@ -146,6 +146,18 @@ namespace fl {
 		ILL_INLINE const T* operator->() const { return ptr; }
 		ILL_INLINE operator bool() const { return ptr; }
 		ILL_INLINE T* raw() { return ptr; }
+		ILL_INLINE unsigned* raw_cnt() { return cnt; }
+		ILL_INLINE void preserve(void* ptrv) {
+			if (ptr && (--(*cnt) == 0)) {
+				delete cnt;
+				delete ptr;
+#ifdef ILL_NOISY
+				printf("destructor: %s\n", typeid(T).name());
+#endif
+			}
+			cnt = (unsigned*)ptrv;
+			ptr = nullptr;
+		}
 		void operator delete(void* p) = delete;
 		void operator delete[](void* p) = delete;
 	};

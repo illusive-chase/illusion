@@ -24,8 +24,7 @@ copies or substantial portions of the Software.
 /// @date 2019/10/9
 ////////////////////////////////////////////
 
-#include "../index/transform.hpp"
-#if 0
+#if 1
 
 #define import_all
 #include "top_element/SImport.h"
@@ -57,24 +56,21 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 	wd->addObject((sp->addPObject(psp), sp));
 }
 
-#include "top_element\SCommand.h"
-
-#ifdef COUNT_VECTOR_CONSTRUCT
-void ttrace(FrameEvent e) {
-	printf("copy: %u\nmove: %u\n\n", Vector3D::copy_cnt(), Vector3D::move_cnt());
-	Vector3D::copy_cnt() = 0;
-	Vector3D::move_cnt() = 0;
-}
-#endif
 // Initialize
 void System::Setup() {
 
-#if 0
+#ifdef RAY
+
+
+#endif
+
+
+#ifdef MMD
 	ImageIO ld = MakeImageIO();
-	ld->load(L"ass\\test.bmp");
+	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->get(0), 3.3f, 0, 0);
 
-	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 2, MakeSkyBox(tx, 2000));
+	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000));
 	stage.addChild(wd);
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
@@ -83,17 +79,14 @@ void System::Setup() {
 	//wd->addObject(MakeModelIO()->loadMMD(L"C:\\Users\\illusion\\Desktop\\3dmax\\model", L"mmd.obj", 12, true));
 	roamer = MakeRoamer(wd);
 	stage.addConsole();
-#ifdef COUNT_VECTOR_CONSTRUCT
-	stage.frameEventListener.add(WM_FRAME, ttrace);
-#endif
 	InitWindow();
 #endif
-#if 0
+#ifdef PHY
 	stage.addConsole();
 
-	ld = MakeImageLoader();
-	ld->load<>(L"ass\\sky.bmp");
-	Texture tx(ld->src(0), ld->width(0), ld->height(0), 3.3f, 0, 0);
+	ImageIO ld = MakeImageIO();
+	ld->load(L"ass\\sky.bmp");
+	Texture tx(ld->get(0), 3.3f, 0, 0);
 	ph = MakePhase(.98f, 0.1f);
 	PQuad pqd = MakePQuad(Vector3D(0, -20, -60), Vector3D(200, 0, 0), Vector3D(0, 0, 200), 0.8f);
 	ph->addObject(pqd, true);
@@ -104,7 +97,7 @@ void System::Setup() {
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
 	SObject3D sq = MakeSQuadr3D(Vector3D(), Vector3D(0, 0, 200), Vector3D(200, 0, 0), Color::GREEN);
 	wd->addObject((sq->addPObject(pqd), sq));
-	//roamer = MakeRoamer(wd);
+	roamer = MakeRoamer(wd);
 
 	addBall(10.0f, Vector3D(8, 100, -60));
 	addBall(1.0f, Vector3D(0, -10, -60));

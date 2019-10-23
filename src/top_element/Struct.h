@@ -141,6 +141,22 @@ namespace fl {
 			static constexpr unsigned getIndex() { return 1 - TypeEqual<Last, Find>::value; }
 		};
 
+		template<typename Iterator, typename ...Args>
+		struct TypeArrayAssign;
+
+		template<typename Iterator, typename First, typename ...Rest>
+		struct TypeArrayAssign<Iterator, First, Rest...> {
+			static void assign(const First& para, const Rest&... paras, Iterator& it) {
+				*(it++) = para;
+				TypeArrayAssign<Iterator, Rest...>::assign(paras..., it);
+			}
+		};
+
+		template<typename Iterator, typename Last>
+		struct TypeArrayAssign<Iterator, Last> {
+			static void assign(const Last& para, Iterator& it) { *it = para; }
+		};
+
 	public:
 
 		template<typename ...Element>
@@ -150,6 +166,11 @@ namespace fl {
 				return TypeArrayBase<Find, Element...>::getIndex();
 			}
 			template<unsigned Index> using type = typename TypeArrayValue<Index, Element...>::value;
+
+			template<typename Iterator>
+			static void assign(const Element&... paras, Iterator it) {
+				TypeArrayAssign<Iterator, Element...>::assign(paras..., it);
+			}
 		};
 
 	};
@@ -192,18 +213,23 @@ namespace fl {
 		unsigned active;
 		template<unsigned N> struct initializer {
 			using S = Array::type<N - 1>;
-			static void init(ToolBase** tb) { *(--tb) = new S; initializer<N - 1>::init(tb); }
+			static void init(ToolBase** tb) { 
+				if (--tb)* tb = new S;
+				initializer<N - 1>::init(tb);
+			}
 		};
 		template<> struct initializer<1U> {
 			using S = Array::type<0U>;
-			static void init(ToolBase** tb) { *(--tb) = new S; }
+			static void init(ToolBase** tb) { if (--tb)* tb = new S; }
 		};
 
 	public:
 		ToolBox() :active(0), tools() {}
+		~ToolBox() { for (int i = 0; i < size; ++i) if (tools[i]) delete tools[i]; }
 		void init() { initializer<size>::init(tools + size); tools[0]->activate(); }
+		void init(T* ... args) { TypeTrait::TypeArray<T*...>::assign(args..., tools); initializer<size>::init(tools + size); tools[0]->activate(); }
 
-		template<typename S, typename E = typename std::enable_if<bool(Array::getIndex<S>() < size)> ::type>
+		template<typename S, typename R = typename std::enable_if<bool(Array::getIndex<S>() < size), bool> ::type>
 		bool switch_to() {
 			if (active != Array::getIndex<S>() && tools[active]->deactivate()) {
 				if (tools[Array::getIndex<S>()]->activate()) active = Array::getIndex<S>();
@@ -211,6 +237,11 @@ namespace fl {
 				return true;
 			}
 			return false;
+		}
+
+		template<typename S>
+		bool is_active() {
+			return active == Array::getIndex<S>();
 		}
 
 	};
