@@ -82,6 +82,10 @@ namespace fl {
 			return Bitmap(new BitmapImpl(src, width, height));
 		}
 
+		ILL_INLINE Bitmap MakeBitmap(int width, int height) {
+			return Bitmap(new BitmapImpl(new DWORD[width * height], width, height));
+		}
+
 
 		// Each SBitmapImpl object keeps a HBITMAP handle, which refers to a bitmap.
 		class SBitmapImpl :public ShapeImpl {
