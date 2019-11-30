@@ -269,6 +269,7 @@
     <ClInclude Include="src\geom3D\SMLAAA.hpp" />
     <ClInclude Include="src\geom3D\SObject3D.h" />
     <ClInclude Include="src\geom3D\SObject3D.hpp" />
+    <ClInclude Include="src\geom3D\SRayTracing.h" />
     <ClInclude Include="src\geom3D\Stage3D.h" />
     <ClInclude Include="src\geom3D\Stage3D.hpp" />
     <ClInclude Include="src\geom3D\SText3D.h" />

@@ -117,7 +117,7 @@ namespace fl {
 			// Class SwapChain is allocated on the heap, and will form a circular linked list.
 			class SwapChain {
 			public:
-				DWORD* sample;
+				DWORD** sample;
 				MapTrait* map_trait;
 				void* colors;
 				HBITMAP hbmp;
@@ -136,13 +136,13 @@ namespace fl {
 					info.bmiHeader.biBitCount = 32;
 					info.bmiHeader.biCompression = BI_RGB;
 					hbmp = CreateDIBSection(NULL, &info, DIB_RGB_COLORS, &colors, NULL, 0);
-					sample = AlignedAllocator<DWORD, 16>().allocate(sample_num * size);
+					sample = AlignedAllocator<DWORD*, 16>().allocate(sample_num * size);
 				}
 
 				~SwapChain() {
 					if (next) delete next;
 					DeleteObject(hbmp);
-					AlignedAllocator<DWORD, 16>().deallocate(sample);
+					AlignedAllocator<DWORD*, 16>().deallocate(sample);
 					delete[] map_trait;
 				}
 			};
@@ -347,35 +347,38 @@ void fl::geom::Stage3DImpl::render() {
 		}
 	}
 	DWORD* p1 = reinterpret_cast<DWORD*>(swap_chain->colors);
-	DWORD* p2 = swap_chain->sample;
+	DWORD** p2 = swap_chain->sample;
 	MapTrait* p3 = swap_chain->map_trait;
 	for (int i = 0; i < size; ++i) {
 #ifdef ILL_SSE
 		__m128 tmp = _mm_setzero_ps();
 		for (int j = 0; j < sample_num; ++j) {
-			BYTE* pick = reinterpret_cast<BYTE*>(p2);
+			DWORD c = **p2;
+			BYTE r = BYTE(c >> 16);
+			BYTE g = BYTE(c >> 8);
+			BYTE b = BYTE(c);
 			tmp = _mm_add_ps(tmp, 
 				_mm_mul_ps(
 					//_mm_div_ps(_mm_set_ps(0, p3->r, p3->g, p3->b), _mm_set1_ps(p3->z_depth)),
 					_mm_div_ps(p3->m_bgrz, _mm_set1_ps(p3->z_depth)),
-					_mm_cvtepi32_ps(_mm_set_epi32(0, pick[2], pick[1], pick[0]))
+					_mm_cvtepi32_ps(_mm_set_epi32(0, r, g, b))
 				)
 			);
 			p2++;
 			p3++;
 		}
 		tmp = _mm_div_ps(tmp, _mm_set1_ps(scalar(sample_num)));
-		const __m128i zero = _mm_setzero_si128();
+		__m128i zero = _mm_setzero_si128();
 		__m128i tmpi = _mm_packus_epi16(_mm_packs_epi32(_mm_cvtps_epi32(tmp), zero), zero);
 		*p1 = _mm_cvtsi128_si32(tmpi);
 		p1++;
 #else
 		unsigned r = 0, g = 0, b = 0;
 		for (int j = 0; j < sample_num; ++j) {
-			BYTE* pick = reinterpret_cast<BYTE*>(p2);
-			r += MIX(pick[2], p3->r / p3->z_depth);
-			g += MIX(pick[1], p3->g / p3->z_depth);
-			b += MIX(pick[0], p3->b / p3->z_depth);
+			DWORD c = **p2;
+			r += MIX(BYTE(c >> 16), p3->r / p3->z_depth);
+			g += MIX(BYTE(c >> 8), p3->g / p3->z_depth);
+			b += MIX(BYTE(c), p3->b / p3->z_depth);
 			p2++, p3++;
 		}
 		*p1 = RGB3D(r / sample_num, g / sample_num, b / sample_num);
@@ -696,7 +699,7 @@ void fl::geom::Stage3DImpl::paint(HDC hdc) {
 		render();
 		SetDIBitsToDevice(hdc, x0, y0, width, height, 0, 0, 0,
 						  swap_chain->info.bmiHeader.biHeight, swap_chain->colors, &swap_chain->info, DIB_RGB_COLORS);
-		memset(swap_chain->colors, 0, size * sizeof(*(swap_chain->sample)));
+		memset(swap_chain->colors, 0, size * sizeof(**(swap_chain->sample)));
 		for (SText3D it : txt) { it->paint(hdc); }
 		swap_chain = swap_chain->next;
 	}

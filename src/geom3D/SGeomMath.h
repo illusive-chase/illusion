@@ -35,6 +35,7 @@ subject to the following restrictions:
 
 #include "../top_element/SAlignedAllocator.h"
 #include "../display/SColor.h"
+#include <random>
 
 namespace fl {
 	namespace geom {
@@ -184,6 +185,23 @@ namespace fl {
 				return Vector3D(_mm_sub_ps(m_vec128, tar.m_vec128));
 #else
 				return Vector3D(x - tar.x, y - tar.y, z - tar.z, w - tar.w);
+#endif
+			}
+
+			ILL_INLINE Vector3D& operator &=(const Vector3D& tar) {
+#ifdef ILL_SSE_IN_API
+				m_vec128 = _mm_mul_ps(m_vec128, tar.m_vec128);
+#else
+				x *= tar.x; y *= tar.y; z *= tar.z;  w *= tar.w;
+#endif
+				return *this;
+			}
+
+			ILL_INLINE Vector3D operator &(const Vector3D& tar)  const {
+#ifdef ILL_SSE_IN_API
+				return Vector3D(_mm_mul_ps(m_vec128, tar.m_vec128));
+#else
+				return Vector3D(x * tar.x, y * tar.y, z * tar.z, w * tar.w);
 #endif
 			}
 
@@ -712,6 +730,20 @@ namespace fl {
 #endif
 			}
 		};
+
+
+		scalar rands(scalar c = 0.0f, scalar d = 0.5f) {
+			static std::default_random_engine e;
+			std::uniform_real_distribution<scalar> u(c - d, c + d);
+			return u(e);
+		}
+
+		// uniform unit vector
+		ILL_INLINE Vector3D random_unit() {
+			scalar cos_theta = rands(0, 1), sin_theta = illSqrt(1 - cos_theta * cos_theta);
+			scalar phi = rands(0, PI);
+			return Vector3D(illCos(phi) * sin_theta, illSin(phi) * sin_theta, cos_theta);
+		}
 
 	}
 }

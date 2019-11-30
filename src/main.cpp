@@ -25,7 +25,7 @@ copies or substantial portions of the Software.
 ////////////////////////////////////////////
 
 #if 1
-
+#define REAL_RANDOM
 #define import_all
 #include "top_element/SImport.h"
 #undef import_all
@@ -34,8 +34,10 @@ copies or substantial portions of the Software.
 
 extern Stage stage;
 
-
+#if defined(PHY) || defined(MMD)
 Stage3D wd;
+#endif
+#ifdef PHY
 Roamer roamer;
 Phase ph;
 PObject3D ptrace, ptrace2;
@@ -55,133 +57,64 @@ void addBall(float w, const Vector3D& pos, const Vector3D& vel0 = Vector3D()) {
 	SObject3D sp = MakeSphere3D(Vector3D(), Color::RED, 10, 10, 10);
 	wd->addObject((sp->addPObject(psp), sp));
 }
-
-#define MMD
-
-float randf(float c = 0.0f, float d = 0.5f) {
-	return (rand() % 101) * 0.02f * d + c - d;
-}
-
-struct ray {
-	Vector3D p, d;
-	Vector3D pointer(scalar t) const { return p + d * t; }
-};
-
-struct sphere {
-	Vector3D p;
-	scalar r;
-	Vector3D c;
-	ray(sphere::* reflect_ray) (const Vector3D& lit);
-	scalar hit(const ray& ra) {
-		//(ra.p+t*ra.d-p).mod2()=r*r
-		//(t*ra.d+oc).mod2()=r^2
-		//ra.d.mod2()*t^2+2oc*ra.d*t+oc.mod2()-r^2;
-		Vector3D oc = ra.p - p; //(0,249t-100,-20t+100)
-		scalar a = ra.d.mod2();
-		scalar b = 2 * (oc * ra.d);
-		scalar c = oc.mod2() - r * r;
-		scalar d = b * b - a * c * 4;
-		return d < 0 ? scalar(-1) : ((-b - illSqrt(d)) / (a * 2));
-	}
-	Vector3D reflect_color(const Vector3D& lit) {
-		return Vector3D(lit.x * c.x, lit.y * c.y, lit.z * c.z);
-	}
-	ray reflect_ray_normal(const Vector3D& rp) {
-		ray ra;
-		ra.p = rp;
-		Vector3D n = ra.p - p;
-		n.normalize();
-		Vector3D rd(randf(), randf(), randf());
-		if (rd == Vector3D()) rd = Vector3D(1, 1, 1);
-		rd.normalize();
-		rd += n;
-		if (rd == Vector3D()) rd = Vector3D(1, 1, 1);
-		ra.d = rd;
-		return ra;
-	}
-	template<int k>
-	ray reflect_ray_metal(const Vector3D& rp) {
-		ray ra;
-		ra.p = rp;
-		Vector3D n = ra.p - p;
-		n.normalize();
-		ra.d = rp - n * ((rp * n) * 2);
-		ra.d.normalize();
-		Vector3D rd(randf(), randf(), randf());
-		if (rd == Vector3D()) rd = Vector3D(1, 1, 1);
-		rd.normalize();
-		ra.d = ra.d * k + rd;
-		ra.d.normalize();
-		return ra;
-	}
-	sphere(const Vector3D& p, scalar r, DWORD color, bool metal) :p(p), r(r), 
-		c(Vector3D(int(color >> 16) & 0xff, int(color >> 8) & 0xff, (int)color & 0xff)* (1.0f / 255.9f)),
-		reflect_ray(metal ? &sphere::reflect_ray_metal<7> : &sphere::reflect_ray_normal) {}
-	sphere(const Vector3D& p, scalar r, const Vector3D& color, bool metal) :p(p), r(r),
-		c(color), reflect_ray(metal ? &sphere::reflect_ray_metal<7> : &sphere::reflect_ray_normal) {}
-};
-
-Vector3D get_color(std::list<sphere>& ls, const ray& r, int depth = 50) {
-	if (!depth) return Vector3D();
-	scalar min_rr = INF;
-	sphere* min_s = nullptr;
-	for (sphere& s : ls) {
-		scalar rr;
-		if ((rr = s.hit(r)) > 0 && min_rr > rr) min_rr = rr, min_s = &s;
-	}
-	//reflection
-	if (min_s) return min_s->reflect_color(get_color(ls, (min_s->*min_s->reflect_ray)(r.pointer(min_rr)), depth - 1));
-	Vector3D tmp = r.d;
-	tmp.normalize();
-	scalar t = 0.5f * (tmp.y + 1.0f);
-	return Vector3D(0.5f, 0.7f, 1.0f) * t + Vector3D(1, 1, 1) * (1.0f - t); //env
-}
+#endif
+#ifdef RAC
+Camera cam(200.0f, 0.0f, 0.0f);
+World w;
+#endif
 
 // Initialize
 void System::Setup() {
 
-#ifdef RAY
-
-	
-
-	InitWindow(L"Ray Tracing", 20, 20, 500, 500);
-	SBitmap sbmp = MakeSBitmap(0, 0, MakeBitmap(500, 500));
-	DWORD* src = sbmp->content();
-	stage.addChild(sbmp);
-	
-	std::list<sphere> ls;
-	ls.push_back(sphere(Vector3D(0, 0, -250), 125, Vector3D(0.8f, 0.3f, 0.3f), 0));
-	ls.push_back(sphere(Vector3D(-250, 0, -250), 125, Vector3D(0.8f, 0.8f, 0.8f), 1));
-	ls.push_back(sphere(Vector3D(250, 0, -250), 125, Vector3D(0.8f, 0.6f, 0.2f), 1));
-	ls.push_back(sphere(Vector3D(0, -250125, -250), 250000, Vector3D(0.8f, 0.8f, 0.0f), 0));
-	for (int i = 0; i < 500; ++i) {
-		for (int j = 0; j < 500; ++j) {
-			Vector3D cl;
-			int nk = 100;
-			for (int k = 0; k < nk; ++k) {
-				ray r;
-				r.p = Vector3D(0, 0, 0);
-				r.d = Vector3D(-250.0f + i + randf(0.5), -250.0f + j + randf(0.5), -150.0f);
-				r.d.normalize();
-				cl += get_color(ls, r);
+	wstring pf = L"C:\\Users\\illusion\\Desktop\\pku\\大二\\基物\\实验报告5\\texture";
+	ImageIO imgio = MakeImageIO();
+	for (int i = 1; i <= 13; ++i) {
+		wstringstream ss;
+		ss << pf << i << L".bmp";
+		Bitmap bmp = imgio->get(imgio->load(ss.str()));
+		if (!bmp) continue;
+		scalar k = 1.2f;
+		for (int x = 0; x < bmp->width; ++x) {
+			for (int y = 0; y < bmp->height; ++y) {
+				DWORD cl = (bmp->src[x + y * bmp->width]);
+				Vector3D vec_cl(int(cl >> 16) & 0xff, int(cl >> 8) & 0xff, (int)cl & 0xff);
+				if (vec_cl.mod() < 128) vec_cl = Vector3D(1, 1, 1);
+				else vec_cl = Vector3D(pow(vec_cl.x, k) + 0.1f, pow(vec_cl.y, k) + 0.1f, pow(vec_cl.z, k) + 0.1f);
+				vec_cl.normalize();
+				vec_cl *= 300;
+				bmp->src[x + y * bmp->width] = RGB3D(min(int(vec_cl.x), 0xff), min(int(vec_cl.y), 0xff), min(int(vec_cl.z), 0xff));
 			}
-			cl /= float(nk);
-			cl.x = illSqrt(cl.x), cl.y = illSqrt(cl.y), cl.z = illSqrt(cl.z);
-			src[i + j * 500] = RGB3D(int(cl.x * 255.9f), int(cl.y * 255.9f), int(cl.z * 255.9f));
 		}
+		bmp->binarization(bmp->src);
+		ss.str(L"");
+		ss << pf << i << L"_process.bmp";
+		imgio->save(ss.str(), bmp->src, bmp->width, bmp->height);
 	}
+	InitWindow();
 
-
-
+	
+#ifdef RAC
+	InitWindow(L"Ray Tracing", 20, 20, 500, 500);
+	
+	stage.addChild(w.sbmp);
+	w.add(RRect(Vector3D(-250, 0, -450), 250, &RRect::YZ, Material(Vector3D(0.4f, 0.4f, 1.0f), &Material::reflect_normal)));
+	w.add(RRect(Vector3D(250, 0, -450), 250, &RRect::YZ, Material(Vector3D(1.0f, 0.4f, 0.4f), &Material::reflect_normal)));
+	w.add(RRect(Vector3D(0, 0, -700), 250, &RRect::XY, Material(Vector3D(0.4f, 1.0f, 0.4f), &Material::reflect_normal)));
+	w.add(RRect(Vector3D(0, -250, -450), 250, &RRect::ZX, Material(Vector3D(0.8f, 0.8f, 0.8f), &Material::reflect_normal)));
+	w.add(RRect(Vector3D(0, 250, -450), 250, &RRect::ZX, Material(Vector3D(0.8f, 0.8f, 0.8f), &Material::reflect_normal)));
+	w.add(RRect(Vector3D(0, 248, -450), 50, &RRect::ZX, Material(Vector3D(15, 15, 15), &Material::reflect_light)));
+	w.add(RSphere(Vector3D(0, -150, -450), 100.0f, Material(Vector3D(1, 1, 1), &Material::reflect_transparent<700>)));
+	w.add(RSphere(Vector3D(0, -155, -450), -95.0f, Material(Vector3D(1, 1, 1), &Material::reflect_transparent<700>)));
+	cam.setCamera(Vector3D(), Vector3D(0, 0, -1));
+	w.render(cam);
 #endif
-
 
 #ifdef MMD
 	ImageIO ld = MakeImageIO();
 	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->get(0), 3.3f, 0, 0);
 
-	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_MLAA, 2, MakeSkyBox(tx, 2000));
+	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000));
 	stage.addChild(wd);
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));

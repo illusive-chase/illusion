@@ -36,7 +36,6 @@ namespace fl {
 #else
 			scalar z_depth, r, g, b;
 #endif
-			DWORD* to_set;
 			// 'z_depth' is set to 0 initially, which means the actual z depth is infinity.
 			// It should be guaranteed that z_depth > 0.
 			MapTrait() :z_depth(0), r(0), g(0), b(0) {}
@@ -48,22 +47,22 @@ namespace fl {
 		// See function Stage3DImpl::drawTriangle and Stage3DImpl::drawTriangleMSAA in Stage3DImpl.cpp.
 		class Shader {
 		public:
-			const BYTE* const src;
+			BYTE* const src;
 
-			const int src_wid;
-			const int src_size;
-			const int offset;
-			const int step;
-			const int width;
+			int src_wid;
+			int src_size;
+			int offset;
+			int step;
+			int width;
 
-			DWORD* const write_src;
+			DWORD** const write_src;
 			MapTrait* const map_trait_src;
 
-			DWORD* write;
+			DWORD** write;
 			MapTrait* map_trait;
 
-			Shader(DWORD* write_src, MapTrait* map_trait_src, int width, const Texture& t, const int offset = 0)
-				:src(reinterpret_cast<const BYTE*>(t.bmp->src)), src_wid(t.bmp->width), src_size(t.bmp->width * t.bmp->height),
+			Shader(DWORD** write_src, MapTrait* map_trait_src, int width, const Texture& t, const int offset = 0)
+				:src(reinterpret_cast<BYTE*>(t.bmp->src)), src_wid(t.bmp->width), src_size(t.bmp->width * t.bmp->height),
 				offset(offset), step(1 << offset), write_src(write_src),
 				map_trait_src(map_trait_src), width(width)
 			{
@@ -90,7 +89,7 @@ namespace fl {
 			ILL_INLINE void shade(const LerpX& shadee) {
 				if (map_trait->z_depth < shadee.z) {
 					int index = shadee.getU() + src_wid * shadee.getV();
-					*write = reinterpret_cast<const DWORD*>(src)[index];
+					*write = reinterpret_cast<DWORD*>(src) + index;
 #ifdef ILL_SSE
 					map_trait->m_bgrz = shadee.m_bgrz;
 #else

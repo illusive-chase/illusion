@@ -53,6 +53,7 @@ using namespace fl::display;
 #if defined(import_geom)
 #include "../geom3D/Stage3D.h"
 #include "../geom3D/SGeom3DShape.h"
+#include "../geom3D/SRayTracing.h"
 using namespace fl::geom;
 #endif
 #if defined(import_ui)

@@ -30,7 +30,7 @@ namespace fl {
 			~ImageIOImpl() {}
 			template<ImageType = IMAGE_BMP> int load(const wstring & path, int width = 0, int height = 0);
 			template<ImageType = IMAGE_BMP> bool save(const wstring & path, DWORD * src, int width, int height);
-			ILL_INLINE Bitmap get(int i) { return content[i]; }
+			ILL_INLINE Bitmap get(int i) { if (~i) return content[i]; return Bitmap(nullptr); }
 		};
 
 		using ImageIO = sptr<ImageIOImpl>;
