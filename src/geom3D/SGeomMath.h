@@ -34,6 +34,7 @@ subject to the following restrictions:
 // The implementation of vector partially draws on the vector of the engine bullet.
 
 #include "../top_element/SAlignedAllocator.h"
+#include "../top_element/Struct.h"
 #include "../display/SColor.h"
 #include <random>
 
@@ -122,16 +123,18 @@ namespace fl {
 			};
 
 			Vector3D(f4 m_vec128) :m_vec128(m_vec128) {}
+			Vector3D() :m_vec128(_mm_setzero_ps()) {}
 
 #else
 			union {
 				scalar m_floats[4];
 				struct { scalar x, y, z, w; };
 			};
+			Vector3D() :x(0), y(0), z(0), w(0) {}
 #endif
 			ILL_DECLARE_ALIGNED_ALLOCATOR
 
-			Vector3D() :x(0), y(0), z(0), w(0) {}
+			
 
 			Vector3D(int x, int y, int z) :x(scalar(x)), y(scalar(y)), z(scalar(z)), w(0) {}
 
@@ -316,6 +319,96 @@ namespace fl {
 				return m_floats;
 			}
 
+		};
+
+		class Matrix3D;
+
+		ILL_DECLARE_SYMBOL(Matrix3D, Trans, Rev)
+
+		class Matrix3D {
+#define ILL_MATRIX3D_FOR(expl,op,expr,delim) expl[0] op expr[0] delim expl[1] op expr[1] delim expl[2] op expr[2] delim expl[3] op expr[3]
+			Vector3D* vec;
+
+			Matrix3D(scalar k) :vec(new Vector3D[4]()) { vec[0][0] = vec[1][1] = vec[2][2] = vec[3][3] = k; }
+
+		public:
+			Matrix3D() :vec(new Vector3D[4]()) {}
+			Matrix3D(const scalar(&arr)[4][4]) :vec(new Vector3D[4]{ arr[0],arr[1],arr[2],arr[3] }) {}
+			Matrix3D(const Matrix3D& rhs) :vec(new Vector3D[4]{ rhs.vec[0],rhs.vec[1],rhs.vec[2],rhs.vec[3] }) {}
+			Matrix3D(Matrix3D&& rhs) noexcept :vec(rhs.vec) { rhs.vec = nullptr; }
+			ILL_INLINE Matrix3D& operator =(const Matrix3D& rhs) { ILL_MATRIX3D_FOR(vec, =, rhs.vec, ;); return *this; }
+			ILL_INLINE Matrix3D& operator =(Matrix3D&& rhs) noexcept { if (vec) delete[]vec; vec = rhs.vec; rhs.vec = nullptr; return *this; }
+			~Matrix3D() { if (vec) delete[] vec; }
+
+			ILL_INLINE scalar* operator [](int i) { return vec[i]; }
+			ILL_INLINE const scalar* operator [](int i) const { return vec[i]; }
+
+			static const Matrix3D& one() { static Matrix3D instance(scalar(1)); return instance; }
+
+			ILL_INLINE Matrix3D&& operator +(const Matrix3D& rhs) const & { return Matrix3D(*this) + rhs; }
+			ILL_INLINE Matrix3D&& operator +(const Matrix3D& rhs) && { return std::move(*this += rhs); }
+			ILL_INLINE Matrix3D& operator +=(const Matrix3D& rhs) & { ILL_MATRIX3D_FOR(vec, +=, rhs.vec, ;); return *this; }
+
+			ILL_INLINE Matrix3D&& operator -(const Matrix3D& rhs) const & { return Matrix3D(*this) - rhs; }
+			ILL_INLINE Matrix3D&& operator -(const Matrix3D& rhs) && { return std::move(*this -= rhs); }
+			ILL_INLINE Matrix3D& operator -=(const Matrix3D& rhs) & { ILL_MATRIX3D_FOR(vec, -=, rhs.vec, ;); return *this; }
+
+			ILL_INLINE Matrix3D&& operator *(const Matrix3D& rhs) const & { return Matrix3D(*this) * rhs; }
+			ILL_INLINE Matrix3D&& operator *(const Matrix3D& rhs) && { return std::move(*this *= rhs); }
+			Matrix3D& operator *=(const Matrix3D& rhs) & {
+				Matrix3D temp(rhs);
+				for (int i = 0; i < 4; ++i)
+					vec[i] = ILL_MATRIX3D_FOR(temp.vec, *, vec[i], +);
+				return *this;
+			}
+
+			ILL_INLINE Matrix3D&& operator /(scalar k) const & { return Matrix3D(*this) / k; }
+			ILL_INLINE Matrix3D&& operator /(scalar k) && { return std::move(*this /= k); }
+			ILL_INLINE Matrix3D& operator /=(scalar k) & { vec[0] /= k, vec[1] /= k, vec[2] /= k, vec[3] /= k; return *this; }
+
+			ILL_INLINE Matrix3D&& operator *(scalar k) const & { return Matrix3D(*this) * k; }
+			ILL_INLINE Matrix3D&& operator *(scalar k) && { return std::move(*this *= k); }
+			ILL_INLINE Matrix3D& operator *=(scalar k) & { vec[0] *= k, vec[1] *= k, vec[2] *= k, vec[3] *= k; return *this; }
+
+			ILL_INLINE Matrix3D&& operator ^(SymbolTrans) const & { return Matrix3D(*this) ^ Trans; }
+			ILL_INLINE Matrix3D&& operator ^(SymbolTrans) && { return std::move(*this ^= Trans); }
+			Matrix3D& operator ^=(SymbolTrans) & { _MM_TRANSPOSE4_PS(vec[0].m_vec128, vec[1].m_vec128, vec[2].m_vec128, vec[3].m_vec128); return *this; }
+
+			ILL_INLINE Matrix3D&& operator ^(SymbolRev) const & { return Matrix3D(*this) ^ Rev; }
+			ILL_INLINE Matrix3D&& operator ^(SymbolRev) && { return std::move(*this ^= Rev); }
+			Matrix3D& operator ^=(SymbolRev) & {
+				Matrix3D temp;
+				for (int i = 0; i < 4; ++i) temp[i][i] = 1;
+				for (int i = 0; i < 4; ++i) {
+					int j = i;
+					while (vec[j][i] == 0 && j < 4) j++;
+					if (j == 4) continue;
+					if (j != i) std::swap(vec[i], vec[j]), std::swap(temp.vec[i], temp.vec[j]);
+					temp.vec[i] /= vec[i][i];
+					vec[i] /= vec[i][i];
+					for (int k = 0; k < i; ++k) temp.vec[k] -= temp.vec[i] * vec[k][i], vec[k] -= vec[i] * vec[k][i];
+					for (int k = i + 1; k < 4; ++k) temp.vec[k] -= temp.vec[i] * vec[k][i], vec[k] -= vec[i] * vec[k][i];
+				}
+				return (*this = std::move(temp));
+			}
+
+			ILL_INLINE Matrix3D&& operator ^(int k) const & { return Matrix3D(*this) ^ k; }
+			ILL_INLINE Matrix3D&& operator ^(int k) && { return std::move(*this ^= k); }
+			Matrix3D& operator ^=(int k) & {
+				bool reverse = false;
+				if (k < 0) k = -k, reverse = true;
+				Matrix3D temp(std::move(*this));
+				vec = new Vector3D[4]();
+				if (k & 1)* this = temp, k >>= 1;
+				else *this = one();
+				while (k) {
+					if (k & 1) (*this) *= temp;
+					temp *= temp;
+					k >>= 1;
+				}
+				return reverse ? (*this ^= Rev) : (*this);
+			}
+#undef ILL_MATRIX3D_FOR
 		};
 
 

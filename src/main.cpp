@@ -66,31 +66,7 @@ World w;
 // Initialize
 void System::Setup() {
 
-	wstring pf = L"C:\\Users\\illusion\\Desktop\\pku\\大二\\基物\\实验报告5\\texture";
-	ImageIO imgio = MakeImageIO();
-	for (int i = 1; i <= 13; ++i) {
-		wstringstream ss;
-		ss << pf << i << L".bmp";
-		Bitmap bmp = imgio->get(imgio->load(ss.str()));
-		if (!bmp) continue;
-		scalar k = 1.2f;
-		for (int x = 0; x < bmp->width; ++x) {
-			for (int y = 0; y < bmp->height; ++y) {
-				DWORD cl = (bmp->src[x + y * bmp->width]);
-				Vector3D vec_cl(int(cl >> 16) & 0xff, int(cl >> 8) & 0xff, (int)cl & 0xff);
-				if (vec_cl.mod() < 128) vec_cl = Vector3D(1, 1, 1);
-				else vec_cl = Vector3D(pow(vec_cl.x, k) + 0.1f, pow(vec_cl.y, k) + 0.1f, pow(vec_cl.z, k) + 0.1f);
-				vec_cl.normalize();
-				vec_cl *= 300;
-				bmp->src[x + y * bmp->width] = RGB3D(min(int(vec_cl.x), 0xff), min(int(vec_cl.y), 0xff), min(int(vec_cl.z), 0xff));
-			}
-		}
-		bmp->binarization(bmp->src);
-		ss.str(L"");
-		ss << pf << i << L"_process.bmp";
-		imgio->save(ss.str(), bmp->src, bmp->width, bmp->height);
-	}
-	InitWindow();
+	
 
 	
 #ifdef RAC

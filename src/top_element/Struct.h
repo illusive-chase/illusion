@@ -17,6 +17,18 @@ copies or substantial portions of the Software.
 #include <memory>
 #include <type_traits>
 
+#define PRIVATE_ARGS_GLUE(x, y) x y
+
+#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1,_2,_3,_4,_5,_6,_7,_8,_9, _10, N, ...) N
+#define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
+#define COUNT_MACRO_VAR_ARGS(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__,10, 9,8,7,6,5,4,3,2,1,0))
+
+#define PRIVATE_MACRO_CHOOSE_HELPER2(M,count)  M##count
+#define PRIVATE_MACRO_CHOOSE_HELPER1(M,count) PRIVATE_MACRO_CHOOSE_HELPER2(M,count)
+#define PRIVATE_MACRO_CHOOSE_HELPER(M,count)   PRIVATE_MACRO_CHOOSE_HELPER1(M,count)
+
+#define INVOKE_VAR_MACRO(M,...) PRIVATE_ARGS_GLUE(PRIVATE_MACRO_CHOOSE_HELPER(M,COUNT_MACRO_VAR_ARGS(__VA_ARGS__)), (__VA_ARGS__))
+
 namespace fl {
 
 	template<typename T, typename Compare = std::less<T>>
@@ -245,5 +257,29 @@ namespace fl {
 		}
 
 	};
+
+	template<typename T, unsigned N>
+	class Symbol {};
+
+#define ILL_DECLARE_SYMBOL_IMPL_2(related_class, symbol) \
+void symbol(Symbol<related_class, 0U>) {} \
+using Symbol##symbol = void(*)(Symbol<related_class, 0U>);
+
+#define ILL_DECLARE_SYMBOL_IMPL_3(related_class, symbol1, symbol2) \
+void symbol1(Symbol<related_class, 0U>) {} \
+using Symbol##symbol1 = void(*)(Symbol<related_class, 0U>); \
+void symbol2(Symbol<related_class, 1U>) {} \
+using Symbol##symbol2 = void(*)(Symbol<related_class, 1U>);
+
+#define ILL_DECLARE_SYMBOL_IMPL_4(related_class, symbol1, symbol2, symbol3) \
+void symbol1(Symbol<related_class, 0U>) {} \
+using Symbol##symbol1 = void(*)(Symbol<related_class, 0U>); \
+void symbol2(Symbol<related_class, 1U>) {} \
+using Symbol##symbol2 = void(*)(Symbol<related_class, 1U>); \
+void symbol3(Symbol<related_class, 1U>) {} \
+using Symbol##symbol3 = void(*)(Symbol<related_class, 1U>);
+
+
+#define ILL_DECLARE_SYMBOL(...) INVOKE_VAR_MACRO(ILL_DECLARE_SYMBOL_IMPL_, __VA_ARGS__)
 
 }
