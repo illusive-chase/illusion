@@ -24,21 +24,23 @@ copies or substantial portions of the Software.
 /// @date 2019/10/9
 ////////////////////////////////////////////
 
+
 #if 1
-#define REAL_RANDOM
+
 #define import_all
 #include "top_element/SImport.h"
 #undef import_all
 
-
+#define MMD
 
 extern Stage stage;
 
+
 #if defined(PHY) || defined(MMD)
 Stage3D wd;
+Roamer roamer;
 #endif
 #ifdef PHY
-Roamer roamer;
 Phase ph;
 PObject3D ptrace, ptrace2;
 
@@ -65,7 +67,7 @@ World w;
 
 // Initialize
 void System::Setup() {
-
+	
 	
 
 	

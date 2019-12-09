@@ -234,6 +234,9 @@
     <ClInclude Include="src\geom3D\SRayTracing.h">
       <Filter>头文件\geom3D</Filter>
     </ClInclude>
+    <ClInclude Include="index\bezier.hpp">
+      <Filter>源文件\index</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

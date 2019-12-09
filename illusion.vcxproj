@@ -243,6 +243,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="index\bezier.hpp" />
     <ClInclude Include="index\polyfill.hpp" />
     <ClInclude Include="index\recter.hpp" />
     <ClInclude Include="index\show.hpp" />

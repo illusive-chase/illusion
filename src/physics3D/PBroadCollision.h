@@ -352,9 +352,7 @@ namespace fl {
 
 			ILL_INLINE void setProxy(iterator_leaf index, const AxisAlignedBoundingBox& aabb, const geom::Vector3D& vel) {
 				BVH::Node* leaf = index->leaf;
-#ifdef ILL_DEBUG
 				ILLAssert(index->dynamic);
-#endif
 				leaf->aabb = aabb;
 				leaf->aabb.expand(vel);
 				dynamic_bvh.update(leaf);
@@ -369,9 +367,7 @@ namespace fl {
 				const geom::Vector3D& vel
 			) {
 				BVH::Node* leaf = index->leaf;
-#ifdef ILL_DEBUG
 				ILLAssert(index->dynamic);
-#endif
 				leaf->aabb = aabb;
 				leaf->aabb.expand(vel);
 				dynamic_bvh.update(leaf);
