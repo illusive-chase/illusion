@@ -17,6 +17,7 @@ copies or substantial portions of the Software.
 
 #include "../top_element/SPointer.h"
 #include "../top_element/SEvent.h"
+#include "SProperty.h"
 
 namespace fl {
 	namespace display {
@@ -47,6 +48,8 @@ namespace fl {
 			int x, y; // screen coordinates
 			int width, height; // width and height of enclosing rectangle
 			BYTE alpha;
+			std::map<std::string, SProperty> properties;
+
 			ShapeImpl(ShapeImpl* parent) :x(0), y(0), width(0), height(0), visible(true), enabled(true), alpha(0xFF), parent(parent) {}
 
 			// It returns true if and only if the shape hit the screen coordinates (gx, gy).

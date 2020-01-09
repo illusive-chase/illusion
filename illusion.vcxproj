@@ -258,6 +258,7 @@
     <ClInclude Include="src\display\SMovieClip.h" />
     <ClInclude Include="src\display\Sprite.h" />
     <ClInclude Include="src\display\Sprite.hpp" />
+    <ClInclude Include="src\display\SProperty.h" />
     <ClInclude Include="src\display\SText.h" />
     <ClInclude Include="src\geom3D\SGeom3DShape.h" />
     <ClInclude Include="src\geom3D\SGeom3DShape.hpp" />

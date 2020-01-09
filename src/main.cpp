@@ -92,8 +92,11 @@ void System::Setup() {
 	ld->load(L"ass\\sky.bmp");
 	Texture tx(ld->get(0), 3.3f, 0, 0);
 
+	
+
 	wd = MakeStage3D(0, 0, 1024, 768, 0, 2000, 12, Stage3DImpl::MODE_NOSAMPLING, 2, MakeSkyBox(tx, 2000));
 	stage.addChild(wd);
+	
 	wd->addLight(MakeDirectionalLight3D(Vector3D(1, -1, 1), Vector3D(0.6f, 0.6f, 0.6f)));
 	wd->addLight(MakeLight3D(Vector3D(0.4f, 0.4f, 0.4f)));
 	wd->setCamera(Vector3D(0, 0, 0), Vector3D(0, 0, -70));
