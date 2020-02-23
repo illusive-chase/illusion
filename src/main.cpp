@@ -31,7 +31,7 @@ copies or substantial portions of the Software.
 #include "top_element/SImport.h"
 #undef import_all
 
-#define MMD
+#define MMDx
 
 extern Stage stage;
 
@@ -67,6 +67,26 @@ World w;
 
 // Initialize
 void System::Setup() {
+	std::wifstream fr(L"1.txt", std::ios::in);
+	std::wofstream fw(L"2.txt", std::ios::out);
+	wstring temp, temp2;
+	int level = 0;
+	while (std::getline(fr, temp)) {
+		if (!level) {
+			if (!temp.length() || temp[0] == L' ') level++;
+			fw << temp << std::endl;
+		} else if (level == 1) {
+			if (temp.length()) temp2 = temp, level++;
+			else level = 0, fw << temp << std::endl;
+		}
+		else if (level == 2) {
+			if (!temp.length() || temp[0] == L' ') temp2 = L"¡¾" + temp2 + L"¡¿";
+			else level = 0;
+			fw << temp2 << std::endl << temp << std::endl;
+		}
+	}
+	fr.close();
+	fw.close();
 	
 	
 

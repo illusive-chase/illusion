@@ -16,6 +16,7 @@ copies or substantial portions of the Software.
 #pragma once
 #include "SPointer.h"
 #include "../geom3D/SObject3D.h"
+#include "../display/SBitmap.h"
 
 namespace fl {
 	namespace io {
@@ -24,13 +25,13 @@ namespace fl {
 
 		class ImageIOImpl {
 		public:
-			std::vector<Bitmap> content;
+			std::vector<display::Bitmap> content;
 			std::vector<BITMAP> info;
 			ImageIOImpl() {}
 			~ImageIOImpl() {}
-			template<ImageType = IMAGE_BMP> int load(const wstring & path, int width = 0, int height = 0);
+			template<ImageType = IMAGE_BMP> int load(const wstring & path);
 			template<ImageType = IMAGE_BMP> bool save(const wstring & path, DWORD * src, int width, int height);
-			ILL_INLINE Bitmap get(int i) { if (~i) return content[i]; return Bitmap(nullptr); }
+			ILL_INLINE display::Bitmap get(int i) { if (~i) return content[i]; return display::Bitmap(nullptr); }
 		};
 
 		using ImageIO = sptr<ImageIOImpl>;
@@ -41,7 +42,7 @@ namespace fl {
 		public:
 			ModelIOImpl() {}
 			~ModelIOImpl() {}
-			SObject3D loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
+			geom::SObject3D loadMMD(const wstring& dir, const wstring& name, scalar scale = 12, bool leftTopOrigin = false);
 		};
 
 		using ModelIO = sptr<ModelIOImpl>;
@@ -55,9 +56,9 @@ namespace fl {
 #include <fstream>
 
 template<>	
-int fl::io::ImageIOImpl::load<fl::io::IMAGE_BMP>(const wstring& path, int width, int height) {
+int fl::io::ImageIOImpl::load<fl::io::IMAGE_BMP>(const wstring& path) {
 	HBITMAP hbmp = 
-		(HBITMAP)LoadImage(NULL, path.c_str(), IMAGE_BITMAP, width, height, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		(HBITMAP)LoadImage(NULL, path.c_str(), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 	if (hbmp == NULL) return -1;
 	BITMAP bmp;
 	GetObject(hbmp, sizeof(BITMAP), &bmp);
@@ -65,10 +66,67 @@ int fl::io::ImageIOImpl::load<fl::io::IMAGE_BMP>(const wstring& path, int width,
 	int size = bmp.bmWidth * bmp.bmHeight;
 	DWORD* save = new DWORD[size];
 	GetBitmapBits(hbmp, size << 2, save);
-	content.push_back(MakeBitmap(bmp.bmWidth, bmp.bmHeight, save));
+	content.push_back(display::MakeBitmap(bmp.bmWidth, bmp.bmHeight, save));
 	DeleteObject(hbmp);
 	return (int)content.size() - 1;
 }
+
+/*
+template<>
+int fl::io::ImageIOImpl::load<fl::io::IMAGE_PNG>(const wstring& path) {
+	std::ifstream fr(path, std::ios::binary | std::ios::in);
+	char buffer[9];
+	fr.read(buffer, 8);
+	buffer[9] = 0;
+	if (strcmp("\x89\x50\x4e\x47\x0d\x0a\x1a\x0a", buffer)) return -1;
+
+	static bool CRCFlag = true;
+	static unsigned CRCTable[256];
+	if (CRCFlag) {
+		CRCFlag = false;
+		unsigned crc = 0;
+		for (unsigned i = 0; i < 256; ++i) {
+			crc = i << 24;
+			for (unsigned j = 0; j < 8; ++j) {
+				if (crc & 0x80000000) crc = (crc << 1) ^ 0x04C11DB7;
+				else crc <<= 1;
+			}
+			CRCTable[i] = crc;
+		}
+	}
+
+	unsigned crc = 0;
+	int width = 0, height = 0;
+	//IHDR
+	{
+		fr.read(buffer, 8);
+		if (strcmp(buffer + 4, "IHDR")) return -1;
+		int length = *reinterpret_cast<int*>(buffer);
+		if (length != 13) return -1;
+		unsigned dat[14];
+		fr.read(reinterpret_cast<char*>(dat), 14);
+		crc = CRCTable[reinterpret_cast<unsigned*>(buffer)[1] ^ ((crc >> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00);
+		width = dat[0];
+		height = dat[1];
+		for (int i = 0; i < 13; ++i) crc = CRCTable[dat[i] ^ ((crc >> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00);
+		if (crc != dat[2]) return -1;
+	}
+	display::Bitmap bmp = display::MakeBitmap(width, height);
+	while(fr) {
+		fr.read(buffer, 8);
+		int length = *reinterpret_cast<int*>(buffer);
+		if (strcmp(buffer + 4, "IDAT") == 0) {
+			
+		} else if (strcmp(buffer + 4, "IEND")) {
+			if (length) return -1;
+			content.push_back(bmp);
+			return (int)content.size() - 1;
+		} else return -1;
+	}
+	
+	
+}
+*/
 
 template<>
 bool fl::io::ImageIOImpl::save<fl::io::IMAGE_PNG>(const wstring& path, DWORD* src, int width, int height) {

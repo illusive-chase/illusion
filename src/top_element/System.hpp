@@ -70,6 +70,7 @@ namespace fl {
 		static HDC g_hmemdc;
 		static HBITMAP g_hbitmap;
 		
+		static bool is_window;
 		static int init_nCmdShow;
 		static HINSTANCE hInst;                                // 当前实例
 		static WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
@@ -134,6 +135,7 @@ HDC System::g_hdc;
 HDC System::g_hmemdc;
 HBITMAP System::g_hbitmap;
 HWND System::g_hWnd;
+bool System::is_window = false;
 int System::init_nCmdShow;
 HINSTANCE System::hInst;                                // 当前实例
 WCHAR System::szTitle[System::MAX_LOADSTRING];                  // 标题栏文本
@@ -162,43 +164,49 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	
 
 	System::Setup();
-	// 执行应用程序初始化:
-	
-	//HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
+
 
 	MSG msg = {};
-	DWORD curr_time = 0, prev_time = 0;
 
-	// 主消息循环:
-	fl::time::Timer::base_time = GetTickCount();
+	if (System::is_window) {
 
-	LARGE_INTEGER li = {};
-	li.QuadPart = -100000;
-	HANDLE m_hTimer = CreateWaitableTimer(NULL, FALSE, NULL);
+		// 执行应用程序初始化:
 
-	SetFocus(System::g_hWnd);
+		//HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ILLUSION));
 
-	if (m_hTimer) {
-		SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
+		DWORD curr_time = 0, prev_time = 0;
 
-		while (1) {
-			if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
-				curr_time = GetTickCount();
-				fl::time::Timer::global_tick(DWORD(curr_time - fl::time::Timer::base_time));
-				fl::time::Timer::base_time = curr_time;
-				if (curr_time - prev_time > fl::MILISECOND_PER_FRAME) {
-					InvalidateRect(System::g_hWnd, NULL, TRUE);
-					stage.framing();
-					prev_time = curr_time;
+		// 主消息循环:
+		fl::time::Timer::base_time = GetTickCount();
+
+		LARGE_INTEGER li = {};
+		li.QuadPart = -100000;
+		HANDLE m_hTimer = CreateWaitableTimer(NULL, FALSE, NULL);
+
+		SetFocus(System::g_hWnd);
+
+		if (m_hTimer) {
+			SetWaitableTimer(m_hTimer, &li, 1, NULL, NULL, FALSE);
+
+			while (1) {
+				if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && WaitForSingleObject(m_hTimer, INFINITE) == WAIT_OBJECT_0) {
+					curr_time = GetTickCount();
+					fl::time::Timer::global_tick(DWORD(curr_time - fl::time::Timer::base_time));
+					fl::time::Timer::base_time = curr_time;
+					if (curr_time - prev_time > fl::MILISECOND_PER_FRAME) {
+						InvalidateRect(System::g_hWnd, NULL, TRUE);
+						stage.framing();
+						prev_time = curr_time;
+					}
+				} else {
+					if (WM_QUIT == msg.message) break;
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
 				}
-			} else {
-				if (WM_QUIT == msg.message) break;
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
 			}
-		}
 
-		CloseHandle(m_hTimer);
+			CloseHandle(m_hTimer);
+		}
 	}
 	stage.destroy();
 	return (int)msg.wParam;
@@ -446,6 +454,7 @@ bool fl::System::InitWindow(const wstring& title, int xpos, int ypos, int width,
 	if (!InitInstance(g_hInstance, init_nCmdShow, xpos, ypos, width, height + 40, ws)) return false;
 	//stage.width = width + 17, stage.height = height + 17;
 	stage.width = width, stage.height = height;
+	is_window = true;
 	return true;
 }
 
